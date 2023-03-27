@@ -32,8 +32,8 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.40.1.0")
     implementation("org.ktorm:ktorm-core:3.6.0")
     implementation("org.ktorm:ktorm-support-sqlite:3.6.0")
-    implementation("org.ktorm:ktorm-ksp-api:1.0.0-RC3")
-    ksp("org.ktorm:ktorm-ksp-compiler:1.0.0-RC3")
+    // implementation("org.ktorm:ktorm-ksp-api:1.0.0-RC3")
+    // ksp("org.ktorm:ktorm-ksp-compiler:1.0.0-RC3")
     // ktor-server
     val ktorVersion = "2.2.4"
     implementation("io.ktor:ktor-server-jvm:$ktorVersion")
@@ -60,7 +60,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.github.bin.Applicationkt")
+    mainClass.set("com.github.bin.Server")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
