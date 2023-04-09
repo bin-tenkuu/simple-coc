@@ -3,7 +3,6 @@ package com.github.bin.model
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.github.bin.entity.Role
-import kotlinx.serialization.SerialName
 
 /**
  *  @Date:2023/3/11

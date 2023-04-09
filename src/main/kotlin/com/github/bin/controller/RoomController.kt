@@ -1,7 +1,5 @@
 package com.github.bin.controller
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
-import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.github.bin.entity.Room
 import com.github.bin.model.IdAndName
 import com.github.bin.service.RoomService

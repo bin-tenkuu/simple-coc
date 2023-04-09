@@ -1,9 +1,9 @@
 package com.github.bin.controller
 
-import com.github.bin.model.RoomConfig
 import com.github.bin.config.Global
 import com.github.bin.config.handler.MsgTableName
 import com.github.bin.model.Message
+import com.github.bin.model.RoomConfig
 import com.github.bin.service.HisMsgService
 import com.github.bin.service.RoomService
 import jakarta.websocket.*
@@ -12,7 +12,6 @@ import jakarta.websocket.server.ServerEndpoint
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.*
 

@@ -3,12 +3,8 @@ package com.github.bin
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 import org.mybatis.spring.annotation.MapperScan
-import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.ApplicationContext
-import org.springframework.web.socket.config.annotation.EnableWebSocket
-import kotlin.reflect.KProperty
 
 /**
  *  @Date:2023/4/9
