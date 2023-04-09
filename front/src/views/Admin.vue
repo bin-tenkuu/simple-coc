@@ -202,7 +202,7 @@ export default {
             );
         },
         deleteRoom() {
-            axios.get(`http://${this.host}/api/room/del`, {
+            axios.delete(`http://${this.host}/api/room`, {
                 params: {
                     id: this.room.id,
                 },

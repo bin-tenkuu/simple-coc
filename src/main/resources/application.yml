@@ -1,0 +1,64 @@
+server:
+  port: 8088
+  servlet:
+    encoding:
+      charset: utf-8
+
+spring:
+  profiles:
+    active:
+      - logging
+      - mybatis-plus
+      - springdoc
+  application:
+    name: server
+  web:
+    locale: zh_CN
+    resources:
+      static-locations:
+        - file:./front/dist
+      chain:
+        enabled: true
+        cache: true
+        compressed: false
+        strategy:
+          content:
+            enabled: false
+      cache:
+        cachecontrol:
+          cache-public: true
+          max-age: P30D
+          s-max-age: P30D
+  messages:
+    encoding: UTF-8
+  main:
+    banner-mode: off
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-bigdecimal-as-plain: true
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+  datasource:
+    #    url: jdbc:postgresql://173.82.153.138:5432/2938137849
+    url: jdbc:postgresql://127.0.0.1:5432/2938137849
+    driver-class-name: org.postgresql.Driver
+    username: 2938137849
+    password: a55195356b
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 30000
+      max-lifetime: 30000
+      connection-test-query: SELECT 1

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.bin.mapper.HisMsgMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.bin.entity.HisMsg">
+        <!--@Table his_msg hm -->
+        <id column="id" property="id"/>
+        <result column="type" property="type"/>
+        <result column="msg" property="msg"/>
+        <result column="role" property="role"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, type, msg, role
+    </sql>
+
+    <update id="initTable">
+        create table his_msg (
+            id bigserial not null
+                primary key,
+            type varchar(16) not null,
+            msg text default ''::text,
+            role varchar(64) default ''::character varying not null
+        );
+    </update>
+
+    <update id="dropTable">
+        drop table his_msg;
+    </update>
+
+    <select id="historyMsg" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM his_msg
+        <if test="id != null">
+            WHERE id <![CDATA[<]]> #{id}
+        </if>
+        order by id desc
+        limit 20
+    </select>
+
+    <select id="insert" resultType="long">
+        INSERT INTO his_msg (type, msg, role)
+        VALUES (#{type}, #{msg}, #{role})
+        returning id
+    </select>
+
+    <update id="update">
+        update his_msg
+        set msg = #{msg},
+            role = #{role}
+        where id = #{id}
+    </update>
+</mapper>
