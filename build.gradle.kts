@@ -24,19 +24,20 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     // annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     // testImplementation("org.springframework.boot:spring-boot-starter-test")
     // lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly("org.projectlombok:lombok:1.18.26")
+    annotationProcessor("org.projectlombok:lombok:1.18.26")
     // kotlin
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
     // sql
-    implementation("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql:42.5.4")
     // implementation("org.xerial:sqlite-jdbc:3.40.1.0")
     implementation("com.baomidou:mybatis-plus-boot-starter:3.5.3.1")
     // swagger
