@@ -7,5 +7,6 @@ import com.github.bin.model.RoomConfig
  * @since 2023/04/12
  */
 interface BotHandler {
-    fun handler(room: RoomConfig, msg: String, role: String)
+    fun handler(room: RoomConfig, msg: String, role: String): String?
+    fun subHandler(): List<BotHandler>? = null
 }

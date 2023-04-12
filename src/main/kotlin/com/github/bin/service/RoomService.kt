@@ -26,7 +26,7 @@ import java.util.zip.ZipOutputStream
 @Service
 class RoomService(
     private val baseMapper: RoomMapper,
-    private val hisMsgMapper: HisMsgMapper
+    private val hisMsgMapper: HisMsgMapper,
 ) : InitializingBean {
     override fun afterPropertiesSet() {
         for (room in baseMapper.selectList(Wrappers.emptyWrapper())) {
@@ -148,8 +148,6 @@ class RoomService(
         write(src)
         write("\"/>")
     }
-
-
 
     companion object : HashMap<String, RoomConfig>()
 }

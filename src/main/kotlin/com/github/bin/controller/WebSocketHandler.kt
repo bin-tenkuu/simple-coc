@@ -73,7 +73,7 @@ class WebSocketHandler {
         when (val msg = Global.fromJson<Message>(message)) {
             is Message.Text -> {
                 roomService.saveMsgAndSend(roomConfig, msg, role)
-                botService.handler(roomConfig, msg.msg, role)
+                botService.handler(roomService, roomConfig, msg.msg, role)
             }
             is Message.Pic -> roomService.saveMsgAndSend(roomConfig, msg, role)
             is Message.Default -> {

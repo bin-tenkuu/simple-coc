@@ -1,9 +1,8 @@
 package com.github.bin.service
 
-import com.github.bin.controller.WebSocketHandler
 import com.github.bin.handler.BotHandler
+import com.github.bin.model.Message
 import com.github.bin.model.RoomConfig
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 
 /**
@@ -12,15 +11,15 @@ import org.springframework.stereotype.Service
  */
 @Service
 class BotService(
-        private val botHandlers: List<BotHandler>
-) : InitializingBean {
-    override fun afterPropertiesSet() {
-        WebSocketHandler.botService = this
-    }
+    private val botHandlers: List<BotHandler>
+) {
 
-    fun handler(room: RoomConfig, msg: String, role: String) {
+    fun handler(service: RoomService, room: RoomConfig, msg: String, role: String) {
         for (handler in botHandlers) {
-            handler.handler(room, msg, role)
+            val str = handler.handler(room, msg, role)
+            if (str != null) {
+                service.saveMsgAndSend(room, Message.Text(str), "bot")
+            }
         }
     }
 }
