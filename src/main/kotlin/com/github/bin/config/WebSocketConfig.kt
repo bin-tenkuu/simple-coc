@@ -1,5 +1,6 @@
 package com.github.bin.config
 
+import com.github.bin.controller.WebSocketHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
@@ -14,6 +15,8 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter
 class WebSocketConfig {
     @Bean
     fun serverEndpointExporter(): ServerEndpointExporter {
-        return ServerEndpointExporter()
+        return ServerEndpointExporter().apply {
+            setAnnotatedEndpointClasses(WebSocketHandler::class.java)
+        }
     }
 }

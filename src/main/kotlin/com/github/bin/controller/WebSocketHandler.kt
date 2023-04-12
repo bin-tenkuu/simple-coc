@@ -13,10 +13,8 @@ import jakarta.websocket.server.ServerEndpoint
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 import org.springframework.web.socket.*
 
-@Component
 @Slf4j
 @ServerEndpoint("/ws/{roomId}")
 class WebSocketHandler {
