@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service
  */
 @Service
 class HisMsgService(
-    private val baseMapper: HisMsgMapper
+        private val baseMapper: HisMsgMapper
 ) : InitializingBean {
     override fun afterPropertiesSet() {
-        WebSocketHandler.setMsgService(this)
+        WebSocketHandler.msgService = this
     }
 
     fun historyMsg(id: Long?): List<HisMsg> {

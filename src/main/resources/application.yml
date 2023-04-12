@@ -50,8 +50,8 @@ spring:
     deserialization:
       adjust-dates-to-context-time-zone: false
   datasource:
-    #    url: jdbc:postgresql://173.82.153.138:5432/2938137849
-    url: jdbc:postgresql://127.0.0.1:5432/2938137849
+    url: jdbc:postgresql://173.82.153.138:5432/2938137849
+    #    url: jdbc:postgresql://127.0.0.1:5432/2938137849
     driver-class-name: org.postgresql.Driver
     username: 2938137849
     password: a55195356b

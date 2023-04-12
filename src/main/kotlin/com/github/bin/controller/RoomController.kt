@@ -44,8 +44,8 @@ class RoomController(
     }
 
     @GetMapping("/room/logs")
-    fun getRoomLogs(@RequestParam id: String, response: HttpServletResponse): List<Room> {
-        TODO()
+    fun getRoomLogs(@RequestParam id: String, response: HttpServletResponse) {
+        roomService.exportHistoryMsg(id, response)
     }
 
 }

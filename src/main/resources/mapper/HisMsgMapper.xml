@@ -54,4 +54,8 @@
             role = #{role}
         where id = #{id}
     </update>
+
+    <select id="listAll" resultMap="BaseResultMap">
+        select * from his_msg
+    </select>
 </mapper>

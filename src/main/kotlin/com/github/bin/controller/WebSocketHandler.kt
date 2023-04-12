@@ -4,6 +4,7 @@ import com.github.bin.config.Global
 import com.github.bin.config.handler.MsgTableName
 import com.github.bin.model.Message
 import com.github.bin.model.RoomConfig
+import com.github.bin.service.BotService
 import com.github.bin.service.HisMsgService
 import com.github.bin.service.RoomService
 import jakarta.websocket.*
@@ -28,18 +29,13 @@ class WebSocketHandler {
         private val log: Logger = LoggerFactory.getLogger(WebSocketHandler::class.java)
 
         @JvmStatic
-        private lateinit var msgService: HisMsgService
+        lateinit var msgService: HisMsgService
 
         @JvmStatic
-        private lateinit var roomService: RoomService
+        lateinit var roomService: RoomService
 
-        fun setMsgService(msgService: HisMsgService) {
-            WebSocketHandler.msgService = msgService
-        }
-
-        fun setRoomService(roomService: RoomService) {
-            WebSocketHandler.roomService = roomService
-        }
+        @JvmStatic
+        lateinit var botService: BotService
     }
 
     @OnOpen
@@ -77,8 +73,7 @@ class WebSocketHandler {
         when (val msg = Global.fromJson<Message>(message)) {
             is Message.Text -> {
                 roomService.saveMsgAndSend(roomConfig, msg, role)
-                // TODO: 2021/4/9 自定义消息
-                msg.msg
+                botService.handler(roomConfig, msg.msg, role)
             }
             is Message.Pic -> roomService.saveMsgAndSend(roomConfig, msg, role)
             is Message.Default -> {
@@ -91,8 +86,8 @@ class WebSocketHandler {
                     msgService.historyMsg(msg.id)
                 }.map {
                     when (it.type) {
-                        "pic" -> Message.Pic(it.id!!, it.msg!!, it.role!!)
-                        "text" -> Message.Text(it.id!!, it.msg!!, it.role!!)
+                        Message.TEXT -> Message.Text(it.id!!, it.msg!!, it.role!!)
+                        Message.PIC -> Message.Pic(it.id!!, it.msg!!, it.role!!)
                         else -> Message.Msgs()
                     }
                 }

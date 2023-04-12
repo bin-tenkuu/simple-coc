@@ -5,13 +5,18 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import com.github.bin.config.handler.MsgTableName
 import com.github.bin.controller.WebSocketHandler
-import com.github.bin.model.RoomConfig
 import com.github.bin.entity.Room
 import com.github.bin.mapper.HisMsgMapper
 import com.github.bin.mapper.RoomMapper
 import com.github.bin.model.Message
+import com.github.bin.model.RoomConfig
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import java.io.BufferedWriter
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  *  @Date:2023/4/9
@@ -27,7 +32,7 @@ class RoomService(
         for (room in baseMapper.selectList(Wrappers.emptyWrapper())) {
             RoomService[room.id!!] = RoomConfig(room)
         }
-        WebSocketHandler.setRoomService(this)
+        WebSocketHandler.roomService = this
     }
 
     fun rooms(name: String?): List<Room> {
@@ -96,6 +101,55 @@ class RoomService(
         }
         room.sendAll(msg)
     }
+
+    fun exportHistoryMsg(id: String, response: HttpServletResponse) {
+        val config = RoomService[id] ?: return
+        response.reset()
+        response.contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE
+        response.characterEncoding = "UTF-8"
+        response.setHeader("Content-Disposition", "attachment; filename=$id.zip")
+        val roles = config.room.roles
+        val list = MsgTableName.invoke(id) { hisMsgMapper.listAll() }
+        ZipOutputStream(response.outputStream).use {
+            it.setLevel(9)
+            it.setComment("聊天记录")
+            it.putNextEntry(ZipEntry("index.html"))
+            val stream = it.bufferedWriter()
+            for (msg in list) {
+                val role = roles[msg.role]
+                if (role != null) {
+                    for (tag in role.tags) {
+                        stream.span(tag.name)
+                    }
+                } else {
+                    stream.span(msg.role!!)
+                }
+                stream.write(":")
+                when (msg.type) {
+                    Message.TEXT -> stream.span(msg.msg!!)
+                    Message.PIC -> stream.img(msg.msg!!)
+                }
+                stream.write("<br/>\n")
+            }
+            stream.flush()
+            it.closeEntry()
+            it.flush()
+        }
+    }
+
+    private fun BufferedWriter.span(txt: String) {
+        write("<span>")
+        write(txt)
+        write("</span>")
+    }
+
+    private fun BufferedWriter.img(src: String) {
+        write("<img src=\"")
+        write(src)
+        write("\"/>")
+    }
+
+
 
     companion object : HashMap<String, RoomConfig>()
 }

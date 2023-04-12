@@ -15,4 +15,5 @@ interface HisMsgMapper {
     fun insert(@Param("type") type: String, @Param("msg") msg: String, @Param("role") role: String): Long
     fun update(@Param("id") id: Long, @Param("msg") msg: String, @Param("role") role: String): Int
     fun historyMsg(@Param("id") id: Long?): List<HisMsg>
+    fun listAll(): List<HisMsg>
 }
