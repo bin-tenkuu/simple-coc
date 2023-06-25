@@ -7,12 +7,21 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TableNameHandler
  *  @author bin
  *  @version 1.0.0
  */
-object MsgTableName : ThreadLocal<String>(), TableNameHandler {
+object MsgTableName : TableNameHandler {
+    private val tableNames = ThreadLocal<String>()
     override fun dynamicTableName(sql: String, tableName: String): String {
         if (tableName == "his_msg") {
-            return "his_msg_${get()}"
+            return "his_msg_${tableNames.get()}"
         }
         return tableName
+    }
+
+    fun set(tableName: String) {
+        tableNames.set(tableName)
+    }
+
+    fun remove() {
+        tableNames.remove()
     }
 
     inline fun <T> invoke(tableName: String, block: () -> T): T {

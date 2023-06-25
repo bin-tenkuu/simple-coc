@@ -1,9 +1,10 @@
 package com.github.bin.config
 
-import com.github.bin.controller.WebSocketHandler
-import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
+import org.springframework.web.socket.WebSocketHandler
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
+import org.springframework.web.socket.server.HandshakeInterceptor
 
 
 /**
@@ -12,11 +13,14 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter
  *  @version 1.0.0
  */
 @Component
-class WebSocketConfig {
-    @Bean
-    fun serverEndpointExporter(): ServerEndpointExporter {
-        return ServerEndpointExporter().apply {
-            setAnnotatedEndpointClasses(WebSocketHandler::class.java)
-        }
+class WebSocketConfig(
+        val socketHandler: WebSocketHandler,
+        val interceptor: HandshakeInterceptor,
+) : WebSocketConfigurer {
+
+    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
+        registry.addHandler(socketHandler, "/ws/{roomId}")
+                .addInterceptors(interceptor)
+                .setAllowedOrigins("*")
     }
 }

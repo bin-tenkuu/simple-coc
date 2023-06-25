@@ -29,7 +29,7 @@ class RoomController(
     }
 
     @GetMapping("/room")
-    fun getRoom(@RequestParam id: String): Room {
+    fun getRoom(@RequestParam id: String): Room? {
         return roomService.getById(id)
     }
 
@@ -38,7 +38,7 @@ class RoomController(
         return roomService.saveOrUpdate(room)
     }
 
-    @DeleteMapping("/room")
+    @GetMapping("/room/del")
     fun deleteRoom(@RequestParam id: String): Boolean {
         return roomService.removeById(id)
     }

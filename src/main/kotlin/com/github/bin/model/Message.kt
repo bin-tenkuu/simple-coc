@@ -2,7 +2,7 @@ package com.github.bin.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.github.bin.entity.Role
+import com.github.bin.entity.RoomRole
 
 /**
  *  @Date:2023/3/11
@@ -49,5 +49,5 @@ sealed class Message {
 
     class Msgs(val msgs: List<Message> = ArrayList(0)) : Message()
 
-    class Roles(val roles: MutableMap<String, Role>) : Message()
+    class Roles(val roles: MutableMap<String, RoomRole>) : Message()
 }

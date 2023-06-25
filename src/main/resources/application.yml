@@ -10,6 +10,7 @@ spring:
       - logging
       - mybatis-plus
       - springdoc
+      - connect
   application:
     name: server
   web:
@@ -49,16 +50,3 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       adjust-dates-to-context-time-zone: false
-  datasource:
-    url: jdbc:postgresql://173.82.153.138:5432/2938137849
-    #    url: jdbc:postgresql://127.0.0.1:5432/2938137849
-    driver-class-name: org.postgresql.Driver
-    username: 2938137849
-    password: a55195356b
-    hikari:
-      minimum-idle: 1
-      maximum-pool-size: 10
-      connection-timeout: 30000
-      idle-timeout: 30000
-      max-lifetime: 30000
-      connection-test-query: SELECT 1

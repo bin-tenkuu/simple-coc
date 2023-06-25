@@ -4,16 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import com.github.bin.config.handler.MsgTableName
-import com.github.bin.controller.WebSocketHandler
 import com.github.bin.entity.Room
 import com.github.bin.mapper.HisMsgMapper
 import com.github.bin.mapper.RoomMapper
 import com.github.bin.model.Message
-import com.github.bin.model.RoomConfig
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.InitializingBean
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.io.BufferedWriter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -25,33 +24,27 @@ import java.util.zip.ZipOutputStream
  */
 @Service
 class RoomService(
-    private val baseMapper: RoomMapper,
-    private val hisMsgMapper: HisMsgMapper,
-) : InitializingBean {
-    override fun afterPropertiesSet() {
-        for (room in baseMapper.selectList(Wrappers.emptyWrapper())) {
-            RoomService[room.id!!] = RoomConfig(room)
-        }
-        WebSocketHandler.roomService = this
-    }
+        private val baseMapper: RoomMapper,
+        private val hisMsgMapper: HisMsgMapper,
+) {
+    companion object : HashMap<String, RoomConfig>()
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     fun rooms(name: String?): List<Room> {
         return baseMapper.selectList(
-            if (name != null) QueryWrapper<Room>().like("name", name)
-            else Wrappers.emptyWrapper()
+                if (name != null) QueryWrapper<Room>().like("name", name)
+                else Wrappers.emptyWrapper()
         )
     }
 
-    fun getById(id: String): Room {
+    fun getById(id: String): Room? {
         return baseMapper.selectById(id)
     }
 
     fun removeById(id: String): Boolean {
         RoomService.remove(id)?.apply {
-            for (client in clients) {
-                client.close()
-            }
-            clients.clear()
+            close()
             MsgTableName.invoke(room.id!!) {
                 hisMsgMapper.dropTable()
             }
@@ -59,23 +52,24 @@ class RoomService(
         return SqlHelper.retBool(baseMapper.deleteById(id))
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     fun saveOrUpdate(room: Room): Boolean {
-        val config = RoomService[room.id!!]
-        val code: Int
+        val id = room.id!!
+        val config = RoomService[id]
         if (config != null) {
             val old = config.room
             old.name = room.name
             old.roles = room.roles
-            code = baseMapper.updateById(old)
+            baseMapper.updateById(old)
             config.sendAll(Message.Roles(old.roles))
         } else {
-            RoomService[room.id!!] = RoomConfig(room)
-            code = baseMapper.insert(room)
-            MsgTableName.invoke(room.id!!) {
+            RoomService[id] = RoomConfig(room)
+            baseMapper.insert(room)
+            MsgTableName.invoke(id) {
                 hisMsgMapper.initTable()
             }
         }
-        return SqlHelper.retBool(code)
+        return true
     }
 
     fun saveMsgAndSend(room: RoomConfig, msg: Message, role: String) {
@@ -118,9 +112,9 @@ class RoomService(
             for (msg in list) {
                 val role = roles[msg.role]
                 if (role != null) {
-                    for (tag in role.tags) {
-                        stream.span(tag.name)
-                    }
+//                    for (tag in role.tags) {
+//                        stream.span(tag.name)
+//                    }
                 } else {
                     stream.span(msg.role!!)
                 }
@@ -149,5 +143,8 @@ class RoomService(
         write("\"/>")
     }
 
-    companion object : HashMap<String, RoomConfig>()
+    fun handleMessage(roomConfig: RoomConfig, id: String, msg: Message) {
+        val role = roomConfig.getRole(id)
+        log.info("handleMessage: $role")
+    }
 }

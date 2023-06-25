@@ -5,36 +5,31 @@
 <mapper namespace="com.github.bin.mapper.HisMsgMapper">
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.github.bin.entity.HisMsg">
-        <!--@Table his_msg hm -->
+        <!--@Table His_Msg hm -->
         <id column="id" property="id"/>
         <result column="type" property="type"/>
         <result column="msg" property="msg"/>
         <result column="role" property="role"/>
     </resultMap>
 
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, type, msg, role
-    </sql>
-
     <update id="initTable">
         create table his_msg (
-            id bigserial not null
-                primary key,
+            id bigserial
+                constraint his_msg_pk
+                    primary key,
             type varchar(16) not null,
-            msg text default ''::text,
+            msg text default ''::text not null,
             role varchar(64) default ''::character varying not null
         );
     </update>
 
     <update id="dropTable">
-        drop table his_msg;
+        drop table His_Msg;
     </update>
 
     <select id="historyMsg" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM his_msg
+        SELECT id, type, msg, role
+        FROM His_Msg
         <if test="id != null">
             WHERE id <![CDATA[<]]> #{id}
         </if>
@@ -43,19 +38,19 @@
     </select>
 
     <select id="insert" resultType="long">
-        INSERT INTO his_msg (type, msg, role)
+        INSERT INTO His_Msg (type, msg, role)
         VALUES (#{type}, #{msg}, #{role})
         returning id
     </select>
 
     <update id="update">
-        update his_msg
+        update His_Msg
         set msg = #{msg},
             role = #{role}
         where id = #{id}
     </update>
 
     <select id="listAll" resultMap="BaseResultMap">
-        select * from his_msg
+        select * from His_Msg
     </select>
 </mapper>
