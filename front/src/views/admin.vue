@@ -5,13 +5,12 @@
                        allow-create
                        default-first-option
                        filterable
-                       clearable
-            >
+                       clearable>
                 <el-option v-for="it in rooms" :key="it.id" :label="it.id" :value="it.id" @click="getRoom(it.id)">
                     <span style="float: left">{{ it.id }}</span>
                     <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">
-            {{ it.name }}
-          </span>
+                      {{ it.name }}
+                    </span>
                 </el-option>
             </el-select>
         </el-form-item>
@@ -94,18 +93,16 @@
 </template>
 
 <script>
-import axios from "axios";
 import {ElNotification} from "element-plus";
+import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
 
 export default {
     name: 'Admin-page',
     data() {
-        let host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
-        axios.get(`http://${host}/api/rooms`).then(res => {
-            this.rooms = res.data
+        getRooms().then(res => {
+            this.rooms = res
         })
         return {
-            host: host,
             /**
              * @type {Array<{id: string, name: string}>}
              */
@@ -124,23 +121,17 @@ export default {
                 id: 1,
                 name: "",
             },
-            dialogVisible: false,
         }
     },
     methods: {
         getRoom(id) {
-            this.dialogVisible = false
             this.room.id = id
-            axios.get(`http://${this.host}/api/room`, {
-                params: {
-                    id: id,
-                }
-            }).then(res => {
-                this.room = res.data
+            getRoom(id).then(data => {
+                this.room = data
             })
         },
         setRoom() {
-            axios.post(`http://${this.host}/api/room`, this.room).then(() => {
+            saveRoom(this.room).then(() => {
                 ElNotification({
                     title: '成功',
                     message: '保存成功',
@@ -157,17 +148,10 @@ export default {
             })
         },
         downloadLog() {
-            window.open(
-                `http://${this.host}/api/room/logs?id=${this.room.id}`,
-                '_self'
-            );
+            downloadLog(this.room.id)
         },
         deleteRoom() {
-            axios.get(`http://${this.host}/api/room/del`, {
-                params: {
-                    id: this.room.id,
-                },
-            }).then(() => {
+            deleteRoom(this.room.id).then(() => {
                 ElNotification({
                     title: '成功',
                     message: '删除成功',

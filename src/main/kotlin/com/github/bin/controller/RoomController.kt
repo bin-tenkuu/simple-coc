@@ -17,13 +17,11 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api")
 class RoomController(
-    private val roomService: RoomService,
+        private val roomService: RoomService,
 ) {
     @GetMapping("/rooms")
-    fun rooms(
-        @RequestParam name: String?
-    ): List<IdAndName> {
-        return roomService.rooms(name).map {
+    fun rooms(): List<IdAndName> {
+        return roomService.rooms().map {
             IdAndName(it.id!!, it.name!!)
         }
     }

@@ -1,8 +1,7 @@
 package com.github.bin.service
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
-import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
+import com.github.bin.aspect.RedisValue
 import com.github.bin.config.handler.MsgTableName
 import com.github.bin.entity.Room
 import com.github.bin.mapper.HisMsgMapper
@@ -31,11 +30,9 @@ class RoomService(
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun rooms(name: String?): List<Room> {
-        return baseMapper.selectList(
-                if (name != null) QueryWrapper<Room>().like("name", name)
-                else Wrappers.emptyWrapper()
-        )
+    @RedisValue(key = "Room:list")
+    fun rooms(): List<Room> {
+        return baseMapper.selectList(null)
     }
 
     fun getById(id: String): Room? {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.IOException
+import java.lang.reflect.Type
 import kotlin.reflect.KClass
 
 /**
@@ -17,7 +18,16 @@ object JsonUtil {
     private lateinit var objectMapper: ObjectMapper
 
     fun Any.toJson(): String {
+        if (this is CharSequence) {
+            return toString()
+        }
         return objectMapper.writeValueAsString(this)
+    }
+
+    @Throws(IOException::class)
+    fun <T : Any> String.toBean(type: Type): T {
+        val javaType = objectMapper.typeFactory.constructType(type)
+        return objectMapper.readValue(this, javaType)
     }
 
     @Throws(IOException::class)

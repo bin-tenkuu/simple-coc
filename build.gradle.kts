@@ -23,12 +23,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    // implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     // annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     // lombok
-//    compileOnly("org.projectlombok:lombok:1.18.26")
-//    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.26")
+    annotationProcessor("org.projectlombok:lombok:1.18.26")
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
@@ -70,8 +71,7 @@ tasks {
                     // "-Xexplicit-api=strict",
                     "-Xjsr305=strict",
                     "-opt-in=kotlin.RequiresOptIn",
-                    // "-Xcontext-receivers",
-                    // "-Xuse-k2"
+                    "-Xcontext-receivers",
             )
         }
     }

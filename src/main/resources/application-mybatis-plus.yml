@@ -1,4 +1,5 @@
 mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
   global-config:
     db-config:
       id-type: NONE
@@ -7,5 +8,4 @@ mybatis-plus:
     map-underscore-to-camel-case: true
     cache-enabled: false
     # 查看 SQL 执行日志
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  mapper-locations: classpath:mapper/*.xml
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
