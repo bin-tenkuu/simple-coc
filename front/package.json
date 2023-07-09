@@ -10,13 +10,13 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
     "@vueup/vue-quill": "^1.2.0",
-    "axios": "^1.3.4",
+    "axios": "^1.4.0",
     "core-js": "^3.8.3",
-    "element-plus": "^2.2.36",
+    "element-plus": "^2.3.7",
     "quill-html-edit-button": "^2.2.12",
-    "unplugin-auto-import": "^0.15.3",
-    "unplugin-vue-components": "^0.24.1",
-    "vue": "^3.2.13"
+    "unplugin-auto-import": "^0.16.4",
+    "unplugin-vue-components": "^0.25.1",
+    "vue": "^3.3.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

@@ -12,42 +12,77 @@ import com.github.bin.entity.RoomRole
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = Message.Default::class, name = Message.DEFAULT),
-    JsonSubTypes.Type(value = Message.Text::class, name = Message.TEXT),
-    JsonSubTypes.Type(value = Message.Pic::class, name = Message.PIC),
-    JsonSubTypes.Type(value = Message.Msgs::class, name = Message.MSGS),
-    JsonSubTypes.Type(value = Message.Roles::class, name = Message.ROLES),
-    failOnRepeatedNames = true
+        JsonSubTypes.Type(value = Message.Default::class, name = Message.DEFAULT),
+        JsonSubTypes.Type(value = Message.Text::class, name = Message.TEXT),
+        JsonSubTypes.Type(value = Message.Pic::class, name = Message.PIC),
+        JsonSubTypes.Type(value = Message.Sys::class, name = Message.SYS),
+        JsonSubTypes.Type(value = Message.Msgs::class, name = Message.MSGS),
+        JsonSubTypes.Type(value = Message.Roles::class, name = Message.ROLES),
+        failOnRepeatedNames = true
 )
-sealed class Message {
+sealed interface Message {
+
     companion object {
         const val DEFAULT = "default"
         const val TEXT = "text"
         const val PIC = "pic"
+        const val SYS = "sys"
         const val MSGS = "msgs"
         const val ROLES = "roles"
     }
 
-    var id: Long? = null
-    var role: String = ""
+    sealed interface Msg : Message {
+        val type: String
+        var id: Long?
+        var role: Int
+        var msg: String
+    }
 
-    class Default : Message()
+    class Default : Message {
+        var id: Long? = null
+        var role: Int = -1
+    }
 
-    class Text(val msg: String) : Message() {
-        constructor(id: Long, msg: String, role: String) : this(msg) {
+    class Text() : Message, Msg {
+        override val type: String get() = TEXT
+        override var id: Long? = null
+        override var role: Int = -1
+        override var msg: String = ""
+
+        constructor(id: Long, msg: String, role: Int) : this() {
             this.id = id
             this.role = role
+            this.msg = msg
         }
     }
 
-    class Pic(val msg: String) : Message() {
-        constructor(id: Long, msg: String, role: String) : this(msg) {
+    class Pic() : Message, Msg {
+        override val type: String get() = PIC
+        override var id: Long? = null
+        override var role: Int = -1
+        override var msg: String = ""
+
+        constructor(id: Long, msg: String, role: Int) : this() {
             this.id = id
             this.role = role
+            this.msg = msg
         }
     }
 
-    class Msgs(val msgs: List<Message> = ArrayList(0)) : Message()
+    class Sys() : Message, Msg {
+        override val type: String get() = SYS
+        override var id: Long? = null
+        override var role: Int = -1
+        override var msg: String = ""
 
-    class Roles(val roles: MutableMap<String, RoomRole>) : Message()
+        constructor(id: Long, msg: String, role: Int) : this() {
+            this.id = id
+            this.role = role
+            this.msg = msg
+        }
+    }
+
+    class Msgs(val msgs: List<Message> = ArrayList(0)) : Message
+
+    class Roles(val roles: MutableMap<Int, RoomRole>) : Message
 }

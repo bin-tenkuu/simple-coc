@@ -24,26 +24,25 @@ class ChatWebSocketHandler(
      * 建立连接
      */
     override fun afterConnectionEstablished(session: WebSocketSession) {
-        val roomConfig = session.attributes["room"] as RoomConfig
+        val roomConfig = session.getRoom()
         roomConfig += session
+        logger.info("'{}' 连接 room '{}' ", session.remoteAddr, roomConfig.id)
     }
 
     /**
      * 接收消息
      */
     override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
-        when (message) {
-            is TextMessage -> {
-                val roomConfig = session.attributes["room"] as RoomConfig
-                val payload = message.payload
-                try {
-                    val msg = payload.toBean(Message::class)
-                    roomService.handleMessage(roomConfig, session.id, msg)
-                } catch (e: IOException) {
-                    logger.info("消息格式错误: '{}'", payload)
-                    session.close(CloseStatus(4000, "消息格式错误"))
-                    return
-                }
+        if (message is TextMessage) {
+            val roomConfig = session.getRoom()
+            val payload = message.payload
+            try {
+                val msg = payload.toBean(Message::class)
+                roomService.handleMessage(roomConfig, session.id, msg)
+            } catch (e: IOException) {
+                logger.warn("'{}' 消息格式错误: '{}'", session.remoteAddr, payload)
+                session.close(CloseStatus(4000, "消息格式错误"))
+                return
             }
         }
     }
@@ -52,20 +51,21 @@ class ChatWebSocketHandler(
      * 发生错误
      */
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
-        val roomConfig = session.attributes["room"] as RoomConfig
+        val roomConfig = session.getRoom()
         roomConfig -= session
         if (session.isOpen) {
             session.close(CloseStatus(4000, "服务器错误:${exception.message}"))
         }
-        logger.error("websocket 异常", exception)
+        logger.warn("'{}' websocket 异常", session.remoteAddr, exception)
     }
 
     /**
      * 关闭连接
      */
     override fun afterConnectionClosed(session: WebSocketSession, closeStatus: CloseStatus) {
-        val roomConfig = session.attributes["room"] as RoomConfig
+        val roomConfig = session.getRoom()
         roomConfig -= session
+        logger.info("'{}' 断开连接", session.remoteAddr)
     }
 
     /**
@@ -73,5 +73,9 @@ class ChatWebSocketHandler(
      */
     override fun supportsPartialMessages(): Boolean = false
 
+    private fun WebSocketSession.getRoom(): RoomConfig {
+        return RoomService[attributes["roomId"] as String]!!
+    }
 
+    private val WebSocketSession.remoteAddr get() = remoteAddress?.hostName ?: "unknown"
 }

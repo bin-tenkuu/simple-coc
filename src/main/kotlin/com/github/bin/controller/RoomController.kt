@@ -6,6 +6,8 @@ import com.github.bin.service.RoomService
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
+import org.springframework.core.io.Resource
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -42,8 +44,8 @@ class RoomController(
     }
 
     @GetMapping("/room/logs")
-    fun getRoomLogs(@RequestParam id: String, response: HttpServletResponse) {
-        roomService.exportHistoryMsg(id, response)
+    fun getRoomLogs(@RequestParam id: String, response: HttpServletResponse): ResponseEntity<out Resource> {
+        return roomService.exportHistoryMsg(id, response)
     }
 
 }

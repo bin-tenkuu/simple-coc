@@ -23,24 +23,6 @@ class Room {
     var name: String? = null
 
     @TableField("roles", jdbcType = JdbcType.OTHER, typeHandler = RoomHandler::class)
-    var roles: MutableMap<String, RoomRole> = HashMap()
+    var roles: MutableMap<Int, RoomRole> = HashMap()
 }
 
-@TableName("room_role", resultMap = "BaseResultMap")
-class RoomRole(
-        @TableId("id", type = IdType.AUTO)
-        val id: String,
-        @TableField("name")
-        var name: String,
-        @TableField("color")
-        var color: String,
-)
-
-@TableName("his_msg", resultMap = "BaseResultMap")
-class HisMsg {
-    @TableId("id", type = IdType.AUTO)
-    var id: Long? = null
-    var type: String? = null
-    var msg: String? = null
-    var role: String? = null
-}

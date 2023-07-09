@@ -93,11 +93,14 @@
 </template>
 
 <script>
-import {ElNotification} from "element-plus";
+import {ElInputNumber, ElNotification} from "element-plus";
 import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
 
 export default {
     name: 'Admin-page',
+    components: {
+        ElInputNumber
+    },
     data() {
         getRooms().then(res => {
             this.rooms = res
@@ -126,6 +129,8 @@ export default {
     methods: {
         getRoom(id) {
             this.room.id = id
+            this.room.name = ""
+            this.room.roles = {}
             getRoom(id).then(data => {
                 this.room = data
             })

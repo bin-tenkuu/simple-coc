@@ -15,10 +15,10 @@
     <update id="initTable">
         create table his_msg
         (
-            id bigserial primary key,
+            id   bigserial primary key,
             type varchar(16) not null,
-            msg text default ''::text not null,
-            role varchar(64) default ''::character varying not null
+            msg  text        not null,
+            role varchar(64) not null
         );
     </update>
 
@@ -30,10 +30,10 @@
         SELECT id, type, msg, role
         FROM his_msg
         <if test="id != null">
-            WHERE id <![CDATA[<]]> #{id}
+            WHERE id &lt; #{id}
         </if>
         order by id desc
-        limit 20
+        limit #{limit}
     </select>
 
     <select id="insert" resultType="long">
@@ -44,12 +44,14 @@
 
     <update id="update">
         update his_msg
-        set msg = #{msg},
+        set msg  = #{msg},
             role = #{role}
         where id = #{id}
     </update>
 
     <select id="listAll" resultMap="BaseResultMap">
-        select * from his_msg
+        select *
+        from his_msg
     </select>
+
 </mapper>

@@ -24,7 +24,7 @@ object MsgTableName : TableNameHandler {
         tableNames.remove()
     }
 
-    inline fun <T> invoke(tableName: String, block: () -> T): T {
+    inline operator fun <T> invoke(tableName: String, block: () -> T): T {
         set(tableName)
         try {
             return block()

@@ -28,9 +28,10 @@ class WebSocketInterceptor(
                 }
                 config = RoomConfig(room)
                 RoomService[roomId] = config
+            } else {
+                config.hold = true
             }
-            attributes["room"] = config
-            logger.info("'{}' 尝试连接 room '{}' ", remoteHost, roomId)
+            attributes["roomId"] = roomId
             return true
         }
         return false

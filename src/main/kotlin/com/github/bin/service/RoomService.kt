@@ -2,17 +2,21 @@ package com.github.bin.service
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import com.github.bin.aspect.RedisValue
-import com.github.bin.config.handler.MsgTableName
+import com.github.bin.entity.HisMsg
 import com.github.bin.entity.Room
-import com.github.bin.mapper.HisMsgMapper
+import com.github.bin.entity.RoomRole
 import com.github.bin.mapper.RoomMapper
 import com.github.bin.model.Message
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.BufferedWriter
+import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -24,7 +28,7 @@ import java.util.zip.ZipOutputStream
 @Service
 class RoomService(
         private val baseMapper: RoomMapper,
-        private val hisMsgMapper: HisMsgMapper,
+        private val hisMsgService: HisMsgService,
 ) {
     companion object : HashMap<String, RoomConfig>()
 
@@ -42,9 +46,7 @@ class RoomService(
     fun removeById(id: String): Boolean {
         RoomService.remove(id)?.apply {
             close()
-            MsgTableName.invoke(room.id!!) {
-                hisMsgMapper.dropTable()
-            }
+            hisMsgService.invoke(this.id) { dropTable() }
         }
         return SqlHelper.retBool(baseMapper.deleteById(id))
     }
@@ -62,86 +64,108 @@ class RoomService(
         } else {
             RoomService[id] = RoomConfig(room)
             baseMapper.insert(room)
-            MsgTableName.invoke(id) {
-                hisMsgMapper.initTable()
+            hisMsgService.invoke(id) {
+                initTable()
             }
         }
         return true
     }
 
-    fun saveMsgAndSend(room: RoomConfig, msg: Message, role: String) {
+    fun <T : Message.Msg> saveMsgAndSend(room: RoomConfig, msg: T, role: Int) {
         msg.role = role
-        MsgTableName.invoke(room.room.id!!) {
-            when (msg) {
-                is Message.Text -> {
-                    if (msg.id == null) {
-                        msg.id = hisMsgMapper.insert("text", msg.msg, role)
-                    } else {
-                        hisMsgMapper.update(msg.id!!, msg.msg, role)
-                    }
-                }
-                is Message.Pic -> {
-                    if (msg.id == null) {
-                        msg.id = hisMsgMapper.insert("pic", msg.msg, role)
-                    } else {
-                        hisMsgMapper.update(msg.id!!, msg.msg, role)
-                    }
-                }
-                else -> return
+        hisMsgService.invoke(room.id) {
+            if (msg.id == null) {
+                msg.id = insert(msg.type, msg.msg, role)
+            } else {
+                update(msg.id!!, msg.msg, role)
             }
         }
         room.sendAll(msg)
     }
 
-    fun exportHistoryMsg(id: String, response: HttpServletResponse) {
-        val config = RoomService[id] ?: return
-        response.reset()
-        response.contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE
-        response.characterEncoding = "UTF-8"
-        response.setHeader("Content-Disposition", "attachment; filename=$id.zip")
-        val roles = config.room.roles
-        val list = MsgTableName.invoke(id) { hisMsgMapper.listAll() }
-        ZipOutputStream(response.outputStream).use {
+    fun exportHistoryMsg(id: String, response: HttpServletResponse): ResponseEntity<Resource> {
+        val fileName = "$id.zip"
+        val config = getById(id) ?: return ResponseEntity.ok(null)
+        val roles = config.roles
+        val list = hisMsgService.invoke(id) { listAll() }
+        val file = File(fileName)
+        ZipOutputStream(file.outputStream()).use {
+            it.setComment("导出历史记录")
             it.setLevel(9)
-            it.setComment("聊天记录")
             it.putNextEntry(ZipEntry("index.html"))
-            val stream = it.bufferedWriter()
+            val writer = it.bufferedWriter()
             for (msg in list) {
-                val role = roles[msg.role]
-                if (role != null) {
-//                    for (tag in role.tags) {
-//                        stream.span(tag.name)
-//                    }
-                } else {
-                    stream.span(msg.role!!)
-                }
-                stream.write(":")
-                when (msg.type) {
-                    Message.TEXT -> stream.span(msg.msg!!)
-                    Message.PIC -> stream.img(msg.msg!!)
-                }
-                stream.write("<br/>\n")
+                val roleId = msg.role!!
+                val role = roles[roleId] ?: RoomRole(roleId, roleId.toString(), "black")
+                val color = role.color
+                writer.append("<div style=\"color: ").append(color).append("\">")
+                writer.append(toHtml(msg.type!!, msg.msg!!, role))
+                writer.append("</div>\n")
+                writer.flush()
             }
-            stream.flush()
             it.closeEntry()
             it.flush()
         }
-    }
-
-    private fun BufferedWriter.span(txt: String) {
-        write("<span>")
-        write(txt)
-        write("</span>")
-    }
-
-    private fun BufferedWriter.img(src: String) {
-        write("<img src=\"")
-        write(src)
-        write("\"/>")
+        val headers = HttpHeaders()
+        headers.add("Content-Disposition", "attachment; filename=$fileName")
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(FileSystemResource(file))
     }
 
     fun handleMessage(roomConfig: RoomConfig, id: String, msg: Message) {
         val role = roomConfig.getRole(id)
         log.info("handleMessage: $role")
+        when (msg) {
+            is Message.Default -> {
+                // 更新角色，根据id获取历史消息
+                roomConfig.setRole(id, msg.role)
+                val list = hisMsgService.invoke(roomConfig.id) { historyMsg(msg.id, 20) }
+                for (hisMsg in list) {
+                    roomConfig.send(id, hisMsg.toMessage())
+                }
+            }
+
+            is Message.Text -> {
+                val b = role != -10 && msg.id == null
+                saveMsgAndSend(roomConfig, msg, role)
+                if (b && msg.msg.startsWith('.')) {
+                    hisMsgService.handleBot(roomConfig, id, msg.msg.substring(1).trim())
+                }
+            }
+
+            is Message.Msg -> saveMsgAndSend(roomConfig, msg, role)
+            else -> {}
+        }
+    }
+
+    private fun HisMsg.toMessage(): Message {
+        val id = id!!
+        val msg = msg!!
+        val role = role!!
+        return when (type) {
+            Message.TEXT -> Message.Text(id, msg, role)
+            Message.PIC -> Message.Pic(id, msg, role)
+            Message.SYS -> Message.Sys(id, msg, role)
+            else -> Message.Msgs()
+        }
+    }
+
+    private fun StringBuilder.toHtml(type: String, msg: String, role: RoomRole) {
+        val name = role.name
+        val user = "<span>&lt;${name}&gt;:</span>"
+        when (type) {
+            Message.TEXT -> append(user).append("<span>").append(msg).append("</span>")
+            Message.PIC -> append(user).append("<img alt='img' src='").append(msg).append("'/>")
+            Message.SYS -> append("<i>").append(msg).append("</i>")
+            else -> {}
+        }
+    }
+
+    private fun toHtml(type: String, msg: String, role: RoomRole): String {
+        return buildString {
+            toHtml(type, msg, role)
+        }
     }
 }
