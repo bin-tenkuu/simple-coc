@@ -8,7 +8,7 @@ import com.github.bin.service.RoomConfig
  * @since 2023/7/9
  */
 abstract class SimpleCommand(
-        protected val first: String
+        private val first: String
 ) : Command {
 
     override fun invoke(roomConfig: RoomConfig, id: String, msg: String): Boolean {
