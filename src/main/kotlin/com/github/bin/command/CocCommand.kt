@@ -19,8 +19,8 @@ object CocCommand {
             val split = msg.split(" ")
             if (split.size != 2) return false
             val num = split[1].toIntOrNull() ?: return false
-            val result = (1..num).map { (1..6).random() }.sum()
-            HisMsgService.sendAsBot(roomConfig, "投掷${num}次骰子，结果为${result}")
+            val result = (1..num).sumOf { (1..6).random() }
+            HisMsgService.sendAsBot(roomConfig, "投掷 $num 次骰子，结果为 $result")
             return true
         }
     }

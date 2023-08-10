@@ -2,7 +2,7 @@ package com.github.bin.service
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import com.github.bin.aspect.RedisValue
-import com.github.bin.entity.HisMsg
+import com.github.bin.entity.msg.HisMsg
 import com.github.bin.entity.Room
 import com.github.bin.entity.RoomRole
 import com.github.bin.mapper.RoomMapper

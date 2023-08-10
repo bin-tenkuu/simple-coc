@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.bin.mapper.HisMsgMapper">
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.github.bin.entity.HisMsg">
+    <resultMap id="BaseResultMap" type="com.github.bin.entity.msg.HisMsg">
         <!--@Table his_msg hm -->
         <id column="id" property="id"/>
         <result column="type" property="type"/>

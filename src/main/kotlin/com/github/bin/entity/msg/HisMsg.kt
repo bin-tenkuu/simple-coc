@@ -1,4 +1,4 @@
-package com.github.bin.entity
+package com.github.bin.entity.msg
 
 import com.baomidou.mybatisplus.annotation.IdType
 import com.baomidou.mybatisplus.annotation.TableId

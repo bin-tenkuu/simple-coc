@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val kotlinVersion = "1.9.0"
 plugins {
-    val kotlinVersion = "1.8.20"
+    val kotlinVersion = "1.9.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.spring") version kotlinVersion
     id("org.springframework.boot") version "3.0.5"
@@ -31,8 +32,9 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     // kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
+    kotlin("stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     compileOnly("org.jetbrains:annotations:24.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
@@ -40,6 +42,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.5.4")
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
     implementation("com.baomidou:mybatis-plus-boot-starter:3.5.3.1")
+    implementation("com.baomidou:dynamic-datasource-spring-boot-starter:3.5.1")
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.1.0")
     // hutool全家桶: https://hutool.cn/docs/#/
@@ -70,10 +73,10 @@ tasks {
             jvmTarget = jvmVersion
             // allWarningsAsErrors = true
             freeCompilerArgs = freeCompilerArgs + mutableListOf(
-                    // "-Xexplicit-api=strict",
-                    "-Xjsr305=strict",
-                    "-opt-in=kotlin.RequiresOptIn",
-                    "-Xcontext-receivers",
+                // "-Xexplicit-api=strict",
+                "-Xjsr305=strict",
+                "-opt-in=kotlin.RequiresOptIn",
+                "-Xcontext-receivers",
             )
         }
     }

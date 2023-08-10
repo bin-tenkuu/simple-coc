@@ -1,6 +1,6 @@
 package com.github.bin.mapper
 
-import com.github.bin.entity.HisMsg
+import com.github.bin.entity.msg.HisMsg
 import org.apache.ibatis.annotations.Param
 
 /**
