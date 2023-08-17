@@ -50,8 +50,13 @@
     </update>
 
     <select id="listAll" resultMap="BaseResultMap">
-        select *
+        select id, type, msg, role
         from his_msg
+        limit #{size} offset #{offset}
     </select>
 
+    <select id="count" resultType="long">
+        select count(*)
+        from his_msg
+    </select>
 </mapper>

@@ -27,8 +27,8 @@ import java.util.zip.ZipOutputStream
  */
 @Service
 class RoomService(
-        private val baseMapper: RoomMapper,
-        private val hisMsgService: HisMsgService,
+    private val baseMapper: RoomMapper,
+    private val hisMsgService: HisMsgService,
 ) {
     companion object : HashMap<String, RoomConfig>()
 
@@ -87,21 +87,27 @@ class RoomService(
         val fileName = "$id.zip"
         val config = getById(id) ?: return ResponseEntity.ok(null)
         val roles = config.roles
-        val list = hisMsgService.invoke(id) { listAll() }
         val file = File(fileName)
         ZipOutputStream(file.outputStream()).use {
             it.setComment("导出历史记录")
             it.setLevel(9)
             it.putNextEntry(ZipEntry("index.html"))
             val writer = it.bufferedWriter()
-            for (msg in list) {
-                val roleId = msg.role!!
-                val role = roles[roleId] ?: RoomRole(roleId, roleId.toString(), "black")
-                val color = role.color
-                writer.append("<div style=\"color: ").append(color).append("\">")
-                writer.append(toHtml(msg.type!!, msg.msg!!, role))
-                writer.append("</div>\n")
-                writer.flush()
+            val allCount = hisMsgService.invoke(id) { count() }
+            val size = 10L
+            var index = 0L
+            while (index >= allCount) {
+                val list = hisMsgService.invoke(id) { listAll(index, size) }
+                for (msg in list) {
+                    val roleId = msg.role!!
+                    val role = roles[roleId] ?: RoomRole(roleId, roleId.toString(), "black")
+                    val color = role.color
+                    writer.append("<div style=\"color: ").append(color).append("\">")
+                    writer.append(toHtml(msg.type!!, msg.msg!!, role))
+                    writer.append("</div>\n")
+                    writer.flush()
+                }
+                index += size
             }
             it.closeEntry()
             it.flush()
@@ -109,9 +115,9 @@ class RoomService(
         val headers = HttpHeaders()
         headers.add("Content-Disposition", "attachment; filename=$fileName")
         return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(FileSystemResource(file))
+            .headers(headers)
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(FileSystemResource(file))
     }
 
     fun handleMessage(roomConfig: RoomConfig, id: String, msg: Message) {
