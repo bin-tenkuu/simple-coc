@@ -46,4 +46,8 @@ object MsgDataSource {
     fun removeDataSource(name: String) {
         dataSource.removeDataSource(name)
     }
+
+    fun set(name: String) {
+        setDataSource(name)
+    }
 }

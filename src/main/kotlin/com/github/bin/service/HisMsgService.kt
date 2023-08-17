@@ -1,7 +1,6 @@
 package com.github.bin.service
 
 import com.github.bin.command.Command
-import com.github.bin.config.handler.MsgTableName
 import com.github.bin.mapper.HisMsgMapper
 import com.github.bin.model.Message
 import org.springframework.stereotype.Service
@@ -14,20 +13,16 @@ import org.springframework.stereotype.Service
 @Suppress("LeakingThis")
 @Service
 class HisMsgService(
-        private val hisMsgMapper: HisMsgMapper,
-        private val commands: List<Command>
+    private val hisMsgMapper: HisMsgMapper,
+    private val commands: List<Command>
 ) {
     init {
         INSTANCE = this
     }
 
     fun <T> invoke(tableName: String, block: HisMsgMapper.() -> T): T {
-        MsgTableName.set(tableName)
-        try {
-            return hisMsgMapper.block()
-        } finally {
-            MsgTableName.remove()
-        }
+        MsgDataSource.set(tableName)
+        return hisMsgMapper.block()
     }
 
     fun handleBot(roomConfig: RoomConfig, id: String, msg: String) {
