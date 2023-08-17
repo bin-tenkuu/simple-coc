@@ -10,5 +10,5 @@ class HisMsg {
     var id: Long? = null
     var type: String? = null
     var msg: String? = null
-    var role: Int? = null
+    var role: Long? = null
 }

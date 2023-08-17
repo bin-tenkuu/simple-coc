@@ -23,6 +23,6 @@ class Room {
     var name: String? = null
 
     @TableField("roles", jdbcType = JdbcType.OTHER, typeHandler = RoomHandler::class)
-    var roles: MutableMap<Int, RoomRole> = HashMap()
+    var roles: MutableMap<Long, RoomRole> = HashMap()
 }
 

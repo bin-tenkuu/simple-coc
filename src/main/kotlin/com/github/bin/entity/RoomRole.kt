@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName
 @TableName("room_role", resultMap = "BaseResultMap")
 class RoomRole() {
     @TableId("id", type = IdType.AUTO)
-    var id: Int? = null
+    var id: Long? = null
 
     @TableField("name")
     var name: String? = null
@@ -16,7 +16,7 @@ class RoomRole() {
     @TableField("color")
     var color: String? = null
 
-    constructor(id: Int, name: String, color: String) : this() {
+    constructor(id: Long, name: String, color: String) : this() {
         this.id = id
         this.name = name
         this.color = color

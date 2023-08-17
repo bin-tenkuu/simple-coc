@@ -18,7 +18,7 @@ class RoomConfig(
 ) : Closeable {
     val id get() = room.id!!
     private val clients = ConcurrentHashMap<String, WebSocketSession>()
-    private val roles = HashMap<String, Int>()
+    private val roles = HashMap<String, Long>()
 
     @JvmField
     @Volatile
@@ -36,11 +36,11 @@ class RoomConfig(
         }
     }
 
-    fun getRole(session: String): Int {
-        return roles.getOrDefault(session, -1)
+    fun getRole(session: String): Long {
+        return roles.getOrDefault(session, -1L)
     }
 
-    fun setRole(session: String, role: Int) {
+    fun setRole(session: String, role: Long) {
         roles[session] = role
     }
 

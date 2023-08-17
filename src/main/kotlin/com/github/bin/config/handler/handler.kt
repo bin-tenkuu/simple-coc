@@ -7,4 +7,4 @@ import com.github.bin.entity.RoomRole
  *  @author bin
  *  @version 1.0.0
  */
-class RoomHandler : BaseJsonTypeHandler<Map<Int, RoomRole>>()
+class RoomHandler : BaseJsonTypeHandler<Map<Long, RoomRole>>()

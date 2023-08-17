@@ -35,18 +35,18 @@ class HisMsgService(
 
     companion object {
         private lateinit var INSTANCE: HisMsgService
-        fun sendAsBot(room: RoomConfig, msg: String) {
+        fun RoomConfig.sendAsBot(msg: String) {
             val text = Message.Text()
             text.msg = msg
-            sendAsBot(room, text)
+            sendAsBot(text)
         }
 
-        fun sendAsBot(room: RoomConfig, msg: Message.Msg) {
+        private fun RoomConfig.sendAsBot(msg: Message.Msg) {
             msg.role = -10
-            INSTANCE.invoke(room.id) {
+            INSTANCE.invoke(id) {
                 msg.id = insert(msg.type, msg.msg, -10)
             }
-            room.sendAll(msg)
+            sendAll(msg)
         }
     }
 }

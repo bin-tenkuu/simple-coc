@@ -71,7 +71,7 @@ class RoomService(
         return true
     }
 
-    fun <T : Message.Msg> saveMsgAndSend(room: RoomConfig, msg: T, role: Int) {
+    fun <T : Message.Msg> saveMsgAndSend(room: RoomConfig, msg: T, role: Long) {
         msg.role = role
         hisMsgService.invoke(room.id) {
             if (msg.id == null) {
@@ -134,7 +134,7 @@ class RoomService(
             }
 
             is Message.Text -> {
-                val b = role != -10 && msg.id == null
+                val b = role != -10L && msg.id == null
                 saveMsgAndSend(roomConfig, msg, role)
                 if (b && msg.msg.startsWith('.')) {
                     hisMsgService.handleBot(roomConfig, id, msg.msg.substring(1).trim())
