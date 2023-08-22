@@ -3,9 +3,9 @@ package com.github.bin.service
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import com.github.bin.aspect.RedisValue
 import com.github.bin.entity.msg.HisMsg
-import com.github.bin.entity.Room
-import com.github.bin.entity.RoomRole
-import com.github.bin.mapper.RoomMapper
+import com.github.bin.entity.master.Room
+import com.github.bin.entity.master.RoomRole
+import com.github.bin.mapper.master.RoomMapper
 import com.github.bin.model.Message
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -151,9 +151,9 @@ class RoomService(
         val msg = msg!!
         val role = role!!
         return when (type) {
-            Message.TEXT -> Message.Text(id, msg, role)
-            Message.PIC -> Message.Pic(id, msg, role)
-            Message.SYS -> Message.Sys(id, msg, role)
+            Message.TEXT -> Message.Text(id, role, msg)
+            Message.PIC -> Message.Pic(id, role, msg)
+            Message.SYS -> Message.Sys(id, role, msg)
             else -> Message.Msgs()
         }
     }

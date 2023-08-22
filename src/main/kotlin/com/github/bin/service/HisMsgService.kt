@@ -1,7 +1,8 @@
 package com.github.bin.service
 
 import com.github.bin.command.Command
-import com.github.bin.mapper.HisMsgMapper
+import com.github.bin.config.MsgDataSource
+import com.github.bin.mapper.msg.HisMsgMapper
 import com.github.bin.model.Message
 import org.springframework.stereotype.Service
 

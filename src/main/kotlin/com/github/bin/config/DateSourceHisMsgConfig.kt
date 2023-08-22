@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.config.GlobalConfig
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean
-import com.github.bin.service.MsgDataSource
 import org.apache.ibatis.session.SqlSessionFactory
 import org.mybatis.spring.SqlSessionTemplate
 import org.mybatis.spring.annotation.MapperScan
@@ -29,7 +28,10 @@ import javax.sql.DataSource
  */
 @Component
 @EnableConfigurationProperties(value = [MybatisPlusProperties::class])
-@MapperScan(value = ["com.github.bin.entity.msg"], sqlSessionTemplateRef = "msgSqlSessionTemplate")
+@MapperScan(
+    basePackages = ["com.github.bin.mapper.msg"],
+    sqlSessionTemplateRef = "msgSqlSessionTemplate"
+)
 class DateSourceHisMsgConfig(
     private val properties: MybatisPlusProperties
 ) {
@@ -47,7 +49,7 @@ class DateSourceHisMsgConfig(
     fun dataSource(
         properties: DataSourceProperties
     ): DynamicRoutingDataSource {
-        return MsgDataSource.dataSource
+        return MsgDataSource.DATA_SOURCE
     }
 
     @Bean(name = ["msgSqlSessionFactory"])

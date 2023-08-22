@@ -11,7 +11,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Duration;
 
 /**
@@ -33,16 +32,16 @@ public class RedisCacheAspect {
             val value = redis.getValue(redisValue.key());
             if (value != null) {
                 try {
-                    return JsonUtil.INSTANCE.toBean(value, type);
-                } catch (IOException e) {
+                    return JsonUtil.toBean(value, JsonUtil.getJavaType(type));
+                } catch (Exception e) {
                     log.warn("反序列化失败：type：{}，json：{}", type, value);
                 }
             }
         }
         val result = pjp.proceed();
-        val json = JsonUtil.INSTANCE.toJson(result);
-        val duration = Duration.of(redisValue.expire(), redisValue.timeUnit().toChronoUnit());
-        redis.setValue(redisValue.key(), json, duration);
+        val json = JsonUtil.toJson(result);
+        val timeout = Duration.of(redisValue.expire(), redisValue.timeUnit().toChronoUnit());
+        redis.setValue(redisValue.key(), json, timeout);
         return result;
     }
 }

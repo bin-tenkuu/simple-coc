@@ -1,6 +1,9 @@
 .gradle/
 build/
 *.iml
-.idea/
+/.idea/
 logs/
 application-connect.yml
+/.fastRequest
+/sql
+!/sql/hisMsg.db

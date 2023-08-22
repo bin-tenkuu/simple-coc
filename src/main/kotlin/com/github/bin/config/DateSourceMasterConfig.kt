@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean
 import com.zaxxer.hikari.HikariDataSource
 import org.apache.ibatis.session.SqlSessionFactory
 import org.mybatis.spring.SqlSessionTemplate
+import org.mybatis.spring.annotation.MapperScan
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
@@ -28,6 +29,10 @@ import javax.sql.DataSource
  */
 @Component
 @EnableConfigurationProperties(value = [MybatisPlusProperties::class])
+@MapperScan(
+    basePackages = ["com.github.bin.mapper.master"],
+    sqlSessionTemplateRef = "masterSqlSessionTemplate"
+)
 class DateSourceMasterConfig(
     private val properties: MybatisPlusProperties
 ) {

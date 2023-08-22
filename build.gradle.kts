@@ -46,7 +46,7 @@ dependencies {
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.1.0")
     // hutool全家桶: https://hutool.cn/docs/#/
-    // implementation("cn.hutool:hutool-core:5.8.15")
+     implementation("cn.hutool:hutool-core:5.8.16")
     // minio
     implementation("io.minio:minio:8.5.2")
 }
