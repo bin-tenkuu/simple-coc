@@ -53,7 +53,7 @@ public class RoomController {
 
     @Operation(summary = "导出房间聊天记录")
     @GetMapping("/room/logs")
-    public ResponseEntity<? super Resource> getRoomLogs(@RequestParam String id, HttpServletResponse response) {
+    public ResponseEntity<Resource> getRoomLogs(@RequestParam String id, HttpServletResponse response) {
         return roomService.exportHistoryMsg(id, response);
     }
 

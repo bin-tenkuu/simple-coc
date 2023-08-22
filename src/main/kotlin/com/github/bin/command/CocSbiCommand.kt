@@ -1,7 +1,7 @@
 package com.github.bin.command
 
 import com.github.bin.service.CocService
-import com.github.bin.service.HisMsgService.Companion.sendAsBot
+import com.github.bin.service.HisMsgService.sendAsBot
 import com.github.bin.service.RoomConfig
 import com.github.bin.util.CacheMap
 import com.github.bin.util.DiceResult
@@ -53,7 +53,7 @@ object CocSbiCommand {
                 it[0]
             }
             val matchResult = diceRegex.find(dice) ?: run {
-                roomConfig.sendAsBot("骰子格式错误")
+                sendAsBot(roomConfig, "骰子格式错误")
                 return true
             }
             val groups = matchResult.groups
@@ -64,7 +64,7 @@ object CocSbiCommand {
             val roleId = roomConfig.getRole(id)
             cache[roleId] = diceResult
             val msg = "${diceResult.origin}：[${diceResult.list.joinToString()}]（${sbiResult(diceResult.list)}）"
-            roomConfig.sendAsBot(msg)
+            sendAsBot(roomConfig, msg)
             return true
         }
     }
@@ -78,14 +78,15 @@ object CocSbiCommand {
                 it[0].toIntOrNull() ?: return true
             }
             var diceResult: DiceResult = cache[roleId] ?: run {
-                roomConfig.sendAsBot("10分钟之内没有投任何骰子")
+                sendAsBot(roomConfig, "10分钟之内没有投任何骰子")
                 return true
             }
             val dice = DiceResult(num, diceResult.max)
             if (!CocService.cheater) dice.dice()
             diceResult += dice
             cache[roleId] = diceResult
-            roomConfig.sendAsBot(
+            sendAsBot(
+                roomConfig,
                 """${dice.origin}：[${dice.list.joinToString(", ")}]=${dice.sum}
                 |[${diceResult.list.joinToString(", ")}]（${sbiResult(diceResult.list)}）
             """.trimMargin()

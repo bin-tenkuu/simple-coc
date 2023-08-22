@@ -32,7 +32,6 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     // kotlin
-    kotlin("stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     compileOnly("org.jetbrains:annotations:24.0.1")
@@ -46,7 +45,7 @@ dependencies {
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.1.0")
     // hutool全家桶: https://hutool.cn/docs/#/
-     implementation("cn.hutool:hutool-core:5.8.16")
+    implementation("cn.hutool:hutool-core:5.8.16")
     // minio
     implementation("io.minio:minio:8.5.2")
 }

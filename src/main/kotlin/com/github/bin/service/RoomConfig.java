@@ -1,5 +1,6 @@
 package com.github.bin.service;
 
+import cn.hutool.core.io.IoUtil;
 import com.github.bin.entity.master.Room;
 import com.github.bin.model.Message;
 import com.github.bin.util.JsonUtil;
@@ -39,7 +40,7 @@ public final class RoomConfig implements Closeable {
     }
 
     public void removeClient(WebSocketSession session) {
-        IOUtils.closeQuietly(clients.remove(session.getId()));
+        clients.remove(session.getId());
     }
 
     public long getRole(String session) {
@@ -79,9 +80,9 @@ public final class RoomConfig implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         for (val client : clients.values()) {
-            client.close();
+            IoUtil.close(client);
         }
         clients.clear();
     }

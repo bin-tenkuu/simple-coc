@@ -1,7 +1,7 @@
 package com.github.bin.command
 
 import com.github.bin.service.CocService
-import com.github.bin.service.HisMsgService.Companion.sendAsBot
+import com.github.bin.service.HisMsgService.sendAsBot
 import com.github.bin.service.RoomConfig
 import com.github.bin.util.DiceResult
 
@@ -23,7 +23,7 @@ object CocCommand {
             if (split.size != 2) return false
             val num = split[1].toIntOrNull() ?: return false
             val result = (1..num).sumOf { (1..6).random() }
-            roomConfig.sendAsBot("投掷 $num 次骰子，结果为 $result")
+            sendAsBot(roomConfig, "投掷 $num 次骰子，结果为 $result")
             return true
         }
     }
@@ -32,7 +32,7 @@ object CocCommand {
     class Dall1 : SimpleCommand("dall1") {
         override fun handler(roomConfig: RoomConfig, id: String, msg: String): Boolean {
             CocService.cheater = !CocService.cheater
-            roomConfig.sendAsBot("全1" + if (CocService.cheater) "开" else "关")
+            sendAsBot(roomConfig, "全1" + if (CocService.cheater) "开" else "关")
             return true
         }
     }
@@ -46,7 +46,7 @@ object CocCommand {
             }
             val roleId = roomConfig.getRole(id)
             var cacheResult: DiceResult = CocService.cache[roleId] ?: run {
-                roomConfig.sendAsBot("10分钟之内没有投任何骰子")
+                sendAsBot(roomConfig, "10分钟之内没有投任何骰子")
                 return true
             }
             val dice = DiceResult(num, cacheResult.max)
@@ -56,7 +56,7 @@ object CocCommand {
             val msg = """${dice.origin}：[${dice.list.joinToString(", ")}]=${dice.sum}
                 |[${cacheResult.list.joinToString(", ")}]
             """.trimMargin()
-            roomConfig.sendAsBot(msg)
+            sendAsBot(roomConfig, msg)
             return true
         }
     }
@@ -73,7 +73,7 @@ object CocCommand {
             val dice = split[0]
             val type = split[1]
             val matchResult = diceRegex.find(dice) ?: run {
-                roomConfig.sendAsBot("骰子格式错误")
+                sendAsBot(roomConfig, "骰子格式错误")
                 return true
             }
             val groups = matchResult.groups
@@ -88,7 +88,7 @@ object CocCommand {
             } else {
                 "${diceResult.origin} = ${diceResult.list.joinToString("+")} = ${diceResult.sum}"
             }
-            roomConfig.sendAsBot(pre + msg)
+            sendAsBot(roomConfig, pre + msg)
             return true
         }
     }

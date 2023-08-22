@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class GcRoomTask {
     @Scheduled(cron = "0 0 * * * ?")
     public void gcRoom() {
-        val iterator = RoomService.Companion.values().iterator();
+        val iterator = RoomService.values().iterator();
         while (iterator.hasNext()) {
             val room = iterator.next();
             if (!room.hold) {
