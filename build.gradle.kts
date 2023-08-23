@@ -1,10 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinVersion = "1.9.0"
+//val kotlinVersion = "1.9.0"
 plugins {
-    val kotlinVersion = "1.9.0"
-    kotlin("jvm") version kotlinVersion
-    kotlin("plugin.spring") version kotlinVersion
+//    val kotlinVersion = "1.9.0"
+    java
+//    kotlin("jvm") version kotlinVersion
+//    kotlin("plugin.spring") version kotlinVersion
     id("org.springframework.boot") version "3.0.5"
     id("io.spring.dependency-management") version "1.1.0"
 }
@@ -26,17 +26,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-//    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-    // annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
-    // kotlin
-//    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-//    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     compileOnly("org.jetbrains:annotations:24.0.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
     // sql
     implementation("org.postgresql:postgresql:42.5.4")
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
@@ -56,6 +50,9 @@ configurations {
     }
 }
 
+springBoot {
+    mainClass.set("com.github.bin.MainKt")
+}
 tasks {
     val jvmVersion = "17"
     withType<JavaCompile> {
@@ -65,18 +62,6 @@ tasks {
         }
         sourceCompatibility = jvmVersion
         targetCompatibility = jvmVersion
-    }
-    withType<KotlinCompile> {
-        kotlinOptions {
-            verbose = true
-            jvmTarget = jvmVersion
-            // allWarningsAsErrors = true
-            freeCompilerArgs = freeCompilerArgs + mutableListOf(
-                // "-Xexplicit-api=strict",
-                "-Xjsr305=strict",
-                "-opt-in=kotlin.RequiresOptIn",
-            )
-        }
     }
     withType<Test> {
         maxParallelForks = Runtime.getRuntime().availableProcessors()

@@ -1,6 +1,5 @@
 package com.github.bin.config.datasource;
 
-import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusProperties;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
@@ -44,10 +43,10 @@ public class HisMsgConfigDataSource {
         bean.setConfiguration(configuration);
     }
 
-    @Bean("msgDataSource")
-    public DynamicRoutingDataSource dataSource() {
-        return MsgDataSource.DATA_SOURCE;
-    }
+//    @Bean("msgDataSource")
+//    public DynamicRoutingDataSource dataSource() {
+//        return MsgDataSource.DATA_SOURCE;
+//    }
 
     @Bean("msgSqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory() throws Exception {

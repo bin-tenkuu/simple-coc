@@ -29,12 +29,6 @@ public class CommonJacksonBuilderCustomizer implements Jackson2ObjectMapperBuild
     @Override
     public void customize(Jackson2ObjectMapperBuilder jacksonObjectMapperBuilder) {
         jacksonObjectMapperBuilder
-//                .modules(
-//                        new KotlinModule.Builder()
-//                                .enable(KotlinFeature.NullIsSameAsDefault)
-//                                .enable(KotlinFeature.SingletonSupport)
-//                                .build()
-//                )
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .featuresToDisable(
                         DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE,

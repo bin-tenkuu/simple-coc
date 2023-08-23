@@ -3,6 +3,12 @@
     <option name="HIDE_BANNER" value="true" />
     <module name="server.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.github.bin.ApplicationStarter" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.github.bin.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
