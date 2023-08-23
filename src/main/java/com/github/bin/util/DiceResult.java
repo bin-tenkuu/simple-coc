@@ -36,7 +36,7 @@ public class DiceResult {
         return String.format("%dd%d", this.size, this.max);
     }
 
-    public DiceResult dice() {
+    public void dice() {
         long sum = 0;
         val random = new SecureRandom();
         for (int i = 0; i < list.length; i++) {
@@ -45,7 +45,6 @@ public class DiceResult {
             sum += it;
         }
         this.sum = sum;
-        return this;
     }
 
     public DiceResult plus(DiceResult dice) {
