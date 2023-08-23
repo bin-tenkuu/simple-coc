@@ -77,7 +77,7 @@ Quill.register({
 });
 let whitelist = ['0.8em', false, '2em', '4em', '8em', '16em', '32em'];
 Quill.imports['attributors/style/size'].whitelist = whitelist;
-Quill.register(Quill.imports['attributors/style/size'])
+
 export default {
   name: 'Index-page',
   components: {Key, Edit, Plus, StarFilled, QuillEditor},
