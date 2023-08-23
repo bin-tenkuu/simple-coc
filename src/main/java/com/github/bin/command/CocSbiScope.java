@@ -70,7 +70,7 @@ public interface CocSbiScope {
     @Component
     class S extends Command.Regex {
         public S() {
-            super("^s\\t*(?<num>\\d*)d(?<max>\\d*)", Pattern.CASE_INSENSITIVE);
+            super("^s\\s*(?<num>\\d*)d(?<max>\\d*)", Pattern.CASE_INSENSITIVE);
         }
 
         @Override
@@ -83,7 +83,7 @@ public interface CocSbiScope {
             }
             val roleId = roomConfig.getRole(id);
             CACHE.set(roleId, diceResult);
-            val msg = String.format("%s：[%s]（%s）",
+            val msg = String.format("%s：%s（%s）",
                     diceResult.getOrigin(), Arrays.toString(diceResult.getList()), sbiResult(diceResult.getList())
             );
             roomConfig.sendAsBot(msg);
@@ -95,7 +95,7 @@ public interface CocSbiScope {
     @Component
     class Sp extends Command.Regex {
         public Sp() {
-            super("^sp\\t*(?<num>\\d*)");
+            super("^sp\\s*(?<num>\\d*)");
         }
 
         @Override
@@ -113,7 +113,7 @@ public interface CocSbiScope {
             }
             diceResult = diceResult.plus(dice);
             CACHE.set(roleId, diceResult);
-            val msg = String.format("%s：[%s]=%s\n[%s]（%s）",
+            val msg = String.format("%s：%s=%s\n%s（%s）",
                     dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum(),
                     Arrays.toString(diceResult.getList()), sbiResult(diceResult.getList()));
             roomConfig.sendAsBot(msg);

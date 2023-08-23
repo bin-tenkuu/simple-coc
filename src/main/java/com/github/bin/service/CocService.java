@@ -34,12 +34,12 @@ public class CocService {
             } else {
                 CACHE.set(qq, new DiceResult(calc.sum, calc.list, calc.max));
                 specialEffects.invoke(calc);
-                return String.format("%s：[%s]=%s%s", calc.origin, Arrays.toString(calc.list), calc.sum, calc.state);
+                return String.format("%s：%s=%s%s", calc.origin, Arrays.toString(calc.list), calc.sum, calc.state);
             }
         }
         val preRet = Arrays.stream(handles)
                 .filter(it -> it.list != null)
-                .map(it -> String.format("%s：[%s]=%s", it.origin, Arrays.toString(it.list), it.sum))
+                .map(it -> String.format("%s：%s=%s", it.origin, Arrays.toString(it.list), it.sum))
                 .collect(Collectors.joining("\n"));
         val s = Arrays.stream(handles)
                 .map(it -> String.format("%s%s", it.op, it.origin))

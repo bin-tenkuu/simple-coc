@@ -33,7 +33,7 @@ public interface CocScope {
     @Component
     class D extends Command.Regex {
         public D() {
-            super(Pattern.compile("^d\\t*(?:(?<times>\\d+)#)?(?<dice>[+\\-*d\\d]+)", Pattern.CASE_INSENSITIVE));
+            super(Pattern.compile("^d\\s*(?:(?<times>\\d+)#)?(?<dice>[+\\-*d\\d]+)", Pattern.CASE_INSENSITIVE));
         }
 
         @Override
@@ -76,7 +76,7 @@ public interface CocScope {
     @Component
     class Dp extends Command.Regex {
         public Dp() {
-            super(Pattern.compile("^dp\\t*(?<num>\\d*)"));
+            super(Pattern.compile("^dp\\s*(?<num>\\d*)"));
         }
 
         @Override
@@ -94,7 +94,7 @@ public interface CocScope {
             }
             cacheResult = cacheResult.plus(dice);
             CocService.CACHE.set(roleId, cacheResult);
-            val msg = String.format("%s：[%s]=%s\n[%s]",
+            val msg = String.format("%s：%s=%s\n%s",
                     dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum(),
                     Arrays.toString(cacheResult.getList()));
             sendAsBot(roomConfig, msg);
@@ -106,7 +106,7 @@ public interface CocScope {
     @Component
     class R extends Command.Regex {
         public R() {
-            super(Pattern.compile("^r\\t*(?<num>\\d*)d(?<max>\\d*)"));
+            super(Pattern.compile("^r\\s*(?<num>\\d*)d(?<max>\\d*)"));
         }
 
         @Override
