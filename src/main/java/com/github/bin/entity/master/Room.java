@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.bin.config.handler.RoomHandler;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,7 @@ import java.util.Map;
 @TableName(value = "room", resultMap = "BaseResultMap")
 public class Room {
     @NotBlank
+    @Pattern(regexp = "^\\w+$", message = "房间ID只能包含字母、数字、下划线")
     @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
