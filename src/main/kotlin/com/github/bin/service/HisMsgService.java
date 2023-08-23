@@ -3,7 +3,6 @@ package com.github.bin.service;
 import com.github.bin.command.Command;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.mapper.msg.HisMsgMapper;
-import com.github.bin.model.Message;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,15 +48,7 @@ public class HisMsgService {
         }
     }
 
-    public  static void sendAsBot(RoomConfig roomConfig, String msg) {
-        val text = new Message.Text();
-        text.setMsg(msg);
-        sendAsBot(roomConfig, text);
-    }
-
-    private static void sendAsBot(RoomConfig roomConfig, Message.Msg msg) {
-        msg.setRole(-10);
-        accept(roomConfig.getId(), hisMsgMapper -> msg.setId(hisMsgMapper.insert(msg.getType(), msg.getMsg(), -10)));
-        roomConfig.sendAll(msg);
+    public static void sendAsBot(RoomConfig roomConfig, String msg) {
+        roomConfig.sendAsBot(msg);
     }
 }

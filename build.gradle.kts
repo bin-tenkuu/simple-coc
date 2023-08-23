@@ -26,14 +26,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+//    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     // annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     // lombok
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     // kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+//    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+//    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     compileOnly("org.jetbrains:annotations:24.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
@@ -75,7 +75,6 @@ tasks {
                 // "-Xexplicit-api=strict",
                 "-Xjsr305=strict",
                 "-opt-in=kotlin.RequiresOptIn",
-                "-Xcontext-receivers",
             )
         }
     }

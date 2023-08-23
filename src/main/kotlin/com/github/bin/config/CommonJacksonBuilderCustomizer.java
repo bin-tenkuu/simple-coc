@@ -11,8 +11,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import com.fasterxml.jackson.module.kotlin.KotlinFeature;
-import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import com.github.bin.constant.DateConstant;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -31,12 +29,12 @@ public class CommonJacksonBuilderCustomizer implements Jackson2ObjectMapperBuild
     @Override
     public void customize(Jackson2ObjectMapperBuilder jacksonObjectMapperBuilder) {
         jacksonObjectMapperBuilder
-                .modules(
-                        new KotlinModule.Builder()
-                                .enable(KotlinFeature.NullIsSameAsDefault)
-                                .enable(KotlinFeature.SingletonSupport)
-                                .build()
-                )
+//                .modules(
+//                        new KotlinModule.Builder()
+//                                .enable(KotlinFeature.NullIsSameAsDefault)
+//                                .enable(KotlinFeature.SingletonSupport)
+//                                .build()
+//                )
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .featuresToDisable(
                         DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE,

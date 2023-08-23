@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
+    public static final Long DEFAULT_ROLE = -1L;
+    public static final long BOT_ROLE = -10L;
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     private final HashMap<String, Long> roles = new HashMap<>();
 
@@ -44,7 +46,7 @@ public final class RoomConfig implements Closeable {
     }
 
     public long getRole(String session) {
-        return roles.getOrDefault(session, -1L);
+        return roles.getOrDefault(session, DEFAULT_ROLE);
     }
 
     public void setRole(String session, long role) {
@@ -86,4 +88,18 @@ public final class RoomConfig implements Closeable {
         }
         clients.clear();
     }
+
+    private void sendAsBot(Message.Msg msg) {
+        msg.setRole(-10);
+        HisMsgService.accept(getId(),
+                hisMsgMapper -> msg.setId(hisMsgMapper.insert(msg.getType(), msg.getMsg(), BOT_ROLE)));
+        sendAll(msg);
+    }
+
+    public void sendAsBot(String msg) {
+        val text = new Message.Text();
+        text.setMsg(msg);
+        sendAsBot(text);
+    }
+
 }
