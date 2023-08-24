@@ -1,9 +1,9 @@
 package com.github.bin.service;
 
+import com.github.bin.config.MinIoConfig;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import lombok.val;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -25,23 +25,10 @@ public class FileService {
     private final String bucket;
     private final MinioClient minioClient;
 
-    public FileService(
-            @Value("${minio.endpoint}")
-            String endpoint,
-            @Value("${minio.accessKey}")
-            String accessKey,
-            @Value("${minio.secretKey}")
-            String secretKey,
-            @Value("${minio.bucket}")
-            String bucket
-    ) {
-        minioClient = MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
-        this.bucket = bucket;
+    public FileService(MinIoConfig config) {
+        minioClient = config.getClient();
+        this.bucket = config.getBucket();
     }
-
 
     public ResponseEntity<InputStreamResource> downloadFile(String filePath)
             throws MinioException, IOException, GeneralSecurityException {

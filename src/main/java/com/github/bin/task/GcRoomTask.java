@@ -6,6 +6,8 @@ import lombok.val;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author bin
  * @since 2023/08/22
@@ -13,14 +15,16 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class GcRoomTask {
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
     public void gcRoom() {
         val iterator = RoomService.values().iterator();
         while (iterator.hasNext()) {
             val room = iterator.next();
-            if (!room.hold) {
+            if (!room.isHold()) {
                 log.info("清理房间: {}", room.getId());
                 iterator.remove();
+            } else if (room.getClients().isEmpty()) {
+                room.setHold(false);
             }
         }
     }

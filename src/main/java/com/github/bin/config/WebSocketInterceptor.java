@@ -45,7 +45,7 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
                 config = new RoomConfig(room);
                 RoomService.set(roomId, config);
             } else {
-                config.hold = true;
+                config.setHold(true);
             }
             attributes.put("roomId", roomId);
             return true;

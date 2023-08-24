@@ -6,6 +6,7 @@ import com.github.bin.model.Message;
 import com.github.bin.util.JsonUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
@@ -21,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author bin
  * @since 2023/08/22
  */
+@Getter
+@Setter
 @RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
@@ -28,20 +31,20 @@ public final class RoomConfig implements Closeable {
     public static final long BOT_ROLE = -10L;
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     private final HashMap<String, Long> roles = new HashMap<>();
-
-    @Getter
     private final Room room;
-    public volatile transient boolean hold = true;
+    private volatile transient boolean hold = true;
 
     public String getId() {
         return room.getId();
     }
 
     public void addClient(WebSocketSession session) {
+        hold = true;
         clients.put(session.getId(), session);
     }
 
     public void removeClient(WebSocketSession session) {
+        roles.remove(session.getId());
         clients.remove(session.getId());
     }
 
@@ -87,6 +90,7 @@ public final class RoomConfig implements Closeable {
             IoUtil.close(client);
         }
         clients.clear();
+        roles.clear();
     }
 
     private void sendAsBot(Message.Msg msg) {

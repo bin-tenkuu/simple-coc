@@ -36,6 +36,8 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomService {
+    // region static
+
     private static final HashMap<String, RoomConfig> ROOM_MAP = new HashMap<>();
 
     public static RoomConfig get(String id) {
@@ -49,6 +51,7 @@ public class RoomService {
     public static Collection<RoomConfig> values() {
         return ROOM_MAP.values();
     }
+    // endregion
 
     private final RoomMapper roomMapper;
 
