@@ -9,7 +9,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -19,7 +18,7 @@ import java.time.Duration;
  * @since 2023/7/2
  */
 @Aspect
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class RedisCacheAspect {

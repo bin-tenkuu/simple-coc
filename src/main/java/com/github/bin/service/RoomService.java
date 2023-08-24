@@ -1,7 +1,6 @@
 package com.github.bin.service;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.github.bin.aspect.RedisValue;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.entity.msg.HisMsg;
@@ -55,7 +54,6 @@ public class RoomService {
 
     private final RoomMapper roomMapper;
 
-    @RedisValue(key = "Room:list")
     public List<Room> rooms() {
         return roomMapper.selectList(null);
     }

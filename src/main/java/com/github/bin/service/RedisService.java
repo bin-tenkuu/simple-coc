@@ -2,7 +2,6 @@ package com.github.bin.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
@@ -10,7 +9,7 @@ import java.time.Duration;
  * @author bin
  * @since 2023/08/22
  */
-@Service
+//@Service
 @RequiredArgsConstructor
 public class RedisService {
     private final StringRedisTemplate redis;
