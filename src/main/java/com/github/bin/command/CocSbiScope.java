@@ -1,5 +1,6 @@
 package com.github.bin.command;
 
+import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.CocService;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.util.CacheMap;
@@ -12,6 +13,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.github.bin.util.NumberUtil.toIntOr;
+
 /**
  * @author bin
  * @since 2023/08/23
@@ -19,17 +22,6 @@ import java.util.regex.Pattern;
 public interface CocSbiScope {
 
     CacheMap<Long, DiceResult> CACHE = new CacheMap<>();
-
-    private static int toIntOr(String str, int def) {
-        if (str == null || str.isEmpty()) {
-            return def;
-        }
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
 
     private static String sbiResult(int[] list) {
         if (list.length < 3) {
@@ -74,15 +66,14 @@ public interface CocSbiScope {
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val num = Math.max(toIntOr(matcher.group("num"), 0), 3);
             val max = toIntOr(matcher.group("max"), 0);
             val diceResult = new DiceResult(num, max);
             if (!CocService.cheater) {
                 diceResult.dice();
             }
-            val roleId = roomConfig.getRole(id);
-            CACHE.set(roleId, diceResult);
+            CACHE.set(roomRole.getId(), diceResult);
             val msg = String.format("%s：%s（%s）",
                     diceResult.getOrigin(), Arrays.toString(diceResult.getList()), sbiResult(diceResult.getList())
             );
@@ -99,10 +90,9 @@ public interface CocSbiScope {
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher) {
-            val roleId = roomConfig.getRole(id);
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val num = toIntOr(matcher.group("num"), 1);
-            var diceResult = CACHE.get(roleId);
+            var diceResult = CACHE.get(roomRole.getId());
             if (diceResult == null) {
                 roomConfig.sendAsBot("10分钟之内没有投任何骰子");
                 return true;
@@ -112,7 +102,7 @@ public interface CocSbiScope {
                 dice.dice();
             }
             diceResult = diceResult.plus(dice);
-            CACHE.set(roleId, diceResult);
+            CACHE.set(roomRole.getId(), diceResult);
             val msg = String.format("%s：%s=%s\n%s（%s）",
                     dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum(),
                     Arrays.toString(diceResult.getList()), sbiResult(diceResult.getList()));

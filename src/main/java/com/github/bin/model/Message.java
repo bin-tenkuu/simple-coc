@@ -57,7 +57,7 @@ public sealed interface Message
     @Setter
     final class Default implements Message {
         private Long id;
-        private long role = -1L;
+        private Long role;
     }
 
     @Getter

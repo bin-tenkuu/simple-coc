@@ -1,5 +1,6 @@
 package com.github.bin.command;
 
+import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.CocService;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.util.DiceResult;
@@ -12,23 +13,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.github.bin.service.HisMsgService.sendAsBot;
+import static com.github.bin.util.NumberUtil.toIntOr;
 
 /**
  * @author bin
  * @since 2023/08/23
  */
 public interface CocScope {
-    private static int toIntOr(String str, int def) {
-        if (str == null || str.isEmpty()) {
-            return def;
-        }
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return def;
-        }
-    }
-
     // d "掷骰子，附带简单计算（+-*），形如 '9#9d9+9'"
     @Component
     class D extends Command.Regex {
@@ -37,7 +28,7 @@ public interface CocScope {
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val times = toIntOr(matcher.group("times"), 1);
             if (times < 1) {
                 roomConfig.sendAsBot("0");
@@ -48,9 +39,8 @@ public interface CocScope {
                 roomConfig.sendAsBot("0" + ", 0".repeat(times - 1));
                 return false;
             }
-            val roleId = roomConfig.getRole(id);
             val str = Arrays.stream(new String[times])
-                    .map(it -> CocService.dice(dice, roleId))
+                    .map(it -> CocService.dice(dice, roomRole.getId()))
                     .collect(Collectors.joining("\n"));
             roomConfig.sendAsBot(str);
             return true;
@@ -80,10 +70,9 @@ public interface CocScope {
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val num = toIntOr(matcher.group("num"), 1);
-            val roleId = roomConfig.getRole(id);
-            var cacheResult = CocService.CACHE.get(roleId);
+            var cacheResult = CocService.CACHE.get(roomRole.getId());
             if (cacheResult == null) {
                 roomConfig.sendAsBot("10分钟之内没有投任何骰子");
                 return true;
@@ -93,7 +82,7 @@ public interface CocScope {
                 dice.dice();
             }
             cacheResult = cacheResult.plus(dice);
-            CocService.CACHE.set(roleId, cacheResult);
+            CocService.CACHE.set(roomRole.getId(), cacheResult);
             val msg = String.format("%s：%s=%s\n%s",
                     dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum(),
                     Arrays.toString(cacheResult.getList()));
@@ -110,15 +99,14 @@ public interface CocScope {
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val num = toIntOr(matcher.group("num"), 1);
             val max = toIntOr(matcher.group("max"), 0);
             val dice = new DiceResult(num, max);
             if (!CocService.cheater) {
                 dice.dice();
             }
-            val roleId = roomConfig.getRole(id);
-            val role = roomConfig.getRoom().getRoles().get(roleId);
+            val role = roomConfig.getRole(id);
             val roleName = role == null ? "" : role.getName();
             val msg = num == 1 ?
                     String.format("%s = %s", dice.getOrigin(), dice.getSum()) :

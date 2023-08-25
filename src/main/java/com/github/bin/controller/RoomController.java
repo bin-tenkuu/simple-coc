@@ -5,7 +5,6 @@ import com.github.bin.model.IdAndName;
 import com.github.bin.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -53,8 +52,8 @@ public class RoomController {
 
     @Operation(summary = "导出房间聊天记录")
     @GetMapping("/room/logs")
-    public ResponseEntity<Resource> getRoomLogs(@RequestParam String id, HttpServletResponse response) {
-        return roomService.exportHistoryMsg(id, response);
+    public ResponseEntity<Resource> getRoomLogs(@RequestParam String id) {
+        return roomService.exportHistoryMsg(id);
     }
 
 }

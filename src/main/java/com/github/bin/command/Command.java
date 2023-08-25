@@ -1,5 +1,6 @@
 package com.github.bin.command;
 
+import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.RoomConfig;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,6 @@ import lombok.val;
 import org.intellij.lang.annotations.Language;
 import org.intellij.lang.annotations.MagicConstant;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,13 +36,17 @@ public interface Command {
 
         @Override
         public final boolean invoke(RoomConfig roomConfig, String id, String msg) {
-            if (Objects.equals(this.msg, msg)) {
-                return handler(roomConfig, id);
+            val roomRole = roomConfig.getRole(id);
+            if (roomRole == null) {
+                return true;
+            }
+            if (this.msg.equals(msg)) {
+                return handler(roomConfig, id, roomRole);
             }
             return false;
         }
 
-       protected abstract boolean handler(RoomConfig roomConfig, String id);
+        protected abstract boolean handler(RoomConfig roomConfig, String id, RoomRole roomRole);
     }
 
     /**
@@ -55,6 +59,10 @@ public interface Command {
 
         @Override
         public final boolean invoke(RoomConfig roomConfig, String id, String msg) {
+            val roomRole = roomConfig.getRole(id);
+            if (roomRole == null) {
+                return true;
+            }
             val split = test(msg);
             if (split == null) {
                 return false;
@@ -94,13 +102,17 @@ public interface Command {
 
         @Override
         public final boolean invoke(RoomConfig roomConfig, String id, String msg) {
+            val roomRole = roomConfig.getRole(id);
+            if (roomRole == null) {
+                return true;
+            }
             val result = regex.matcher(msg);
             if (result.find()) {
-                return handler(roomConfig, id, result);
+                return handler(roomConfig, id, result, roomRole);
             }
             return false;
         }
 
-        protected abstract boolean handler(RoomConfig roomConfig, String id, Matcher matcher);
+        protected abstract boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole);
     }
 }

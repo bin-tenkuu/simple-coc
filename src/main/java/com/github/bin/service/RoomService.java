@@ -7,7 +7,6 @@ import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.mapper.msg.HisMsgMapper;
 import com.github.bin.model.Message;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -101,7 +100,7 @@ public class RoomService {
         room.sendAll(msg);
     }
 
-    public ResponseEntity<Resource> exportHistoryMsg(String id, HttpServletResponse response) {
+    public ResponseEntity<Resource> exportHistoryMsg(String id) {
         val fileName = id + ".zip";
         val config = getById(id);
         if (config == null) {
@@ -147,6 +146,9 @@ public class RoomService {
 
     public void handleMessage(RoomConfig roomConfig, String id, Message msg) {
         val role = roomConfig.getRole(id);
+        if (role == null) {
+            return;
+        }
         log.info("handleMessage: {}", role);
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
@@ -156,14 +158,15 @@ public class RoomService {
             for (val hisMsg : list) {
                 roomConfig.send(id, toMessage(hisMsg));
             }
-        } else if (msg instanceof Message.Text text) {
-            val b = role != -10L && text.getId() == null;
-            saveMsgAndSend(roomConfig, text, role);
-            if (b && text.getMsg().startsWith(".")) {
-                HisMsgService.handleBot(roomConfig, id, text.getMsg().substring(1).trim());
-            }
         } else if (msg instanceof Message.Msg message) {
-            saveMsgAndSend(roomConfig, message, role);
+            val roleId = role.getId();
+            saveMsgAndSend(roomConfig, message, roleId);
+            if (msg instanceof Message.Text text) {
+                val b = !roleId.equals(RoomConfig.BOT_ROLE) && text.getId() == null && text.getMsg().startsWith(".");
+                if (b) {
+                    HisMsgService.handleBot(roomConfig, id, text.getMsg().substring(1).trim());
+                }
+            }
         }
     }
 

@@ -10,6 +10,8 @@ import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.github.bin.util.NumberUtil.toIntOr;
+
 /**
  * @author bin
  * @since 2023/08/22
@@ -79,17 +81,6 @@ public class CocService {
             dices.dice();
         }
         return new Calc(op, dices.getSum(), dices.getList(), dices.getOrigin(), dices.getMax());
-    }
-
-    private static int toIntOr(String v, int or) {
-        if (v == null || v.isEmpty()) {
-            return or;
-        }
-        try {
-            return Integer.parseInt(v);
-        } catch (NumberFormatException e) {
-            return or;
-        }
     }
 
     @RequiredArgsConstructor

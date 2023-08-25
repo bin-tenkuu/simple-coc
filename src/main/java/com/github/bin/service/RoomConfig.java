@@ -2,6 +2,7 @@ package com.github.bin.service;
 
 import cn.hutool.core.io.IoUtil;
 import com.github.bin.entity.master.Room;
+import com.github.bin.entity.master.RoomRole;
 import com.github.bin.model.Message;
 import com.github.bin.util.JsonUtil;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,10 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
-    public static final Long DEFAULT_ROLE = -1L;
-    public static final long BOT_ROLE = -10L;
+    public static final Long BOT_ROLE = -10L;
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
-    private final HashMap<String, Long> roles = new HashMap<>();
+    private final HashMap<String, RoomRole> roles = new HashMap<>();
     private final Room room;
     private volatile transient boolean hold = true;
 
@@ -48,12 +49,13 @@ public final class RoomConfig implements Closeable {
         clients.remove(session.getId());
     }
 
-    public long getRole(String session) {
-        return roles.getOrDefault(session, DEFAULT_ROLE);
+    @Nullable
+    public RoomRole getRole(String session) {
+        return roles.get(session);
     }
 
-    public void setRole(String session, long role) {
-        roles.put(session, role);
+    public void setRole(String session, @Nullable Long roleId) {
+        roles.put(session, room.getRoles().get(roleId));
     }
 
     public void sendAll(Message msg) {
