@@ -2,7 +2,7 @@ package com.github.bin.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.github.bin.entity.master.RoomRole;
+import com.github.bin.entity.master.Room;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author bin
@@ -24,18 +23,20 @@ import java.util.Map;
                 @JsonSubTypes.Type(value = Message.Pic.class, name = Message.PIC),
                 @JsonSubTypes.Type(value = Message.Sys.class, name = Message.SYS),
                 @JsonSubTypes.Type(value = Message.Msgs.class, name = Message.MSGS),
-                @JsonSubTypes.Type(value = Message.Roles.class, name = Message.ROLES),
+                @JsonSubTypes.Type(value = Message.RoomMessage.class, name = Message.ROOM),
         },
         failOnRepeatedNames = true
 )
 public sealed interface Message
-        permits Message.Msg, Message.Default, Message.Msgs, Message.Pic, Message.Roles, Message.Sys, Message.Text {
+        permits Message.Default,
+        Message.Msg, Message.Text, Message.Pic, Message.Sys,
+        Message.Msgs, Message.RoomMessage {
     String DEFAULT = "default";
     String TEXT = "text";
     String PIC = "pic";
     String SYS = "sys";
     String MSGS = "msgs";
-    String ROLES = "roles";
+    String ROOM = "room";
 
     sealed interface Msg extends Message {
         String getType();
@@ -107,7 +108,7 @@ public sealed interface Message
 
     @Getter
     @AllArgsConstructor
-    final class Roles implements Message {
-        private final Map<Long, RoomRole> roles;
+    final class RoomMessage implements Message {
+        private final Room room;
     }
 }

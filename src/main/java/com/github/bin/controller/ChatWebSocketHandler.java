@@ -40,7 +40,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
             val payload = textMessage.getPayload();
             try {
                 val msg = JsonUtil.toBean(payload, Message.class);
-                roomService.handleMessage(roomConfig, session.getId(), msg);
+                roomService.handleMessage(roomConfig, session, msg);
             } catch (Exception e) {
                 log.warn("'{}' 消息格式错误: '{}'", getRemoteAddr(session), payload);
                 session.close(new CloseStatus(4000, "消息格式错误"));

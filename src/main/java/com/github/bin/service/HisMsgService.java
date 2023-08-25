@@ -3,6 +3,7 @@ package com.github.bin.service;
 import com.github.bin.command.Command;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.mapper.msg.HisMsgMapper;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.function.Function;
  * @since 2023/08/22
  */
 @Service
+@Slf4j
 public class HisMsgService {
     private static HisMsgMapper hisMsgMapper;
     private static List<Command> commands;
@@ -41,10 +43,15 @@ public class HisMsgService {
     }
 
     public static void handleBot(RoomConfig roomConfig, String id, String msg) {
-        for (val command : commands) {
-            if (command.invoke(roomConfig, id, msg)) {
-                return;
+        try {
+            for (val command : commands) {
+                if (command.invoke(roomConfig, id, msg)) {
+                    return;
+                }
             }
+        } catch (Exception e) {
+            log.warn("bot 处理异常", e);
+            roomConfig.sendAsBot("【ERROR】bot 处理异常，请联系管理员");
         }
     }
 

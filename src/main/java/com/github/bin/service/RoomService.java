@@ -10,12 +10,14 @@ import com.github.bin.model.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.WebSocketSession;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -77,7 +79,7 @@ public class RoomService {
             old.setName(room.getName());
             old.setRoles(room.getRoles());
             roomMapper.updateById(old);
-            config.sendAll(new Message.Roles(old.getRoles()));
+            config.sendAll(new Message.RoomMessage(old));
         } else {
             ROOM_MAP.put(id, new RoomConfig(room));
             roomMapper.insert(room);
@@ -142,14 +144,20 @@ public class RoomService {
                 .body(new FileSystemResource(file));
     }
 
-    public void handleMessage(RoomConfig roomConfig, String id, Message msg) {
+    public void handleMessage(RoomConfig roomConfig, WebSocketSession session, Message msg) {
+        val id = session.getId();
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
             roomConfig.setRole(id, defMsg.getRole());
             val list = HisMsgService.apply(roomConfig.getId(),
                     hisMsgMapper -> hisMsgMapper.historyMsg(defMsg.getId(), 20));
-            for (val hisMsg : list) {
-                roomConfig.send(id, toMessage(hisMsg));
+            try {
+                roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
+                for (val hisMsg : list) {
+                    roomConfig.send(id, toMessage(hisMsg));
+                }
+            } catch (IOException e) {
+                IOUtils.closeQuietly(session);
             }
         } else if (msg instanceof Message.Msg message) {
             RoomRole role = roomConfig.getRole(id);
@@ -161,16 +169,17 @@ public class RoomService {
                 role = roomRole.copy(message.getRole());
                 roomConfig.getRoom().addRole(role);
                 roomMapper.updateById(roomConfig.getRoom());
-                roomConfig.sendAll(new Message.Roles(roomConfig.getRoom().getRoles()));
+                roomConfig.sendAll(new Message.RoomMessage(roomConfig.getRoom()));
                 return;
             }
             val roleId = role.getId();
+            val b = message instanceof Message.Text
+                    && !roleId.equals(RoomConfig.BOT_ROLE)
+                    && message.getId() == null
+                    && message.getMsg().startsWith(".");
             saveMsgAndSend(roomConfig, message, roleId);
-            if (msg instanceof Message.Text text) {
-                val b = !roleId.equals(RoomConfig.BOT_ROLE) && text.getId() == null && text.getMsg().startsWith(".");
-                if (b) {
-                    HisMsgService.handleBot(roomConfig, id, text.getMsg().substring(1).trim());
-                }
+            if (b) {
+                HisMsgService.handleBot(roomConfig, id, message.getMsg().substring(1).trim());
             }
         }
     }

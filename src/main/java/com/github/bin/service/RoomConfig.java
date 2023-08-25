@@ -61,31 +61,28 @@ public final class RoomConfig implements Closeable {
 
     public void sendAll(Message msg) {
         val json = JsonUtil.toJson(msg);
-
+        val textMessage = new TextMessage(json);
         val iterator = clients.values().iterator();
         while (iterator.hasNext()) {
             val client = iterator.next();
-            if (client.isOpen()) {
-                try {
-                    client.sendMessage(new TextMessage(json));
-                } catch (IOException e) {
-                    iterator.remove();
-                    IOUtils.closeQuietly(client);
-                }
+            try {
+                send(client, textMessage);
+            } catch (IOException e) {
+                iterator.remove();
+                IOUtils.closeQuietly(client);
             }
         }
     }
 
-    public void send(String id, Message msg) {
+    public void send(String id, Message msg) throws IOException {
         val json = JsonUtil.toJson(msg);
         val session = clients.get(id);
-        if (session != null) {
-            try {
-                session.sendMessage(new TextMessage(json));
-            } catch (IOException e) {
-                IOUtils.closeQuietly(clients.remove(id));
-                throw new RuntimeException(e);
-            }
+        send(session, new TextMessage(json));
+    }
+
+    private static void send(WebSocketSession session, TextMessage textMessage) throws IOException {
+        if (session != null && session.isOpen()) {
+            session.sendMessage(textMessage);
         }
     }
 
@@ -98,17 +95,13 @@ public final class RoomConfig implements Closeable {
         roles.clear();
     }
 
-    private void sendAsBot(Message.Msg msg) {
-        msg.setRole(-10);
-        HisMsgService.accept(getId(),
-                hisMsgMapper -> msg.setId(hisMsgMapper.insert(msg.getType(), msg.getMsg(), BOT_ROLE)));
-        sendAll(msg);
-    }
-
     public void sendAsBot(String msg) {
         val text = new Message.Text();
         text.setMsg(msg);
-        sendAsBot(text);
+        text.setRole(RoomConfig.BOT_ROLE);
+        HisMsgService.accept(getId(), hisMsgMapper ->
+                text.setId(hisMsgMapper.insert(Message.TEXT, text.getMsg(), BOT_ROLE)));
+        sendAll(text);
     }
 
 }

@@ -59,7 +59,6 @@
 
 <script>
 import {Edit, Key, Plus, StarFilled} from '@element-plus/icons-vue'
-import axios from "axios";
 import {ElMessage} from "element-plus";
 import {ref} from "vue";
 import {Quill, QuillEditor} from '@vueup/vue-quill';
@@ -124,8 +123,8 @@ export default {
        * @type {WebSocket}
        */
       ws: null,
-      minId: null,
-      maxId: null,
+      minId: Number.MAX_SAFE_INTEGER,
+      maxId: -1,
       scrollDown: true,
       /**
        * @type {[{type:string,msg:string,role:string}]}
@@ -193,28 +192,6 @@ export default {
       if (this.ws != null) {
         return
       }
-      axios.get(`http://${this.host}/api/room`, {
-        params: {
-          id: this.room.id,
-        }
-      }).then((res) => {
-        this.room = res.data
-        let role = this.room.roles[this.role.id];
-        if (role != null) {
-          this.role.name = role.name
-          this.role.color = role.color
-        } else {
-          this.role.name = `unknown-${this.role.id}`
-          this.role.color = "black"
-        }
-        document.title = `${this.room.name} - ${this.role.id}`
-      }).catch(() => {
-        ElMessage({
-          message: `获取房间信息失败`,
-          type: 'error',
-          showClose: true
-        });
-      })
       const ws = this.ws = new WebSocket(`ws://${this.host}/ws/${this.room.id}`);
       ws.onopen = () => {
         ElMessage({
@@ -224,8 +201,8 @@ export default {
         });
         this.chatLogs.textContent = ""
         this.msgs = []
-        this.minId = null
-        this.maxId = null
+        this.minId = Number.MAX_SAFE_INTEGER
+        this.maxId = -1
         this.sendHistory()
       }
       /**
@@ -259,8 +236,17 @@ export default {
       }
       ws.onmessage = (ev) => {
         const json = JSON.parse(ev.data);
-        if (json.type === 'roles') {
-          this.room.roles = json["roles"];
+        if (json.type === 'room') {
+          this.room = json["room"];
+          let role = this.room.roles[this.role.id];
+          if (role != null) {
+            this.role.name = role.name
+            this.role.color = role.color
+          } else {
+            this.role.name = `unknown-${this.role.id}`
+            this.role.color = "black"
+          }
+          document.title = `${this.room.name} - ${this.role.name}`
         } else {
           this.setMsg(json)
         }
@@ -276,19 +262,20 @@ export default {
           console.error(json, e)
         }
       } else {
-        if (this.maxId < json.id) {
-          for (let i = this.maxId; i <= json.id; i++) {
+        let jsonId = +json.id;
+        if (this.maxId < jsonId) {
+          for (let i = this.maxId; i <= jsonId; i++) {
             this.chatLogs.appendChild(document.createElement("div"))
           }
           this.scroll()
-          this.maxId = json.id
+          this.maxId = jsonId
         }
-        if (this.minId == null || this.minId > json.id) {
-          this.minId = json.id
+        if (this.minId == null || this.minId > jsonId) {
+          this.minId = jsonId
         }
-        let element = this.chatLogs.children[json.id];
+        let element = this.chatLogs.children[jsonId];
         this.setInnerMsg(element, json)
-        this.msgs[json.id] = json
+        this.msgs[jsonId] = json
       }
     },
     /**
@@ -364,6 +351,7 @@ export default {
           this.send({
             id: this.id,
             type: "text",
+            role: this.role.id,
             msg: text,
           })
         }
@@ -373,6 +361,7 @@ export default {
           this.send({
             id: this.id,
             type: "sys",
+            role: this.role.id,
             msg: `*${this.role.name} ${text}`,
           })
         }
@@ -382,6 +371,7 @@ export default {
           this.send({
             id: this.id,
             type: "text",
+            role: this.role.id,
             msg: trim,
           })
         }
