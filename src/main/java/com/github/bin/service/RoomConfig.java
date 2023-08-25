@@ -64,11 +64,13 @@ public final class RoomConfig implements Closeable {
         val iterator = clients.values().iterator();
         while (iterator.hasNext()) {
             val client = iterator.next();
-            try {
-                client.sendMessage(new TextMessage(json));
-            } catch (IOException e) {
-                iterator.remove();
-                IOUtils.closeQuietly(client);
+            if (client.isOpen()) {
+                try {
+                    client.sendMessage(new TextMessage(json));
+                } catch (IOException e) {
+                    iterator.remove();
+                    IOUtils.closeQuietly(client);
+                }
             }
         }
     }

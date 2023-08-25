@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -95,13 +95,19 @@ public sealed interface Message
         private String msg = "";
     }
 
-    record Msgs(List<Message> msgs) implements Message {
+    @Getter
+    @AllArgsConstructor
+    final class Msgs implements Message {
+        private final List<Message> msgs;
+
         public Msgs() {
-            this(new ArrayList<>(0));
+            this(Collections.emptyList());
         }
     }
 
-    record Roles(Map<Long, RoomRole> roles) implements Message {
-
+    @Getter
+    @AllArgsConstructor
+    final class Roles implements Message {
+        private final Map<Long, RoomRole> roles;
     }
 }
