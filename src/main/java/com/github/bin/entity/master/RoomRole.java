@@ -28,4 +28,7 @@ public class RoomRole {
     @TableField("color")
     private String color;
 
+    public RoomRole copy(Long id) {
+        return new RoomRole(id, name, color);
+    }
 }

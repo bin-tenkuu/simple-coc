@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
+    public static final Long DEFAULT_ROLE = -1L;
     public static final Long BOT_ROLE = -10L;
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     private final HashMap<String, RoomRole> roles = new HashMap<>();

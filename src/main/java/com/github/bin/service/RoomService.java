@@ -16,7 +16,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -70,7 +69,6 @@ public class RoomService {
         return SqlHelper.retBool(roomMapper.deleteById(id));
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public boolean saveOrUpdate(Room room) {
         val id = room.getId();
         val config = ROOM_MAP.get(id);
@@ -145,11 +143,6 @@ public class RoomService {
     }
 
     public void handleMessage(RoomConfig roomConfig, String id, Message msg) {
-        val role = roomConfig.getRole(id);
-        if (role == null) {
-            return;
-        }
-        log.info("handleMessage: {}", role);
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
             roomConfig.setRole(id, defMsg.getRole());
@@ -159,6 +152,18 @@ public class RoomService {
                 roomConfig.send(id, toMessage(hisMsg));
             }
         } else if (msg instanceof Message.Msg message) {
+            RoomRole role = roomConfig.getRole(id);
+            if (role == null) {
+                val roomRole = roomConfig.getRoom().getRoles().get(RoomConfig.DEFAULT_ROLE);
+                if (roomRole == null) {
+                    return;
+                }
+                role = roomRole.copy(message.getRole());
+                roomConfig.getRoom().addRole(role);
+                roomMapper.updateById(roomConfig.getRoom());
+                roomConfig.sendAll(new Message.Roles(roomConfig.getRoom().getRoles()));
+                return;
+            }
             val roleId = role.getId();
             saveMsgAndSend(roomConfig, message, roleId);
             if (msg instanceof Message.Text text) {

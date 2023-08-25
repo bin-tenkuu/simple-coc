@@ -35,5 +35,12 @@ public class Room {
     @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
     private Map<Long, RoomRole> roles = new HashMap<>();
 
+    public RoomRole getRole(Long id) {
+        return roles.get(id);
+    }
+
+    public void addRole(RoomRole role) {
+        roles.put(role.getId(), role);
+    }
 }
 
