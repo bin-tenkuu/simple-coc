@@ -17,7 +17,7 @@ import static com.github.bin.util.NumberUtil.toIntOr;
  * @since 2023/08/22
  */
 public class CocService {
-    public static final CacheMap<Long, DiceResult> CACHE = new CacheMap<>();
+    public static final CacheMap<Integer, DiceResult> CACHE = new CacheMap<>();
 
     private static final Pattern SPLIT_DICE_REGEX = Pattern.compile("(?=[+\\-*])");
 
@@ -25,7 +25,7 @@ public class CocService {
 
     public static Effects specialEffects = Effects.bug;
 
-    public static String dice(String str, Long qq) {
+    public static String dice(String str, Integer qq) {
         val handles = Arrays.stream(SPLIT_DICE_REGEX.split(str)).map(it ->
                 castString(it, CocService.cheater)
         ).toArray(Calc[]::new);

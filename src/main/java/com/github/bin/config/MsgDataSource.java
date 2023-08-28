@@ -27,8 +27,12 @@ public class MsgDataSource {
         addDataSource("default");
     }
 
+    public static String getDbUrl(String name) {
+        return "sql/hisMsg_" + name + ".db";
+    }
+
     public static void addDataSource(String name) {
-        val url = "sql/hisMsg_" + name + ".db";
+        val url = getDbUrl(name);
         val dbFile = new File(url);
         if (!dbFile.exists()) {
             try {

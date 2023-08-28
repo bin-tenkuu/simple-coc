@@ -12,7 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.github.bin.service.HisMsgService.sendAsBot;
 import static com.github.bin.util.NumberUtil.toIntOr;
 
 /**
@@ -57,7 +56,7 @@ public interface CocScope {
         @Override
         protected boolean handler(RoomConfig roomConfig, String id, String msg) {
             CocService.cheater = !CocService.cheater;
-            sendAsBot(roomConfig, "全1" + (CocService.cheater ? "开" : "关"));
+            roomConfig.sendAsBot("全1" + (CocService.cheater ? "开" : "关"));
             return true;
         }
     }
@@ -86,7 +85,7 @@ public interface CocScope {
             val msg = String.format("%s：%s=%s\n%s",
                     dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum(),
                     Arrays.toString(cacheResult.getList()));
-            sendAsBot(roomConfig, msg);
+            roomConfig.sendAsBot(msg);
             return true;
         }
     }

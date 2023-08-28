@@ -20,5 +20,5 @@ public class HisMsg {
     private Long id;
     private String type;
     private String msg;
-    private Long role;
+    private Integer role;
 }

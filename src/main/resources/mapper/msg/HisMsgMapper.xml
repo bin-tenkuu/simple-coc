@@ -12,20 +12,6 @@
         <result column="role" property="role"/>
     </resultMap>
 
-    <update id="initTable">
-        create table his_msg
-        (
-            id   bigserial primary key,
-            type varchar(16) not null,
-            msg  text        not null,
-            role varchar(64) not null
-        );
-    </update>
-
-    <update id="dropTable">
-        drop table his_msg;
-    </update>
-
     <select id="historyMsg" resultMap="BaseResultMap">
         SELECT id, type, msg, role
         FROM his_msg

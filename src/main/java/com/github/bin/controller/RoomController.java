@@ -1,5 +1,6 @@
 package com.github.bin.controller;
 
+import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.model.IdAndName;
 import com.github.bin.service.RoomService;
@@ -7,7 +8,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.val;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,4 +61,15 @@ public class RoomController {
         return roomService.exportHistoryMsg(id);
     }
 
+    @Operation(summary = "导出房间聊天记录原始数据")
+    @GetMapping("/room/logs/db")
+    public ResponseEntity<Resource> getRoomLogsDb(@RequestParam String id) {
+        val dbUrl = MsgDataSource.getDbUrl(id);
+        val headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=hisMsg_" + id + ".db");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new FileSystemResource(dbUrl));
+    }
 }

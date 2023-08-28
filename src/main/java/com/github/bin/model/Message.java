@@ -45,9 +45,9 @@ public sealed interface Message
 
         void setId(Long id);
 
-        long getRole();
+        int getRole();
 
-        void setRole(long role);
+        void setRole(int role);
 
         String getMsg();
 
@@ -58,7 +58,7 @@ public sealed interface Message
     @Setter
     final class Default implements Message {
         private Long id;
-        private Long role;
+        private Integer role;
     }
 
     @Getter
@@ -68,7 +68,7 @@ public sealed interface Message
     final class Text implements Message, Msg {
         private final String type = TEXT;
         private Long id;
-        private long role = -1;
+        private int role = -1;
         private String msg = "";
 
     }
@@ -80,7 +80,7 @@ public sealed interface Message
     final class Pic implements Message, Msg {
         private final String type = PIC;
         private Long id;
-        private long role = -1;
+        private int role = -1;
         private String msg = "";
 
     }
@@ -92,7 +92,7 @@ public sealed interface Message
     final class Sys implements Message, Msg {
         private final String type = SYS;
         private Long id;
-        private long role = -1;
+        private int role = -1;
         private String msg = "";
     }
 

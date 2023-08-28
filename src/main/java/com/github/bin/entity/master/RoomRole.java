@@ -1,9 +1,6 @@
 package com.github.bin.entity.master;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,10 +14,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value = "room_role", resultMap = "BaseResultMap")
 public class RoomRole {
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private int id;
 
     @TableField("name")
     private String name;
@@ -28,7 +23,7 @@ public class RoomRole {
     @TableField("color")
     private String color;
 
-    public RoomRole copy(Long id) {
+    public RoomRole copy(int id) {
         return new RoomRole(id, name, color);
     }
 }

@@ -1,6 +1,8 @@
 package com.github.bin.service;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.github.bin.command.Command;
+import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.entity.msg.HisMsg;
@@ -53,6 +55,7 @@ public class RoomService {
     // endregion
 
     private final RoomMapper roomMapper;
+    private final List<Command> commands;
 
     public List<Room> rooms() {
         return roomMapper.selectList(null);
@@ -60,7 +63,12 @@ public class RoomService {
 
     @Nullable
     public Room getById(String id) {
-        return roomMapper.selectById(id);
+        var roomConfig = get(id);
+        if (roomConfig == null) {
+            roomConfig = new RoomConfig(roomMapper.selectById(id));
+            set(id, roomConfig);
+        }
+        return roomConfig.getRoom();
     }
 
     public boolean removeById(String id) {
@@ -83,12 +91,12 @@ public class RoomService {
         } else {
             ROOM_MAP.put(id, new RoomConfig(room));
             roomMapper.insert(room);
-            HisMsgService.accept(id, HisMsgMapper::initTable);
+            MsgDataSource.addDataSource(id);
         }
         return true;
     }
 
-    public <T extends Message.Msg> void saveMsgAndSend(RoomConfig room, T msg, Long role) {
+    public <T extends Message.Msg> void saveMsgAndSend(RoomConfig room, T msg, int role) {
         msg.setRole(role);
         HisMsgService.accept(room.getId(), hisMsgMapper -> {
             if (msg.getId() == null) {
@@ -174,13 +182,26 @@ public class RoomService {
             }
             val roleId = role.getId();
             val b = message instanceof Message.Text
-                    && !roleId.equals(RoomConfig.BOT_ROLE)
+                    && roleId != RoomConfig.BOT_ROLE
                     && message.getId() == null
                     && message.getMsg().startsWith(".");
             saveMsgAndSend(roomConfig, message, roleId);
             if (b) {
-                HisMsgService.handleBot(roomConfig, id, message.getMsg().substring(1).trim());
+                handleBot(roomConfig, id, message.getMsg().substring(1).trim());
             }
+        }
+    }
+
+    private void handleBot(RoomConfig roomConfig, String id, String msg) {
+        try {
+            for (val command : commands) {
+                if (command.invoke(roomConfig, id, msg)) {
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("bot 处理异常", e);
+            roomConfig.sendAsBot("【ERROR】bot 处理异常，请联系管理员");
         }
     }
 

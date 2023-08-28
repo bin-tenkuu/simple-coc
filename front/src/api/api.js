@@ -68,3 +68,12 @@ export function downloadLog(id) {
         '_self'
     );
 }
+
+
+/**
+ * @param {string} id
+ * @returns {WebSocket}
+ */
+export function newWebSocket(id) {
+    return new WebSocket(`ws://${origin}/ws/${id}`);
+}

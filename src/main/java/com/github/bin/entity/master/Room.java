@@ -33,11 +33,7 @@ public class Room {
     private String name;
 
     @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
-    private Map<Long, RoomRole> roles = new HashMap<>();
-
-    public RoomRole getRole(Long id) {
-        return roles.get(id);
-    }
+    private Map<Integer, RoomRole> roles = new HashMap<>();
 
     public void addRole(RoomRole role) {
         roles.put(role.getId(), role);

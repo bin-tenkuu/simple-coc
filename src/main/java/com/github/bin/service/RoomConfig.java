@@ -4,6 +4,7 @@ import cn.hutool.core.io.IoUtil;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.model.Message;
+import com.github.bin.util.IdWorker;
 import com.github.bin.util.JsonUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
-    public static final Long DEFAULT_ROLE = -1L;
-    public static final Long BOT_ROLE = -10L;
+    public static final int DEFAULT_ROLE = -1;
+    public static final int BOT_ROLE = -10;
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     private final HashMap<String, RoomRole> roles = new HashMap<>();
+    private final IdWorker idWorker = new IdWorker(0L);
     private final Room room;
     private volatile transient boolean hold = true;
 
@@ -55,7 +57,7 @@ public final class RoomConfig implements Closeable {
         return roles.get(session);
     }
 
-    public void setRole(String session, @Nullable Long roleId) {
+    public void setRole(String session, @Nullable Integer roleId) {
         roles.put(session, room.getRoles().get(roleId));
     }
 

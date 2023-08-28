@@ -67,6 +67,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import {UsrTiktok} from "@/formats/UsrTiktok";
 import {UsrShake} from "@/formats/UsrShake";
 import {Ruby} from "@/formats/ruby";
+import {newWebSocket} from "@/api/api";
 
 Quill.register({
   "modules/htmlEditButton": htmlEditButton,
@@ -91,7 +92,6 @@ export default {
     }
   },
   data() {
-    let host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
     document.addEventListener("keyup", (e) => {
       if (e.key === "Enter") {
         if (e.ctrlKey) {
@@ -101,7 +101,6 @@ export default {
       }
     })
     return {
-      host: host,
       edit: {
         inputVisible: false,
         inputValue: "",
@@ -192,7 +191,7 @@ export default {
       if (this.ws != null) {
         return
       }
-      const ws = this.ws = new WebSocket(`ws://${this.host}/ws/${this.room.id}`);
+      const ws = this.ws = newWebSocket(this.room.id);
       ws.onopen = () => {
         ElMessage({
           message: `连接成功`,

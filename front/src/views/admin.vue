@@ -93,18 +93,16 @@
 </template>
 
 <script>
-import axios from "axios";
 import {ElNotification} from "element-plus";
+import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
 
 export default {
     name: 'Admin-page',
     data() {
-        let host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
-        axios.get(`http://${host}/api/rooms`).then(res => {
-            this.rooms = res.data
+        getRooms().then(data => {
+            this.rooms = data
         })
         return {
-            host: host,
             /**
              * @type {Array<{id: string, name: string}>}
              */
@@ -130,16 +128,12 @@ export default {
         getRoom(id) {
             this.dialogVisible = false
             this.room.id = id
-            axios.get(`http://${this.host}/api/room`, {
-                params: {
-                    id: id,
-                }
-            }).then(res => {
-                this.room = res.data
+            getRoom(id).then(data => {
+                this.room = data
             })
         },
         setRoom() {
-            axios.post(`http://${this.host}/api/room`, this.room).then(() => {
+            saveRoom(this.room).then(() => {
                 ElNotification({
                     title: '成功',
                     message: '保存成功',
@@ -149,17 +143,10 @@ export default {
             })
         },
         downloadLog() {
-            window.open(
-                `http://${this.host}/api/room/logs?id=${this.room.id}`,
-                '_self'
-            );
+            downloadLog(this.room.id)
         },
         deleteRoom() {
-            axios.get(`http://${this.host}/api/room/del`, {
-                params: {
-                    id: this.room.id,
-                },
-            }).then(() => {
+            deleteRoom(this.room.id).then(() => {
                 ElNotification({
                     title: '成功',
                     message: '删除成功',

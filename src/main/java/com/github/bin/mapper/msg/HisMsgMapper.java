@@ -10,13 +10,10 @@ import java.util.List;
  * @since 2023/08/22
  */
 public interface HisMsgMapper {
-    void initTable();
 
-    void dropTable();
+    long insert(@Param("type") String type, @Param("msg") String msg, @Param("role") int role);
 
-    long insert(@Param("type") String type, @Param("msg") String msg, @Param("role") long role);
-
-    int update(@Param("id") long id, @Param("msg") String msg, @Param("role") long role);
+    int update(@Param("id") long id, @Param("msg") String msg, @Param("role") int role);
 
     List<HisMsg> historyMsg(@Param("id") Long id, @Param("limit") int limit);
 

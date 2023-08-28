@@ -1,9 +1,11 @@
 package com.github.bin.controller;
 
 import com.github.bin.service.FileService;
+import com.github.bin.service.RoomService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,12 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestPart MultipartFile mutipartFile, @RequestParam String filePath) {
+    public String upload(@RequestPart MultipartFile mutipartFile, @RequestParam String name) {
+        val roomConfig = RoomService.get(name);
+        if (roomConfig == null) {
+            return "404";
+        }
+        val filePath = name + "/" + roomConfig.getIdWorker().nextId();
         try {
             return fileService.uploadFile(filePath, mutipartFile);
         } catch (Exception e) {

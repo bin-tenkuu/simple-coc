@@ -21,7 +21,7 @@ import static com.github.bin.util.NumberUtil.toIntOr;
  */
 public interface CocSbiScope {
 
-    CacheMap<Long, DiceResult> CACHE = new CacheMap<>();
+    CacheMap<Integer, DiceResult> CACHE = new CacheMap<>();
 
     private static String sbiResult(int[] list) {
         if (list.length < 3) {
