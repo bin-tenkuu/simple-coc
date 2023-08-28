@@ -289,7 +289,7 @@ export default {
       element.setAttribute("style", `--color: ${role.color};`)
       switch (msg.type) {
         case "text": {
-          if (msg.role === +this.role.id) {
+          if (+msg.role === +this.role.id) {
             element.setAttribute("class", "edit")
             element.addEventListener("click", () => {
               this.editMsg(msg.id)

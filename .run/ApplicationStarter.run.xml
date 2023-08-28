@@ -2,6 +2,7 @@
   <configuration default="false" name="ApplicationStarter" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <option name="HIDE_BANNER" value="true" />
     <module name="server.main" />
+    <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.github.bin.ApplicationStarter" />
     <extension name="coverage">
       <pattern>
