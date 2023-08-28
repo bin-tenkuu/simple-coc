@@ -13,27 +13,27 @@ public class IdWorker {
     /**
      * Start time cut (2020-05-03)
      */
-    private final long twepoch = 1588435200000L;
+    private static final long TWEPOCH = 1588435200000L;
 
     /**
      * The number of bits occupied by workerId
      */
-    private final int workerIdBits = 10;
+    private static final int WORKER_ID_BITS = 10;
 
     /**
      * The number of bits occupied by timestamp
      */
-    private final int timestampBits = 41;
+    private static final int TIMESTAMP_BITS = 41;
 
     /**
      * The number of bits occupied by sequence
      */
-    private final int sequenceBits = 12;
+    private static final int SEQUENCE_BITS = 12;
 
     /**
      * Maximum supported machine id, the result is 1023
      */
-    private final int maxWorkerId = ~(-1 << workerIdBits);
+    private static final int MAX_WORKER_ID = ~(-1 << WORKER_ID_BITS);
 
     /**
      * business meaning: machine ID (0 ~ 1023)
@@ -55,7 +55,7 @@ public class IdWorker {
     /**
      * mask that help to extract timestamp and sequence from a long
      */
-    private final long timestampAndSequenceMask = ~(-1L << (timestampBits + sequenceBits));
+    private static final long TIMESTAMP_AND_SEQUENCE_MASK = ~(-1L << (TIMESTAMP_BITS + SEQUENCE_BITS));
 
     /**
      * instantiate an IdWorker using given workerId
@@ -72,7 +72,7 @@ public class IdWorker {
      */
     private void initTimestampAndSequence() {
         long timestamp = getNewestTimestamp();
-        long timestampWithSequence = timestamp << sequenceBits;
+        long timestampWithSequence = timestamp << SEQUENCE_BITS;
         this.timestampAndSequence = new AtomicLong(timestampWithSequence);
     }
 
@@ -85,11 +85,11 @@ public class IdWorker {
         if (workerId == null) {
             workerId = generateWorkerId();
         }
-        if (workerId > maxWorkerId || workerId < 0) {
-            String message = String.format("worker Id can't be greater than %d or less than 0", maxWorkerId);
+        if (workerId > MAX_WORKER_ID || workerId < 0) {
+            String message = String.format("worker Id can't be greater than %d or less than 0", MAX_WORKER_ID);
             throw new IllegalArgumentException(message);
         }
-        this.workerId = workerId << (timestampBits + sequenceBits);
+        this.workerId = workerId << (TIMESTAMP_BITS + SEQUENCE_BITS);
     }
 
     /**
@@ -104,7 +104,7 @@ public class IdWorker {
     public long nextId() {
         waitIfNecessary();
         long next = timestampAndSequence.incrementAndGet();
-        long timestampWithSequence = next & timestampAndSequenceMask;
+        long timestampWithSequence = next & TIMESTAMP_AND_SEQUENCE_MASK;
         return workerId | timestampWithSequence;
     }
 
@@ -114,7 +114,7 @@ public class IdWorker {
      */
     private void waitIfNecessary() {
         long currentWithSequence = timestampAndSequence.get();
-        long current = currentWithSequence >>> sequenceBits;
+        long current = currentWithSequence >>> SEQUENCE_BITS;
         long newest = getNewestTimestamp();
         if (current >= newest) {
             try {
@@ -129,7 +129,7 @@ public class IdWorker {
      * get newest timestamp relative to twepoch
      */
     private long getNewestTimestamp() {
-        return System.currentTimeMillis() - twepoch;
+        return System.currentTimeMillis() - TWEPOCH;
     }
 
     /**
@@ -172,6 +172,6 @@ public class IdWorker {
      * @return workerId
      */
     private long generateRandomWorkerId() {
-        return new Random().nextInt(maxWorkerId + 1);
+        return new Random().nextInt(MAX_WORKER_ID + 1);
     }
 }
