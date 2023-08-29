@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
+const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
+const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
 
 /**
  *
@@ -75,5 +76,5 @@ export function downloadLog(id) {
  * @returns {WebSocket}
  */
 export function newWebSocket(id) {
-    return new WebSocket(`ws://${origin}/ws/${id}`);
+    return new WebSocket(`ws://${host}/ws/${id}`);
 }

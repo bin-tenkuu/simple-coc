@@ -76,8 +76,9 @@ Quill.register({
     'blots/ruby': Ruby,
 });
 let whitelist = ['0.8em', false, '2em', '4em', '8em', '16em', '32em'];
-Quill.imports['attributors/style/size'].whitelist = whitelist;
-
+let SizeStyle = Quill.imports['attributors/style/size'];
+SizeStyle.whitelist = whitelist;
+Quill.register(SizeStyle, true)
 export default {
     name: 'Index-page',
     components: {Key, Edit, Plus, StarFilled, QuillEditor},
