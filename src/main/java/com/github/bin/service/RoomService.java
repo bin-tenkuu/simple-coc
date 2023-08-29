@@ -156,7 +156,8 @@ public class RoomService {
         val id = session.getId();
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
-            roomConfig.setRole(id, defMsg.getRole());
+            val roomRole = roomConfig.setRole(id, defMsg.getRole());
+            log.info("'{}' 进入 room '{}'，角色：{}", id, roomConfig.getId(), roomRole);
             val list = HisMsgService.apply(roomConfig.getId(),
                     hisMsgMapper -> hisMsgMapper.historyMsg(defMsg.getId(), 20));
             try {

@@ -4,6 +4,6 @@ import com.github.bin.entity.master.RoomRole;
 
 import java.util.Map;
 
-public class RoomHandler extends BaseJsonTypeHandler<Map<Long, RoomRole>> {
+public class RoomHandler extends BaseJsonTypeHandler<Map<Integer, RoomRole>> {
 
 }

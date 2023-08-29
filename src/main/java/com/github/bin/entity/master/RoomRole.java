@@ -26,4 +26,11 @@ public class RoomRole {
     public RoomRole copy(int id) {
         return new RoomRole(id, name, color);
     }
+
+    @Override
+    public String toString() {
+        return "RoomRole(" +
+                "id=" + id +
+                ')';
+    }
 }

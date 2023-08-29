@@ -94,15 +94,16 @@ public interface CocScope {
     @Component
     class R extends Command.Regex {
         public R() {
-            super(Pattern.compile("^r\\s*(?<num>\\d*)d(?<max>\\d*)"));
+            super(Pattern.compile("^r\\s*(?<num>\\d*)d(?<max>\\d+)\\s*(?<type>\\S*)"));
         }
 
         @Override
         protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             val num = toIntOr(matcher.group("num"), 1);
-            val max = toIntOr(matcher.group("max"), 0);
+            val max = toIntOr(matcher.group("max"), 1);
+            val type = matcher.group("type");
             val dice = new DiceResult(num, max);
-            if (!CocService.cheater) {
+            if (!CocService.cheater && max > 1) {
                 dice.dice();
             }
             val role = roomConfig.getRole(id);
@@ -110,7 +111,7 @@ public interface CocScope {
             val msg = num == 1 ?
                     String.format("%s = %s", dice.getOrigin(), dice.getSum()) :
                     String.format("%s = %s = %s", dice.getOrigin(), Arrays.toString(dice.getList()), dice.getSum());
-            roomConfig.sendAsBot(roleName + "进行检定：\n" + msg);
+            roomConfig.sendAsBot(roleName + "进行" + type + "检定：\n" + msg);
             return true;
         }
     }

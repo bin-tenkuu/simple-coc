@@ -28,7 +28,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     public void afterConnectionEstablished(@NotNull WebSocketSession session) {
         val roomConfig = getRoom(session);
         roomConfig.addClient(session);
-        log.info("'{}' 连接 room '{}' ", getRemoteAddr(session), roomConfig.getId());
+        log.info("{} ({}) 连接 room '{}' ", session.getId(), getRemoteAddr(session), roomConfig.getId());
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                 val msg = JsonUtil.toBean(payload, Message.class);
                 roomService.handleMessage(roomConfig, session, msg);
             } catch (Exception e) {
-                log.warn("'{}' 消息格式错误: '{}'", getRemoteAddr(session), payload);
+                log.warn("{} ({}) 消息格式错误: '{}'", session.getId(), getRemoteAddr(session), payload);
                 session.close(new CloseStatus(4000, "消息格式错误"));
             }
         }
@@ -55,14 +55,14 @@ public class ChatWebSocketHandler implements WebSocketHandler {
         if (session.isOpen()) {
             session.close(new CloseStatus(4000, "服务器错误:${exception.message}"));
         }
-        log.warn("'{}' websocket 异常", getRemoteAddr(session), exception);
+        log.warn("{} ({}) websocket 异常", session.getId(), getRemoteAddr(session), exception);
     }
 
     @Override
     public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) {
         val roomConfig = getRoom(session);
         roomConfig.removeClient(session);
-        log.info("'{}' 断开连接", getRemoteAddr(session));
+        log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
     }
 
     @Override

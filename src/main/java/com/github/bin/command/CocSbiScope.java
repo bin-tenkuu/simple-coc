@@ -9,7 +9,6 @@ import lombok.val;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,8 +26,8 @@ public interface CocSbiScope {
         if (list.length < 3) {
             return "数量过少";
         }
-        val ints = Set.of(list[0], list[1], list[2]).stream()
-                .mapToInt(Integer::intValue)
+        val ints = Arrays.stream(new int[]{list[0], list[1], list[2]})
+                .distinct()
                 .sorted()
                 .toArray();
         if (ints.length == 1) {

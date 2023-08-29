@@ -57,8 +57,10 @@ public final class RoomConfig implements Closeable {
         return roles.get(session);
     }
 
-    public void setRole(String session, @Nullable Integer roleId) {
-        roles.put(session, room.getRoles().get(roleId));
+    public RoomRole setRole(String session, @Nullable Integer roleId) {
+        val role = room.getRoles().get(roleId);
+        roles.put(session, role);
+        return role;
     }
 
     public void sendAll(Message msg) {
