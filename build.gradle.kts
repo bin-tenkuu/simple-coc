@@ -1,6 +1,7 @@
 //val kotlinVersion = "1.9.0"
 plugins {
 //    val kotlinVersion = "1.9.0"
+    distribution
     java
     application
 //    kotlin("jvm") version kotlinVersion
