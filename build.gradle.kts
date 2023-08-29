@@ -1,8 +1,8 @@
-
 //val kotlinVersion = "1.9.0"
 plugins {
 //    val kotlinVersion = "1.9.0"
     java
+    application
 //    kotlin("jvm") version kotlinVersion
 //    kotlin("plugin.spring") version kotlinVersion
     id("org.springframework.boot") version "3.0.5"
@@ -50,9 +50,30 @@ configurations {
     }
 }
 
-springBoot {
-    mainClass.set("com.github.bin.MainKt")
+application {
+
 }
+distributions {
+    main {
+        contents {
+            from("sql/hisMsg.db") {
+                into("bin/sql")
+            }
+            from("src/main/resources") {
+                into("bin/config")
+                exclude("mapper")
+            }
+            from("front/dist") {
+                into("bin/front/dist")
+            }
+        }
+    }
+}
+
+springBoot {
+
+}
+
 tasks {
     val jvmVersion = "17"
     withType<JavaCompile> {
