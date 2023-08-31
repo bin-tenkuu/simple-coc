@@ -1,2 +1,2 @@
-rootProject.name = "server"
-
+rootProject.name = "coc-server"
+include("server")

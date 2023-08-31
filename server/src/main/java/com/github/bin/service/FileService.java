@@ -43,13 +43,12 @@ public class FileService {
         val index = filePath.lastIndexOf('/');
         val filename = (index >= 0) ? filePath.substring(index) : filePath;
         val headers = new HttpHeaders();
-        headers.setETag(statObject.etag());
+        headers.setETag("\"" + statObject.etag() + "\"");
         headers.setContentLength(statObject.size());
         headers.setContentDisposition(ContentDisposition.attachment()
                 .filename(filename, StandardCharsets.UTF_8)
                 .build());
         headers.setLastModified(statObject.lastModified());
-//        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentType(MediaType.valueOf(statObject.contentType()));
         return ResponseEntity.ok()
                 .headers(headers)

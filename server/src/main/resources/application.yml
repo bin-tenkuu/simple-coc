@@ -15,6 +15,7 @@ spring:
     name: server
   web:
     locale: zh_CN
+    locale-resolver: fixed
     resources:
       static-locations:
         - file:./front/dist

@@ -29,7 +29,7 @@
                     :disabled="hasmessage"
                     @click="sendMessage"
             >
-                {{ id ? "修改" : "发送" }}
+                {{ id ? "修改" : "发送" }} (Ctrl+Enter)
             </el-button>
             <el-switch
                     v-model="scrollDown"

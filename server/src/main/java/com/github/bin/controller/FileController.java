@@ -33,6 +33,16 @@ public class FileController {
         }
     }
 
+    @GetMapping("/download/{*path}")
+    public ResponseEntity<InputStreamResource> downloadByPath(@PathVariable String path) {
+        try {
+            return fileService.downloadFile(path);
+        } catch (Exception e) {
+            log.warn("download file failed", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping("/upload")
     public String upload(@RequestPart MultipartFile mutipartFile, @RequestParam String name) {
         val roomConfig = RoomService.get(name);

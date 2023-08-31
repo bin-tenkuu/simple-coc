@@ -36,7 +36,7 @@ public class CommonJacksonBuilderCustomizer implements Jackson2ObjectMapperBuild
                 )
                 .featuresToEnable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
                 .serializerByType(Long.class, ToStringSerializer.instance)
-                .serializerByType(java.lang.Long.TYPE, ToStringSerializer.instance)
+                .serializerByType(Long.TYPE, ToStringSerializer.instance)
                 .serializerByType(LocalDateTime.class,
                         new LocalDateTimeSerializer(DateConstant.DATE_TIME_FORMATTER))
                 .serializerByType(LocalDate.class,
