@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -15,7 +17,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -26,6 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @AllArgsConstructor
+@Slf4j
 public class RoomController {
     private final RoomService roomService;
 
@@ -71,5 +76,54 @@ public class RoomController {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new FileSystemResource(dbUrl));
+    }
+
+    @GetMapping("/sseRoom")
+    public SseEmitter sseRoom() {
+        log.info("sseRoom");
+        SseEmitter emitter = new SseEmitter();
+        new SseEmitterThread(emitter).start();
+        return emitter;
+    }
+
+    @RequiredArgsConstructor
+    private static class SseEmitterThread extends Thread {
+        private final SseEmitter emitter;
+        private volatile transient boolean running = true;
+
+        @Override
+        public void run() {
+            emitter.onCompletion(this::interrupt);
+            emitter.onError((e) -> interrupt());
+            emitter.onTimeout(this::interrupt);
+            try {
+                int i = 0;
+                while (running) {
+                    val event = SseEmitter.event()
+                            .id(String.valueOf(i++))
+                            // a=new EventSource("http://localhost:8080/api/sseRoom");
+                            // a.addEventListener('name',event=>console.log(event))
+                            .name("name")
+                            .data("{ \"message\": \"hello\"}\n\n", MediaType.APPLICATION_JSON);
+                    try {
+                        if (running) {
+                            emitter.send(event);
+                        }
+                    } catch (IOException e) {
+                        this.running = false;
+                        break;
+                    }
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException e) {
+                this.running = false;
+            }
+        }
+
+        @Override
+        public void interrupt() {
+            this.running = false;
+            super.interrupt();
+        }
     }
 }
