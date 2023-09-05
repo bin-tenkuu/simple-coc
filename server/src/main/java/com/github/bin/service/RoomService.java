@@ -7,7 +7,6 @@ import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.master.RoomMapper;
-import com.github.bin.mapper.msg.HisMsgMapper;
 import com.github.bin.model.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +25,7 @@ import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -109,43 +109,17 @@ public class RoomService {
     }
 
     public ResponseEntity<Resource> exportHistoryMsg(String id) {
-        val fileName = id + ".zip";
-        val config = getById(id);
-        if (config == null) {
-            return ResponseEntity.ok(null);
-        }
-        val roles = config.getRoles();
+        val fileName = "logs/room/" + id + ".zip";
         val file = new File(fileName);
-        try (val it = new ZipOutputStream(new FileOutputStream(file))) {
-            it.setComment("导出历史记录");
-            it.setLevel(9);
-            it.putNextEntry(new ZipEntry("index.html"));
-            val writer = new BufferedWriter(new OutputStreamWriter(it));
-            val allCount = HisMsgService.apply(id, HisMsgMapper::count);
-            val size = 10L;
-            var index = 0L;
-            while (index >= allCount) {
-                val i = index;
-                val list = HisMsgService.apply(id, hisMsgMapper -> hisMsgMapper.listAll(i, size));
-                for (val msg : list) {
-                    val roleId = msg.getRole();
-                    val role = roles.getOrDefault(roleId,
-                            new RoomRole(roleId, roleId.toString(), "black"));
-                    val color = role.getColor();
-                    writer.append("<div style=\"color: ").append(color).append("\">");
-                    writer.append(toHtml(msg.getType(), msg.getMsg(), role));
-                    writer.append("</div>\n");
-                    writer.flush();
-                }
-                index += size;
+        if (!file.isFile()) {
+            val config = getById(id);
+            if (config == null) {
+                return ResponseEntity.ok(null);
             }
-            it.closeEntry();
-            it.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            createRoomLog(file, id, config.getRoles());
         }
         val headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=" + fileName);
+        headers.add("Content-Disposition", "attachment; filename=room_" + id + ".zip");
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -158,8 +132,7 @@ public class RoomService {
             // 更新角色，根据id获取历史消息
             val roomRole = roomConfig.setRole(id, defMsg.getRole());
             log.info("'{}' 进入 room '{}'，角色：{}", id, roomConfig.getId(), roomRole);
-            val list = HisMsgService.apply(roomConfig.getId(),
-                    hisMsgMapper -> hisMsgMapper.historyMsg(defMsg.getId(), 20));
+            val list = HisMsgService.historyMsg(roomConfig.getId(), defMsg.getId(), 20);
             try {
                 roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
                 for (val hisMsg : list) {
@@ -206,6 +179,38 @@ public class RoomService {
         }
     }
 
+    private void createRoomLog(File file, String id, Map<Integer, RoomRole> roles) {
+        //noinspection ResultOfMethodCallIgnored
+        file.getParentFile().mkdir();
+        try (val it = new ZipOutputStream(new FileOutputStream(file))) {
+            it.setComment("导出历史记录");
+            it.setLevel(9);
+            it.putNextEntry(new ZipEntry("index.html"));
+            val writer = new BufferedWriter(new OutputStreamWriter(it));
+            val allCount = HisMsgService.count(id);
+            val size = 10L;
+            var index = 0L;
+            while (index < allCount) {
+                val list = HisMsgService.listAll(id, index, size);
+                for (val msg : list) {
+                    val roleId = msg.getRole();
+                    val role = roles.getOrDefault(roleId,
+                            new RoomRole(roleId, roleId.toString(), "black"));
+                    val color = role.getColor();
+                    writer.append("<div style=\"color: ").append(color).append("\">");
+                    writer.append(toHtml(msg.getType(), msg.getMsg(), role));
+                    writer.append("</div>\n");
+                    writer.flush();
+                }
+                index += size;
+            }
+            it.closeEntry();
+            it.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Message toMessage(HisMsg hisMsg) {
         val id = hisMsg.getId();
         val msg = hisMsg.getMsg();
@@ -229,4 +234,5 @@ public class RoomService {
         }
         return sb.toString();
     }
+
 }

@@ -1,6 +1,8 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
-    id("distribution")
-    id("application")
+//    id("distribution")
+//    id("application")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
@@ -34,25 +36,35 @@ dependencies {
     implementation("io.minio:minio:8.5.2")
 }
 
-distributions {
-    main {
-        contents {
-            from(rootDir.resolve("sql/hisMsg.db")) {
-                into("bin/sql")
-            }
-            from(projectDir.resolve("src/main/resources")) {
-                exclude("mapper")
-                into("bin/config")
-            }
-            from(rootDir.resolve("front/dist")) {
-                into("bin/front/dist")
-            }
-        }
-    }
-}
-
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
 }
+
+tasks {
+    withType<BootJar> {
+        archiveBaseName.set("server")
+        archiveAppendix.set("exec")
+        archiveVersion.set("")
+    }
+}
+
+//distributions {
+//    main {
+//        distributionBaseName = "server"
+//        contents {
+//            println(buildFile.absolutePath)
+//            from(rootDir.resolve("sql/hisMsg.db")) {
+//                into("sql")
+//            }
+//            from(projectDir.resolve("src/main/resources")) {
+//                exclude("mapper")
+//                into("config")
+//            }
+//            from(rootDir.resolve("front/dist")) {
+//                into("front/dist")
+//            }
+//        }
+//    }
+//}

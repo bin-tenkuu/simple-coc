@@ -14,9 +14,8 @@ version = "1.0.0"
 allprojects {
     apply(plugin = "java")
     repositories {
-        maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
         mavenLocal()
-        mavenCentral()
+        maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
     }
 
     tasks {
