@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * @author bin
@@ -32,8 +32,8 @@ public class RoomLogTask {
             return;
         }
         for (val logFile : list) {
-            val lastday = LocalDate.now().minusDays(1);
-            val lastModefied = LocalDateTimeUtil.of(logFile.lastModified()).toLocalDate();
+            val lastday = LocalDateTime.now().minusHours(12);
+            val lastModefied = LocalDateTimeUtil.of(logFile.lastModified());
             if (lastModefied.isBefore(lastday)) {
                 if (!logFile.delete()) {
                     log.error("删除文件失败: {}", logFile.getPath());
