@@ -19,7 +19,7 @@ import java.time.ZoneId;
 public class RoomLogTask {
     private static final String ROOM_LOG = "logs/room";
 
-    @Scheduled(cron = "0 0,30 * * * ?")
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void cleanLog() {
         val file = new File(ROOM_LOG);
         if (!file.isDirectory()) {
@@ -33,7 +33,7 @@ public class RoomLogTask {
             return;
         }
         for (val logFile : list) {
-            val lastday = LocalDateTime.now().minusMinutes(30);
+            val lastday = LocalDateTime.now().minusMinutes(10);
             val lastModefied = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(logFile.lastModified() / 1000),
                     ZoneId.systemDefault()
