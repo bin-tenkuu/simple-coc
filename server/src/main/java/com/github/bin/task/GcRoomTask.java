@@ -23,8 +23,9 @@ public class GcRoomTask {
             if (!room.isHold()) {
                 log.info("清理房间: {}", room.getId());
                 iterator.remove();
-            } else if (room.getClients().isEmpty()) {
-                room.setHold(false);
+            } else if (room.isEmpty()) {
+                log.info("准备清理房间: {}", room.getId());
+                room.unhold();
             }
         }
     }

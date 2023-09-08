@@ -22,7 +22,6 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class ChatWebSocketHandler implements WebSocketHandler {
-    private final RoomService roomService;
 
     @Override
     public void afterConnectionEstablished(@NotNull WebSocketSession session) {
@@ -40,7 +39,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
             val payload = textMessage.getPayload();
             try {
                 val msg = JsonUtil.toBean(payload, Message.class);
-                roomService.handleMessage(roomConfig, session, msg);
+                RoomService.handleMessage(roomConfig, session, msg);
             } catch (Exception e) {
                 log.warn("{} ({}) 消息格式错误: '{}'", session.getId(), getRemoteAddr(session), payload);
                 session.close(new CloseStatus(4000, "消息格式错误"));

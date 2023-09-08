@@ -32,12 +32,11 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class RoomController {
-    private final RoomService roomService;
 
     @Operation(summary = "获取房间列表")
     @GetMapping("/rooms")
     public List<IdAndName> rooms() {
-        return roomService.rooms().stream()
+        return RoomService.rooms().stream()
                 .map(room -> new IdAndName(room.getId(), room.getName()))
                 .toList();
     }
@@ -45,25 +44,25 @@ public class RoomController {
     @Operation(summary = "获取房间信息")
     @GetMapping("/room")
     public Room getRoom(@RequestParam String id) {
-        return roomService.getById(id);
+        return RoomService.getById(id);
     }
 
     @Operation(summary = "创建/更新房间")
     @PostMapping("/room")
     public boolean postRoom(@Valid @RequestBody Room room) {
-        return roomService.saveOrUpdate(room);
+        return RoomService.saveOrUpdate(room);
     }
 
     @Operation(summary = "删除房间")
     @GetMapping("/room/del")
     public boolean deleteRoom(@RequestParam String id) {
-        return roomService.removeById(id);
+        return RoomService.removeById(id);
     }
 
     @Operation(summary = "导出房间聊天记录")
     @GetMapping("/room/logs")
     public ResponseEntity<Resource> getRoomLogs(@RequestParam String id) {
-        return roomService.exportHistoryMsg(id);
+        return RoomService.exportHistoryMsg(id);
     }
 
     @Operation(summary = "导出房间聊天记录原始数据")

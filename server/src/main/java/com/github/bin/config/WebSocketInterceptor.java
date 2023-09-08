@@ -1,6 +1,5 @@
 package com.github.bin.config;
 
-import com.github.bin.service.RoomConfig;
 import com.github.bin.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class WebSocketInterceptor implements HandshakeInterceptor {
-    private final RoomService roomService;
 
     @Override
     public boolean beforeHandshake(
@@ -36,16 +34,9 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
             val roomId = serverHttpRequest.getURI().getPath().substring(4);
             val remoteHost = serverHttpRequest.getServletRequest().getRemoteAddr();
             var config = RoomService.get(roomId);
-            if (config == null) {
-                val room = roomService.getById(roomId);
-                if (room == null) {
-                    log.warn("'{}' 尝试连接 room '{}' （不存在）", remoteHost, roomId);
-                    return false;
-                }
-                config = new RoomConfig(room);
-                RoomService.set(roomId, config);
-            } else {
-                config.setHold(true);
+            if (!config.isEnable()) {
+                log.warn("'{}' 尝试连接 room '{}' （不存在）", remoteHost, roomId);
+                return false;
             }
             attributes.put("roomId", roomId);
             return true;

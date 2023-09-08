@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -37,12 +38,19 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomService {
-    // region static
+    // region ROOM_MAP
 
     private static final HashMap<String, RoomConfig> ROOM_MAP = new HashMap<>();
 
     public static RoomConfig get(String id) {
-        return ROOM_MAP.get(id);
+        var roomConfig = ROOM_MAP.get(id);
+        if (roomConfig == null) {
+            roomConfig = new RoomConfig(roomMapper.selectById(id));
+            ROOM_MAP.put(id, roomConfig);
+        } else {
+            roomConfig.hold();
+        }
+        return roomConfig;
     }
 
     public static RoomConfig set(String id, RoomConfig config) {
@@ -52,26 +60,34 @@ public class RoomService {
     public static Collection<RoomConfig> values() {
         return ROOM_MAP.values();
     }
+
     // endregion
 
-    private final RoomMapper roomMapper;
-    private final List<Command> commands;
+    private static RoomMapper roomMapper;
 
-    public List<Room> rooms() {
+    @Autowired
+    public void setRoomMapper(RoomMapper roomMapper) {
+        RoomService.roomMapper = roomMapper;
+    }
+
+    private static List<Command> commands;
+
+    @Autowired
+    public void setCommands(List<Command> commands) {
+        RoomService.commands = commands;
+    }
+
+    public static List<Room> rooms() {
         return roomMapper.selectList(null);
     }
 
     @Nullable
-    public Room getById(String id) {
+    public static Room getById(String id) {
         var roomConfig = get(id);
-        if (roomConfig == null) {
-            roomConfig = new RoomConfig(roomMapper.selectById(id));
-            set(id, roomConfig);
-        }
         return roomConfig.getRoom();
     }
 
-    public boolean removeById(String id) {
+    public static boolean removeById(String id) {
         val roomConfig = ROOM_MAP.remove(id);
         if (roomConfig != null) {
             roomConfig.close();
@@ -79,7 +95,7 @@ public class RoomService {
         return SqlHelper.retBool(roomMapper.deleteById(id));
     }
 
-    public boolean saveOrUpdate(Room room) {
+    public static boolean saveOrUpdate(Room room) {
         val id = room.getId();
         val config = ROOM_MAP.get(id);
         if (config != null) {
@@ -96,7 +112,7 @@ public class RoomService {
         return true;
     }
 
-    public <T extends Message.Msg> void saveMsgAndSend(RoomConfig room, T msg, int role) {
+    public static <T extends Message.Msg> void saveMsgAndSend(RoomConfig room, T msg, int role) {
         msg.setRole(role);
         HisMsgService.accept(room.getId(), hisMsgMapper -> {
             if (msg.getId() == null) {
@@ -108,7 +124,7 @@ public class RoomService {
         room.sendAll(msg);
     }
 
-    public ResponseEntity<Resource> exportHistoryMsg(String id) {
+    public static ResponseEntity<Resource> exportHistoryMsg(String id) {
         val fileName = "logs/room/" + id + ".zip";
         val file = new File(fileName);
         if (!file.isFile()) {
@@ -117,6 +133,9 @@ public class RoomService {
                 return ResponseEntity.ok(null);
             }
             createRoomLog(file, id, config.getRoles());
+        } else {
+            //noinspection ResultOfMethodCallIgnored
+            file.setLastModified(System.currentTimeMillis());
         }
         val headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=room_" + id + ".zip");
@@ -126,12 +145,12 @@ public class RoomService {
                 .body(new FileSystemResource(file));
     }
 
-    public void handleMessage(RoomConfig roomConfig, WebSocketSession session, Message msg) {
+    public static void handleMessage(RoomConfig roomConfig, WebSocketSession session, Message msg) {
         val id = session.getId();
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
             val roomRole = roomConfig.setRole(id, defMsg.getRole());
-            log.info("'{}' 进入 room '{}'，角色：{}", id, roomConfig.getId(), roomRole);
+            log.info("{} 进入 room '{}'，角色：{}", id, roomConfig.getId(), roomRole);
             val list = HisMsgService.historyMsg(roomConfig.getId(), defMsg.getId(), 20);
             try {
                 roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
@@ -166,7 +185,7 @@ public class RoomService {
         }
     }
 
-    private void handleBot(RoomConfig roomConfig, String id, String msg) {
+    private static void handleBot(RoomConfig roomConfig, String id, String msg) {
         try {
             for (val command : commands) {
                 if (command.invoke(roomConfig, id, msg)) {
@@ -179,7 +198,7 @@ public class RoomService {
         }
     }
 
-    private void createRoomLog(File file, String id, Map<Integer, RoomRole> roles) {
+    private static void createRoomLog(File file, String id, Map<Integer, RoomRole> roles) {
         //noinspection ResultOfMethodCallIgnored
         file.getParentFile().mkdir();
         try (val it = new ZipOutputStream(new FileOutputStream(file))) {
@@ -211,7 +230,7 @@ public class RoomService {
         }
     }
 
-    private Message toMessage(HisMsg hisMsg) {
+    private static Message toMessage(HisMsg hisMsg) {
         val id = hisMsg.getId();
         val msg = hisMsg.getMsg();
         val role = hisMsg.getRole();
@@ -223,7 +242,7 @@ public class RoomService {
         };
     }
 
-    private String toHtml(String type, String msg, RoomRole role) {
+    private static String toHtml(String type, String msg, RoomRole role) {
         StringBuilder sb = new StringBuilder();
         val name = role.getName();
         val user = "<span>&lt;" + name + "&gt;:</span>";

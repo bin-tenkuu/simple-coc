@@ -7,8 +7,6 @@ import com.github.bin.model.Message;
 import com.github.bin.util.IdWorker;
 import com.github.bin.util.JsonUtil;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
@@ -25,18 +23,42 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author bin
  * @since 2023/08/22
  */
-@Getter
-@Setter
-@RequiredArgsConstructor
 @Slf4j
 public final class RoomConfig implements Closeable {
     public static final int DEFAULT_ROLE = -1;
     public static final int BOT_ROLE = -10;
+
     private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     private final HashMap<String, RoomRole> roles = new HashMap<>();
-    private final IdWorker idWorker = new IdWorker(0L);
+    @Getter
+    public final IdWorker idWorker = new IdWorker(0L);
+    @Getter
     private final Room room;
-    private volatile transient boolean hold = true;
+    @Getter
+    private volatile boolean hold;
+
+    public RoomConfig(Room room) {
+        this.room = room;
+        this.hold = room != null;
+    }
+
+    public boolean isEnable() {
+        return room != null;
+    }
+
+    public void hold() {
+        if (isEnable()) {
+            hold = true;
+        }
+    }
+
+    public void unhold() {
+        hold = false;
+    }
+
+    public boolean isEmpty() {
+        return clients.isEmpty();
+    }
 
     public String getId() {
         return room.getId();

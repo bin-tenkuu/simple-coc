@@ -1,13 +1,14 @@
 package com.github.bin.task;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * @author bin
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 public class RoomLogTask {
     private static final String ROOM_LOG = "logs/room";
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0,12 * * ?")
     public void cleanLog() {
         val file = new File(ROOM_LOG);
         if (!file.isDirectory()) {
@@ -33,7 +34,10 @@ public class RoomLogTask {
         }
         for (val logFile : list) {
             val lastday = LocalDateTime.now().minusHours(12);
-            val lastModefied = LocalDateTimeUtil.of(logFile.lastModified());
+            val lastModefied = LocalDateTime.ofInstant(
+                    Instant.ofEpochSecond(logFile.lastModified() / 1000),
+                    ZoneId.systemDefault()
+            );
             if (lastModefied.isBefore(lastday)) {
                 if (!logFile.delete()) {
                     log.error("删除文件失败: {}", logFile.getPath());
