@@ -40,8 +40,10 @@ public class RoomLogTask {
             );
             if (lastModefied.isBefore(lastday)) {
                 if (!logFile.delete()) {
-                    log.error("删除文件失败: {}", logFile.getPath());
+                    log.error("删除文件失败: {}", logFile.getName());
                 }
+            } else {
+                log.info("保留文件: {} , s", logFile.getName());
             }
         }
     }
