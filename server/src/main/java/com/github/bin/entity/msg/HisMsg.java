@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * @author bin
  * @since 2023/08/22
@@ -21,4 +23,6 @@ public class HisMsg {
     private String type;
     private String msg;
     private Integer role;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

@@ -23,15 +23,16 @@
     </select>
 
     <select id="insert" resultType="long">
-        INSERT INTO his_msg (type, msg, role)
-        VALUES (#{type}, #{msg}, #{role})
+        INSERT INTO his_msg (type, msg, role, create_time, update_time)
+        VALUES (#{type}, #{msg}, #{role}, datetime(), datetime())
         returning id
     </select>
 
     <update id="update">
         update his_msg
-        set msg  = #{msg},
-            role = #{role}
+        set msg = #{msg},
+            role = #{role},
+            update_time = datetime()
         where id = #{id}
     </update>
 
