@@ -43,11 +43,6 @@ public class HisMsgConfigDataSource {
         bean.setConfiguration(configuration);
     }
 
-//    @Bean("msgDataSource")
-//    public DynamicRoutingDataSource dataSource() {
-//        return MsgDataSource.DATA_SOURCE;
-//    }
-
     @Bean("msgSqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         val bean = new MybatisSqlSessionFactoryBean();

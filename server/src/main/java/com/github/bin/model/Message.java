@@ -105,9 +105,6 @@ public sealed interface Message
         }
     }
 
-    @Getter
-    @AllArgsConstructor
-    final class RoomMessage implements Message {
-        private final Room room;
+    record RoomMessage(Room room) implements Message {
     }
 }

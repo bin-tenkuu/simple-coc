@@ -1,7 +1,10 @@
 package com.github.bin.service;
 
 import com.github.bin.config.MinIoConfig;
-import io.minio.*;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.StatObjectArgs;
 import io.minio.errors.MinioException;
 import lombok.val;
 import org.springframework.core.io.InputStreamResource;
@@ -66,14 +69,6 @@ public class FileService {
                     .build());
         }
         return filePath;
-    }
-
-    public void deleteFile(String filePath)
-            throws MinioException, IOException, GeneralSecurityException {
-        minioClient.removeObject(RemoveObjectArgs.builder()
-                .bucket(bucket)
-                .object(filePath)
-                .build());
     }
 
 }

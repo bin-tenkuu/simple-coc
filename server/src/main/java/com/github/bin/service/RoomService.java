@@ -50,10 +50,6 @@ public class RoomService {
         return roomConfig;
     }
 
-    public static RoomConfig set(String id, RoomConfig config) {
-        return ROOM_MAP.put(id, config);
-    }
-
     public static Collection<RoomConfig> values() {
         return ROOM_MAP.values();
     }
@@ -106,7 +102,7 @@ public class RoomService {
         return SqlHelper.retBool(roomMapper.deleteById(id));
     }
 
-    public static boolean saveOrUpdate(Room room) {
+    public static void saveOrUpdate(Room room) {
         val id = room.getId();
         val config = ROOM_MAP.get(id);
         if (config != null) {
@@ -120,7 +116,6 @@ public class RoomService {
             roomMapper.insert(room);
             MsgDataSource.addDataSource(id);
         }
-        return true;
     }
 
     public static ResponseEntity<Resource> exportHistoryMsg(String id) {

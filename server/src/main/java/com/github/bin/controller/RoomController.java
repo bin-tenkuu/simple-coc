@@ -50,7 +50,8 @@ public class RoomController {
     @Operation(summary = "创建/更新房间")
     @PostMapping("/room")
     public boolean postRoom(@Valid @RequestBody Room room) {
-        return RoomService.saveOrUpdate(room);
+        RoomService.saveOrUpdate(room);
+        return true;
     }
 
     @Operation(summary = "删除房间")

@@ -4,7 +4,6 @@ import com.github.bin.mapper.master.SysUserMapper;
 import com.github.bin.model.login.CustomUserDetails;
 import com.github.bin.service.RedisService;
 import com.github.bin.util.IdWorker;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -59,8 +58,7 @@ public class UserTokenService
     }
 
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-            throws IOException, ServletException {
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         getToken(request);
         response.setStatus(200);
         response.setContentType("application/json");
