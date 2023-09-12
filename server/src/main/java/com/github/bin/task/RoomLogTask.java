@@ -15,7 +15,7 @@ import java.io.File;
  */
 @Component
 @Slf4j
-public class RoomLogTask extends Thread implements InitializingBean {
+public class RoomLogTask implements InitializingBean {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void cleanLog() {
         val currentTimeMillis = System.currentTimeMillis();
@@ -40,7 +40,6 @@ public class RoomLogTask extends Thread implements InitializingBean {
         }
     }
 
-    @Override
     public void run() {
         val iterator = RoomService.fileIter();
         while (iterator.hasNext()) {
@@ -50,6 +49,11 @@ public class RoomLogTask extends Thread implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        Runtime.getRuntime().addShutdownHook(this);
+        Runtime.getRuntime().addShutdownHook(new Thread("cleanRoomLog") {
+            @Override
+            public void run() {
+                RoomLogTask.this.run();
+            }
+        });
     }
 }
