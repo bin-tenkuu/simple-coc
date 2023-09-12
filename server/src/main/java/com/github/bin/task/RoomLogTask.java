@@ -31,13 +31,13 @@ public class RoomLogTask implements InitializingBean {
     }
 
     private static boolean removeFile(File file) {
-        if (file.delete()) {
+        val delete = file.delete();
+        if (delete) {
             log.info("删除文件: {}", file.getName());
-            return true;
         } else {
             log.error("删除文件失败: {}", file.getName());
-            return false;
         }
+        return delete;
     }
 
     public void run() {

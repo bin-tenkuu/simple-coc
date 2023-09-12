@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 /**
@@ -24,6 +25,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 )
 @SpringBootApplication
 @EnableWebSocket
+@EnableScheduling
 public class ApplicationStarter implements ApplicationListener<ApplicationStartedEvent> {
     @Override
     public void onApplicationEvent(@NotNull ApplicationStartedEvent event) {

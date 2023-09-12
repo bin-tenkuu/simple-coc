@@ -1,8 +1,6 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-//    id("distribution")
-//    id("application")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
@@ -12,16 +10,19 @@ version = "1.0.0"
 
 dependencies {
     // spring
+    implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     // lombok
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
     compileOnly("org.jetbrains:annotations:24.0.1")
     // sql
     implementation("org.postgresql:postgresql:42.5.4")
@@ -49,22 +50,3 @@ tasks {
         archiveVersion.set("")
     }
 }
-
-//distributions {
-//    main {
-//        distributionBaseName = "server"
-//        contents {
-//            println(buildFile.absolutePath)
-//            from(rootDir.resolve("sql/hisMsg.db")) {
-//                into("sql")
-//            }
-//            from(projectDir.resolve("src/main/resources")) {
-//                exclude("mapper")
-//                into("config")
-//            }
-//            from(rootDir.resolve("front/dist")) {
-//                into("front/dist")
-//            }
-//        }
-//    }
-//}

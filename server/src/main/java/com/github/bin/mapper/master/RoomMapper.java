@@ -8,4 +8,5 @@ import com.github.bin.entity.master.Room;
  * @since 2023/08/22
  */
 public interface RoomMapper extends BaseMapper<Room> {
+
 }

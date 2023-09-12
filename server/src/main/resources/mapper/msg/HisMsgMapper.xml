@@ -12,8 +12,13 @@
         <result column="role" property="role"/>
     </resultMap>
 
+    <sql id="Base_Column_List">
+        id, type, msg, role
+    </sql>
+
     <select id="historyMsg" resultMap="BaseResultMap">
-        SELECT id, type, msg, role
+        SELECT
+        <include refid="Base_Column_List"/>
         FROM his_msg
         <if test="id != null">
             WHERE id &lt; #{id}
@@ -22,22 +27,26 @@
         limit #{limit}
     </select>
 
-    <select id="insert" resultType="long">
+    <select id="insert" resultMap="BaseResultMap">
         INSERT INTO his_msg (type, msg, role, create_time, update_time)
         VALUES (#{type}, #{msg}, #{role}, datetime(), datetime())
-        returning id
+        returning
+        <include refid="Base_Column_List"/>
     </select>
 
-    <update id="update">
+    <select id="update" resultMap="BaseResultMap">
         update his_msg
         set msg = #{msg},
             role = #{role},
             update_time = datetime()
         where id = #{id}
-    </update>
+        returning
+        <include refid="Base_Column_List"/>
+    </select>
 
     <select id="listAll" resultMap="BaseResultMap">
-        select id, type, msg, role
+        select
+        <include refid="Base_Column_List"/>
         from his_msg
         limit #{size} offset #{offset}
     </select>

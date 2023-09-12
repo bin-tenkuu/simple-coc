@@ -3,12 +3,12 @@ package com.github.bin.service;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.msg.HisMsgMapper;
+import com.github.bin.model.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author bin
@@ -28,9 +28,15 @@ public class HisMsgService {
         MsgDataSource.set(tableName);
     }
 
-    public static void accept(String tableName, Consumer<HisMsgMapper> block) {
+    public static HisMsg saveOrUpdate(String tableName, Message.Msg msg) {
         set(tableName);
-        block.accept(hisMsgMapper);
+        HisMsg hisMsg;
+        if (msg.getId() == null) {
+            hisMsg = hisMsgMapper.insert(msg.getType(), msg.getMsg(), msg.getRole());
+        } else {
+            hisMsg = hisMsgMapper.update(msg.getId(), msg.getMsg(), msg.getRole());
+        }
+        return hisMsg;
     }
 
     public static List<HisMsg> historyMsg(String tableName, Long id, int limit) {

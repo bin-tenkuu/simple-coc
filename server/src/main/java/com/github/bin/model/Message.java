@@ -70,7 +70,6 @@ public sealed interface Message
         private Long id;
         private int role = -1;
         private String msg = "";
-
     }
 
     @Getter

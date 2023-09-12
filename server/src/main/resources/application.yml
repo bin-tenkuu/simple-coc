@@ -51,3 +51,15 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       adjust-dates-to-context-time-zone: false
+  task:
+    execution:
+      thread-name-prefix: Exec-
+      pool:
+        allow-core-thread-timeout: true
+        core-size: 4
+        keep-alive: 60s
+        max-size: 16
+        queue-capacity: 64
+    scheduling:
+      pool.size: 3
+      thread-name-prefix: Task-

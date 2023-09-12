@@ -27,8 +27,6 @@ public class SysUser {
     private String nickname;
     @TableField("password")
     private String password;
-    @TableField("salt")
-    private String salt;
     @TableField("create_time")
     private LocalDateTime createTime;
     @TableField("update_time")

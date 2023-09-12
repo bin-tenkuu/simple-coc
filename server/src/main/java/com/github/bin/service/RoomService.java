@@ -5,9 +5,9 @@ import com.github.bin.command.Command;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
-import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.Message;
+import com.github.bin.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -66,6 +66,7 @@ public class RoomService {
     private static void addFile(File file) {
         val min10 = 10 * 60 * 1000L;
         FILE_MAP.put(file, System.currentTimeMillis() + min10);
+        log.info("添加文件: {}", file.getName());
     }
 
     public static Iterator<Map.Entry<File, Long>> fileIter() {
@@ -122,18 +123,6 @@ public class RoomService {
         return true;
     }
 
-    public static <T extends Message.Msg> void saveMsgAndSend(RoomConfig room, T msg, int role) {
-        msg.setRole(role);
-        HisMsgService.accept(room.getId(), hisMsgMapper -> {
-            if (msg.getId() == null) {
-                msg.setId(hisMsgMapper.insert(msg.getType(), msg.getMsg(), role));
-            } else {
-                hisMsgMapper.update(msg.getId(), msg.getMsg(), role);
-            }
-        });
-        room.sendAll(msg);
-    }
-
     public static ResponseEntity<Resource> exportHistoryMsg(String id) {
         val fileName = "logs/room/" + id + ".zip";
         val file = new File(fileName);
@@ -163,7 +152,7 @@ public class RoomService {
             try {
                 roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
                 for (val hisMsg : list) {
-                    roomConfig.send(id, toMessage(hisMsg));
+                    roomConfig.send(id, MessageUtil.toMessage(hisMsg));
                 }
             } catch (IOException e) {
                 IOUtils.closeQuietly(session);
@@ -186,7 +175,9 @@ public class RoomService {
                     && roleId != RoomConfig.BOT_ROLE
                     && message.getId() == null
                     && message.getMsg().startsWith(".");
-            saveMsgAndSend(roomConfig, message, roleId);
+            message.setRole(roleId);
+            val hisMsg = HisMsgService.saveOrUpdate(roomConfig.getId(), message);
+            roomConfig.sendAll(MessageUtil.toMessage(hisMsg));
             if (b) {
                 handleBot(roomConfig, id, message.getMsg().substring(1).trim());
             }
@@ -236,18 +227,6 @@ public class RoomService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static Message toMessage(HisMsg hisMsg) {
-        val id = hisMsg.getId();
-        val msg = hisMsg.getMsg();
-        val role = hisMsg.getRole();
-        return switch (hisMsg.getType()) {
-            case Message.TEXT -> new Message.Text(id, role, msg);
-            case Message.PIC -> new Message.Pic(id, role, msg);
-            case Message.SYS -> new Message.Sys(id, role, msg);
-            default -> new Message.Msgs();
-        };
     }
 
     private static String toHtml(String type, String msg, RoomRole role) {

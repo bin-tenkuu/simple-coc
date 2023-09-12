@@ -6,6 +6,7 @@ import com.github.bin.entity.master.RoomRole;
 import com.github.bin.model.Message;
 import com.github.bin.util.IdWorker;
 import com.github.bin.util.JsonUtil;
+import com.github.bin.util.MessageUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -122,12 +123,9 @@ public final class RoomConfig implements Closeable {
     }
 
     public void sendAsBot(String msg) {
-        val text = new Message.Text();
-        text.setMsg(msg);
-        text.setRole(RoomConfig.BOT_ROLE);
-        HisMsgService.accept(getId(), hisMsgMapper ->
-                text.setId(hisMsgMapper.insert(Message.TEXT, text.getMsg(), BOT_ROLE)));
-        sendAll(text);
+        val text = new Message.Text(null, RoomConfig.BOT_ROLE, msg);
+        val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
+        sendAll(MessageUtil.toMessage(hisMsg));
     }
 
 }
