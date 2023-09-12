@@ -23,10 +23,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -62,7 +59,20 @@ public class RoomService {
     }
 
     // endregion
+    // region FILE_MAP
 
+    public static final HashMap<File, Long> FILE_MAP = new HashMap<>();
+
+    private static void addFile(File file) {
+        val min10 = 10 * 60 * 1000L;
+        FILE_MAP.put(file, System.currentTimeMillis() + min10);
+    }
+
+    public static Iterator<Map.Entry<File, Long>> fileIter() {
+        return FILE_MAP.entrySet().iterator();
+    }
+
+    // endregion
     private static RoomMapper roomMapper;
 
     @Autowired
@@ -133,10 +143,8 @@ public class RoomService {
                 return ResponseEntity.ok(null);
             }
             createRoomLog(file, id, config.getRoles());
-        } else {
-            //noinspection ResultOfMethodCallIgnored
-            file.setLastModified(System.currentTimeMillis());
         }
+        addFile(file);
         val headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=room_" + id + ".zip");
         return ResponseEntity.ok()
