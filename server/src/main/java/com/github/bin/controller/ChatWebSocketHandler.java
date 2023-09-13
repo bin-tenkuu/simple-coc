@@ -1,5 +1,6 @@
 package com.github.bin.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.bin.model.Message;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.service.RoomService;
@@ -40,21 +41,24 @@ public class ChatWebSocketHandler implements WebSocketHandler {
             try {
                 val msg = JsonUtil.toBean(payload, Message.class);
                 RoomService.handleMessage(roomConfig, session, msg);
-            } catch (Exception e) {
-                log.warn("{} ({}) 消息格式错误: '{}'", session.getId(), getRemoteAddr(session), payload);
+            } catch (JsonProcessingException e) {
                 session.close(new CloseStatus(4000, "消息格式错误"));
+            } catch (Exception e) {
+                log.warn("{} ({}) 消息处理错误: '{}'", session.getId(), getRemoteAddr(session), payload, e);
+                session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
             }
         }
     }
 
     @Override
-    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable exception) throws Exception {
+    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws
+            Exception {
         val roomConfig = getRoom(session);
         roomConfig.removeClient(session);
         if (session.isOpen()) {
-            session.close(new CloseStatus(4000, "服务器错误:${exception.message}"));
+            session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
         }
-        log.warn("{} ({}) websocket 异常", session.getId(), getRemoteAddr(session), exception);
+        log.warn("{} ({}) websocket 异常", session.getId(), getRemoteAddr(session), e);
     }
 
     @Override

@@ -80,18 +80,14 @@ public class JsonUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T toBean(String json, Class<T> clazz) {
+    public static <T> T toBean(String json, Class<T> clazz) throws JsonProcessingException {
         if (json == null || json.isEmpty()) {
             return null;
         }
         if (String.class.isAssignableFrom(clazz)) {
             return (T) json;
         }
-        try {
-            return objectMapper.readValue(json, clazz);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return objectMapper.readValue(json, clazz);
     }
 
     public static <T> T toBean(String json, TypeReference<T> clazz) {
