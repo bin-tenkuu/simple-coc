@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.github.bin.util.NumberUtil.toIntOr;
 
@@ -61,7 +60,7 @@ public interface CocSbiScope {
     @Component
     class S extends Command.Regex {
         public S() {
-            super("^s\\s*(?<num>\\d*)d(?<max>\\d*)", Pattern.CASE_INSENSITIVE);
+            super("^s\\s*(?<num>\\d*)d(?<max>\\d*)");
         }
 
         @Override

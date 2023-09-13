@@ -1,7 +1,10 @@
 package com.github.bin.command;
 
+import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.RoomConfig;
 import org.springframework.stereotype.Component;
+
+import java.util.regex.Matcher;
 
 /**
  * @author bin
@@ -9,13 +12,13 @@ import org.springframework.stereotype.Component;
  */
 public interface HelperScope {
     @Component
-    class Ping extends Command.Simple {
+    class Ping extends Command.Regex {
         public Ping() {
-            super("ping");
+            super("^ping$");
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, String msg) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             roomConfig.sendAsBot("pong");
             return true;
         }

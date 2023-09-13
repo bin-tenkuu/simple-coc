@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.github.bin.util.NumberUtil.toIntOr;
@@ -23,7 +22,7 @@ public interface CocScope {
     @Component
     class D extends Command.Regex {
         public D() {
-            super(Pattern.compile("^d\\s*(?:(?<times>\\d+)#)?(?<dice>[+\\-*d\\d]+)", Pattern.CASE_INSENSITIVE));
+            super("^d\\s*(?:(?<times>\\d+)#)?(?<dice>[+\\-*d\\d]+)");
         }
 
         @Override
@@ -48,13 +47,13 @@ public interface CocScope {
 
     // dall1
     @Component
-    class Dall1 extends Command.Simple {
+    class Dall1 extends Command.Regex {
         public Dall1() {
-            super("dall1");
+            super("^dall1");
         }
 
         @Override
-        protected boolean handler(RoomConfig roomConfig, String id, String msg) {
+        protected boolean handler(RoomConfig roomConfig, String id, Matcher matcher, RoomRole roomRole) {
             CocService.cheater = !CocService.cheater;
             roomConfig.sendAsBot("全1" + (CocService.cheater ? "开" : "关"));
             return true;
@@ -65,7 +64,7 @@ public interface CocScope {
     @Component
     class Dp extends Command.Regex {
         public Dp() {
-            super(Pattern.compile("^dp\\s*(?<num>\\d*)"));
+            super("^dp\\s*(?<num>\\d*)");
         }
 
         @Override
@@ -94,7 +93,7 @@ public interface CocScope {
     @Component
     class R extends Command.Regex {
         public R() {
-            super(Pattern.compile("^r\\s*(?<num>\\d*)d(?<max>\\d+)\\s*(?<type>\\S*)"));
+            super("^r\\s*(?<num>\\d*)d(?<max>\\d+)\\s*(?<type>\\S*)");
         }
 
         @Override
