@@ -44,9 +44,22 @@ configurations {
 }
 
 tasks {
+    create("copyLib", Copy::class) {
+        group = "build"
+        into(projectDir.resolve("build/libs/lib"))
+        from(configurations.runtimeClasspath)
+    }
     withType<BootJar> {
         archiveBaseName.set("server")
         archiveAppendix.set("exec")
         archiveVersion.set("")
+//        exclude(configurations.runtimeClasspath.get().map { it.name })
+        exclude("*.jar")
+        mainClass = "com.github.bin.ApplicationStarter"
+        dependsOn("copyLib")
+        manifest {
+            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { "lib/" + it.name }
+        }
     }
 }
+
