@@ -19,7 +19,7 @@ public class DiceResult {
 
     public DiceResult(int size, int max) {
         this.size = Math.max(Math.min(size, 999), 1);
-        this.max = Math.max(Math.min(max, 999_999_999 + 1), 1);
+        this.max = Math.max(Math.min(max, 999_999_999), 1);
         this.sum = this.size;
         this.list = new int[this.size];
         Arrays.fill(this.list, 1);
@@ -39,8 +39,9 @@ public class DiceResult {
     public void dice() {
         long sum = 0;
         val random = new SecureRandom();
+        val max = this.max + 1;
         for (int i = 0; i < list.length; i++) {
-            val it = random.nextInt(1, this.max);
+            val it = random.nextInt(1, max);
             list[i] = it;
             sum += it;
         }
