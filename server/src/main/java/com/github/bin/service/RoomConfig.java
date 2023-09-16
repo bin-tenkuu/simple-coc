@@ -55,7 +55,7 @@ public final class RoomConfig implements Closeable {
         }
     }
 
-    public void unhold() {
+    public void unHold() {
         hold = false;
     }
 

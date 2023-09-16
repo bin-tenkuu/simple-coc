@@ -25,7 +25,7 @@ public class GcRoomTask {
                 iterator.remove();
             } else if (room.isEmpty()) {
                 log.info("准备清理房间: {}", room.getId());
-                room.unhold();
+                room.unHold();
             }
         }
     }
