@@ -1,14 +1,12 @@
 package com.github.bin.service;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.github.bin.command.Command;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.Message;
 import com.github.bin.util.MessageUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
@@ -32,7 +30,6 @@ import java.util.zip.ZipOutputStream;
  * @since 2023/08/22
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class RoomService {
     // region ROOM_MAP
@@ -75,13 +72,6 @@ public class RoomService {
     @Autowired
     public void setRoomMapper(RoomMapper roomMapper) {
         RoomService.roomMapper = roomMapper;
-    }
-
-    private static List<Command> commands;
-
-    @Autowired
-    public void setCommands(List<Command> commands) {
-        RoomService.commands = commands;
     }
 
     public static List<Room> rooms() {
@@ -141,8 +131,7 @@ public class RoomService {
         val id = session.getId();
         if (msg instanceof Message.Default defMsg) {
             // 更新角色，根据id获取历史消息
-            val roomRole = roomConfig.setRole(id, defMsg.getRole());
-            log.info("{} 进入 room '{}'，角色：{}", id, roomConfig.getId(), roomRole);
+            roomConfig.setRole(id, defMsg.getRole());
             val list = HisMsgService.historyMsg(roomConfig.getId(), defMsg.getId(), 20);
             try {
                 roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
@@ -174,21 +163,8 @@ public class RoomService {
             val hisMsg = HisMsgService.saveOrUpdate(roomConfig.getId(), message);
             roomConfig.sendAll(MessageUtil.toMessage(hisMsg));
             if (b) {
-                handleBot(roomConfig, id, message.getMsg().substring(1).trim());
+                CommandServer.handleBot(roomConfig, id, message.getMsg().substring(1).trim());
             }
-        }
-    }
-
-    private static void handleBot(RoomConfig roomConfig, String id, String msg) {
-        try {
-            for (val command : commands) {
-                if (command.invoke(roomConfig, id, msg)) {
-                    return;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("bot 处理异常", e);
-            roomConfig.sendAsBot("【ERROR】bot 处理异常，请联系管理员");
         }
     }
 

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -23,7 +24,11 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
                 version = "v1.0"
         )
 )
-@SpringBootApplication
+@SpringBootApplication(
+        exclude = {
+                UserDetailsServiceAutoConfiguration.class
+        }
+)
 @EnableWebSocket
 @EnableScheduling
 public class ApplicationStarter implements ApplicationListener<ApplicationStartedEvent> {

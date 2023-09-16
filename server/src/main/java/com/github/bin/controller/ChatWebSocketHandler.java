@@ -12,9 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
-import java.net.InetSocketAddress;
-import java.util.Optional;
-
 /**
  * @author bin
  * @since 2023/08/22
@@ -28,7 +25,6 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     public void afterConnectionEstablished(@NotNull WebSocketSession session) {
         val roomConfig = getRoom(session);
         roomConfig.addClient(session);
-        log.info("{} ({}) 连接 room '{}' ", session.getId(), getRemoteAddr(session), roomConfig.getId());
     }
 
     @Override
@@ -44,7 +40,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
             } catch (JsonProcessingException e) {
                 session.close(new CloseStatus(4000, "消息格式错误"));
             } catch (Exception e) {
-                log.warn("{} ({}) 消息处理错误: '{}'", session.getId(), getRemoteAddr(session), payload, e);
+                log.warn("{} 消息处理错误: '{}'", session.getId(), payload, e);
                 session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
             }
         }
@@ -53,19 +49,18 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     @Override
     public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws
             Exception {
+        log.warn("{} websocket 异常", session.getId(), e);
         val roomConfig = getRoom(session);
         roomConfig.removeClient(session);
         if (session.isOpen()) {
             session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
         }
-        log.warn("{} ({}) websocket 异常", session.getId(), getRemoteAddr(session), e);
     }
 
     @Override
     public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) {
         val roomConfig = getRoom(session);
         roomConfig.removeClient(session);
-        log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
     }
 
     @Override
@@ -77,9 +72,4 @@ public class ChatWebSocketHandler implements WebSocketHandler {
         return RoomService.get((String) session.getAttributes().get("roomId"));
     }
 
-    private String getRemoteAddr(WebSocketSession session) {
-        return Optional.ofNullable(session.getRemoteAddress())
-                .map(InetSocketAddress::getHostName)
-                .orElse("unknown");
-    }
 }

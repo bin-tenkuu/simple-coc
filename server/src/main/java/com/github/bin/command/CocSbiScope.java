@@ -6,9 +6,9 @@ import com.github.bin.service.RoomConfig;
 import com.github.bin.util.CacheMap;
 import com.github.bin.util.DiceResult;
 import lombok.val;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 
 import static com.github.bin.util.NumberUtil.toIntOr;
@@ -18,6 +18,12 @@ import static com.github.bin.util.NumberUtil.toIntOr;
  * @since 2023/08/23
  */
 public interface CocSbiScope {
+    static List<Command> getCommands() {
+        return List.of(
+                new S(),
+                new Sp()
+        );
+    }
 
     CacheMap<Integer, DiceResult> CACHE = new CacheMap<>();
 
@@ -57,7 +63,6 @@ public interface CocSbiScope {
     }
 
     // s
-    @Component
     class S extends Command.Regex {
         public S() {
             super("^s\\s*(?<num>\\d*)d(?<max>\\d*)");
@@ -81,7 +86,6 @@ public interface CocSbiScope {
     }
 
     // sp
-    @Component
     class Sp extends Command.Regex {
         public Sp() {
             super("^sp\\s*(?<num>\\d*)");

@@ -22,13 +22,12 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Slf4j
 public class RedisCacheAspect {
-    private final RedisService redis;
 
     @Around("@annotation(redisValue)")
     public Object around(ProceedingJoinPoint pjp, RedisValue redisValue) throws Throwable {
         if (pjp.getSignature() instanceof MethodSignature methodSignature) {
             val type = methodSignature.getMethod().getGenericReturnType();
-            val value = redis.getValue(redisValue.key());
+            val value = RedisService.getValue(redisValue.key());
             if (value != null) {
                 try {
                     return JsonUtil.toBean(value, JsonUtil.getJavaType(type));
@@ -40,7 +39,7 @@ public class RedisCacheAspect {
         val result = pjp.proceed();
         val json = JsonUtil.toJson(result);
         val timeout = Duration.of(redisValue.expire(), redisValue.timeUnit().toChronoUnit());
-        redis.setValue(redisValue.key(), json, timeout);
+        RedisService.setValue(redisValue.key(), json, timeout);
         return result;
     }
 }

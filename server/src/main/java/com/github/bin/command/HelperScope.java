@@ -2,8 +2,8 @@ package com.github.bin.command;
 
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.RoomConfig;
-import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.regex.Matcher;
 
 /**
@@ -11,7 +11,12 @@ import java.util.regex.Matcher;
  * @since 2023/08/23
  */
 public interface HelperScope {
-    @Component
+    static List<Command> getCommands() {
+        return List.of(
+                new Ping()
+        );
+    }
+
     class Ping extends Command.Regex {
         public Ping() {
             super("^ping$");

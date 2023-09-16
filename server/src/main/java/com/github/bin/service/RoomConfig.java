@@ -17,7 +17,9 @@ import org.springframework.web.socket.WebSocketSession;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -68,11 +70,14 @@ public final class RoomConfig implements Closeable {
     public void addClient(WebSocketSession session) {
         hold = true;
         clients.put(session.getId(), session);
+        log.info("{} ({}) 连接 room '{}' ", session.getId(), getRemoteAddr(session), getId());
     }
 
+    @SuppressWarnings("resource")
     public void removeClient(WebSocketSession session) {
         roles.remove(session.getId());
         clients.remove(session.getId());
+        log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
     }
 
     @Nullable
@@ -80,10 +85,10 @@ public final class RoomConfig implements Closeable {
         return roles.get(session);
     }
 
-    public RoomRole setRole(String session, @Nullable Integer roleId) {
+    public void setRole(String session, @Nullable Integer roleId) {
         val role = room.getRoles().get(roleId);
         roles.put(session, role);
-        return role;
+        log.info("{} room '{}'，切换角色：{}", session, getId(), role);
     }
 
     public void sendAll(Message msg) {
@@ -128,4 +133,9 @@ public final class RoomConfig implements Closeable {
         sendAll(MessageUtil.toMessage(hisMsg));
     }
 
+    private String getRemoteAddr(WebSocketSession session) {
+        return Optional.ofNullable(session.getRemoteAddress())
+                .map(InetSocketAddress::getHostName)
+                .orElse("unknown");
+    }
 }

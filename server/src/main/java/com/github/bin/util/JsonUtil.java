@@ -7,12 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author bin
@@ -20,13 +21,18 @@ import java.util.Objects;
  */
 @Component
 public class JsonUtil {
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
     };
 
     @Autowired
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        JsonUtil.objectMapper = Objects.requireNonNull(objectMapper);
+    public void setObjectMapper(Jackson2ObjectMapperBuilder builder) {
+        builder.configure(MAPPER);
+    }
+
+    @Bean
+    public ObjectMapper getObjectMapper() {
+        return MAPPER;
     }
 
     public static <T> String toJson(T value) {
@@ -37,7 +43,7 @@ public class JsonUtil {
             return value.toString();
         }
         try {
-            return objectMapper.writeValueAsString(value);
+            return MAPPER.writeValueAsString(value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +57,7 @@ public class JsonUtil {
             return value.toString().getBytes();
         }
         try {
-            return objectMapper.writeValueAsBytes(value);
+            return MAPPER.writeValueAsBytes(value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -62,7 +68,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.readValue(json, MAP_TYPE);
+            return MAPPER.readValue(json, MAP_TYPE);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +79,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.readTree(json);
+            return MAPPER.readTree(json);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -87,7 +93,7 @@ public class JsonUtil {
         if (String.class.isAssignableFrom(clazz)) {
             return (T) json;
         }
-        return objectMapper.readValue(json, clazz);
+        return MAPPER.readValue(json, clazz);
     }
 
     public static <T> T toBean(String json, TypeReference<T> clazz) {
@@ -95,7 +101,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.readValue(json, clazz);
+            return MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +112,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.readValue(json, clazz);
+            return MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +123,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.readValue(json, clazz);
+            return MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -128,8 +134,8 @@ public class JsonUtil {
             return null;
         }
         try {
-            val type = objectMapper.getTypeFactory().constructCollectionType(List.class, clazz);
-            return objectMapper.readValue(json, type);
+            val type = MAPPER.getTypeFactory().constructCollectionType(List.class, clazz);
+            return MAPPER.readValue(json, type);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -140,7 +146,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.convertValue(obj, clazz);
+            return MAPPER.convertValue(obj, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -151,7 +157,7 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.convertValue(obj, clazz);
+            return MAPPER.convertValue(obj, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -162,25 +168,25 @@ public class JsonUtil {
             return null;
         }
         try {
-            return objectMapper.convertValue(obj, clazz);
+            return MAPPER.convertValue(obj, clazz);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public static JavaType getJavaType(Type type) {
-        return objectMapper.getTypeFactory().constructType(type);
+        return MAPPER.getTypeFactory().constructType(type);
     }
 
     public static JavaType getListJavaType(Class<?> type) {
-        return objectMapper.getTypeFactory().constructCollectionType(List.class, type);
+        return MAPPER.getTypeFactory().constructCollectionType(List.class, type);
     }
 
     public static JavaType getMapJavaType(Class<?> key, Class<?> value) {
-        return objectMapper.getTypeFactory().constructMapType(Map.class, key, value);
+        return MAPPER.getTypeFactory().constructMapType(Map.class, key, value);
     }
 
     public static <T> JavaType getJavaType(TypeReference<T> type) {
-        return objectMapper.getTypeFactory().constructType(type);
+        return MAPPER.getTypeFactory().constructType(type);
     }
 }

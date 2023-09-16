@@ -41,10 +41,6 @@ public class CustomRedisTemplate extends RedisTemplate<String, Object> {
         CustomRedisSerializer.CLASS_CACHE.set(JsonUtil.getJavaType(type));
     }
 
-    public void clearTargetType() {
-        CustomRedisSerializer.CLASS_CACHE.remove();
-    }
-
     /**
      * 支持一下自定义序列化，防止值的二次序列化
      */

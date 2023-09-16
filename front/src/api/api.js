@@ -5,6 +5,19 @@ const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : locatio
 
 /**
  *
+ * @param res {axios.AxiosResponse<*>}
+ * @returns {*}
+ */
+function handleWarning(res) {
+    let header = res.headers['Warning'];
+    if (header) {
+        console.log(header)
+    }
+    return res.data
+}
+
+/**
+ *
  * @returns {Promise<Array<{id: string, name: string}>>}
  */
 export function getRooms() {
@@ -12,7 +25,7 @@ export function getRooms() {
         url: "/api/rooms",
         method: "get",
         baseURL: origin
-    }).then(res => res.data);
+    }).then(handleWarning);
 }
 
 /**
@@ -28,7 +41,7 @@ export function getRoom(id) {
         params: {
             id: id,
         }
-    }).then(res => res.data);
+    }).then(handleWarning);
 }
 
 /**
@@ -42,7 +55,7 @@ export function saveRoom(room) {
         method: "post",
         baseURL: origin,
         data: room
-    });
+    }).then(handleWarning);
 }
 
 /**
@@ -57,7 +70,7 @@ export function deleteRoom(id) {
         params: {
             id: id,
         },
-    });
+    }).then(handleWarning);
 }
 
 /**
@@ -77,4 +90,22 @@ export function downloadLog(id) {
  */
 export function newWebSocket(id) {
     return new WebSocket(`ws://${host}/ws/${id}`);
+}
+
+/**
+ *
+ * @param username {string}
+ * @param password {string}
+ * @returns {Promise<boolean>}
+ */
+export function login(username, password) {
+    return axios.request({
+        url: "/login",
+        method: "post",
+        baseURL: origin,
+        data: {
+            username: username,
+            password: password
+        }
+    }).then(handleWarning)
 }

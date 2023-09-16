@@ -5,9 +5,9 @@ import com.github.bin.service.CocService;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.util.DiceResult;
 import lombok.val;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -18,8 +18,16 @@ import static com.github.bin.util.NumberUtil.toIntOr;
  * @since 2023/08/23
  */
 public interface CocScope {
+    static List<Command> getCommands() {
+        return List.of(
+                new D(),
+                new Dall1(),
+                new Dp(),
+                new R()
+        );
+    }
+
     // d "掷骰子，附带简单计算（+-*），形如 '9#9d9+9'"
-    @Component
     class D extends Command.Regex {
         public D() {
             super("^d\\s*(?:(?<times>\\d+)#)?(?<dice>[+\\-*d\\d]+)");
@@ -46,7 +54,6 @@ public interface CocScope {
     }
 
     // dall1
-    @Component
     class Dall1 extends Command.Regex {
         public Dall1() {
             super("^dall1");
@@ -61,7 +68,6 @@ public interface CocScope {
     }
 
     // dp
-    @Component
     class Dp extends Command.Regex {
         public Dp() {
             super("^dp\\s*(?<num>\\d*)");
@@ -90,7 +96,6 @@ public interface CocScope {
     }
 
     // r
-    @Component
     class R extends Command.Regex {
         public R() {
             super("^r\\s*(?<num>\\d*)d(?<max>\\d+)\\s*(?<type>\\S*)");
