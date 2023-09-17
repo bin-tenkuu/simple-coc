@@ -100,7 +100,7 @@ export function newWebSocket(id) {
  */
 export function login(username, password) {
     return axios.request({
-        url: "/login",
+        url: "/api/login",
         method: "post",
         baseURL: origin,
         data: {

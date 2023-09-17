@@ -35,6 +35,10 @@ public class JsonUtil {
         return MAPPER;
     }
 
+    public static ObjectMapper getMapper() {
+        return MAPPER;
+    }
+
     public static <T> String toJson(T value) {
         if (value == null) {
             return "";

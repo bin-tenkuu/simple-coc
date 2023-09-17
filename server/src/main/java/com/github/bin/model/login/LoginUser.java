@@ -22,8 +22,23 @@ public class LoginUser {
     private String nickname;
 
     public void setSysUser(SysUser user) {
-        id = user.getId();
-        username = user.getUsername();
-        nickname = user.getNickname();
+        if (user == null) {
+            id = null;
+            username = null;
+            nickname = null;
+        } else {
+            id = user.getId();
+            username = user.getUsername();
+            nickname = user.getNickname();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "LoginUser{" +
+                "token='" + token + '\'' +
+                ", id=" + id +
+                ", username='" + username + '\'' +
+                '}';
     }
 }

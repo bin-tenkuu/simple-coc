@@ -56,6 +56,11 @@ public final class RedisService {
     // endregion
 
     // region hash
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getClass(T value) {
+        return (Class<T>) value.getClass();
+    }
+
     private static <V> HashOperations<String, String, V> opsForHash(Class<V> clazz) {
         redis.setTargetType(clazz);
         return redis.opsForHash();
@@ -73,7 +78,7 @@ public final class RedisService {
         if (value == null) {
             opsForHash(null).delete(key, hashKey);
         } else {
-            opsForHash((Class<T>) value.getClass()).put(key, hashKey, value);
+            opsForHash(getClass(value)).put(key, hashKey, value);
         }
     }
 

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author bin
@@ -29,12 +30,11 @@ public class UserLoginFilter implements Filter {
     private static final ThreadLocal<LoginUser> USER = new ThreadLocal<>();
     private static final Duration TIMEOUT = Duration.ofDays(1);
 
-    public static LoginUser getUser() {
-        return USER.get();
+    public static Optional<LoginUser> getUser() {
+        return Optional.ofNullable(USER.get());
     }
 
-    public static void refreshUser() {
-        val user = USER.get();
+    public static void refreshUser(final LoginUser user) {
         if (user != null) {
             RedisService.setValue("token:" + user.getToken(), user, TIMEOUT);
         }
@@ -69,12 +69,13 @@ public class UserLoginFilter implements Filter {
         USER.remove();
     }
 
-    private static @Nullable String getToken(HttpServletRequest request) {
+    @Nullable
+    private static String getToken(HttpServletRequest request) {
         val cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (AUTHORIZATION.equals(cookie.getName())) {
-                    return (cookie.getValue());
+                    return cookie.getValue();
                 }
             }
         }
@@ -101,7 +102,7 @@ public class UserLoginFilter implements Filter {
             renew = true;
         }
         if (renew) {
-            RedisService.setValue("token:" + user.getToken(), user, TIMEOUT);
+            refreshUser(user);
         }
     }
 
