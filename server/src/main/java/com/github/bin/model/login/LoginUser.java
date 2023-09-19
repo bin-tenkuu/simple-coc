@@ -3,6 +3,9 @@ package com.github.bin.model.login;
 import com.github.bin.entity.master.SysUser;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
+import java.util.Optional;
 
 /**
  * @author bin
@@ -11,13 +14,17 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString(includeFieldNames = false)
 public class LoginUser {
+    @ToString.Include
     private String token;
     private String remoteAddr;
     private String remoteHost;
     private String userAgent;
 
+    @ToString.Include
     private Long id;
+    @ToString.Include
     private String username;
     private String nickname;
 
@@ -33,12 +40,24 @@ public class LoginUser {
         }
     }
 
-    @Override
-    public String toString() {
-        return "LoginUser{" +
-                "token='" + token + '\'' +
-                ", id=" + id +
-                ", username='" + username + '\'' +
-                '}';
+    private static final ThreadLocal<LoginUser> USER = new ThreadLocal<>();
+
+    public static Optional<LoginUser> getUser() {
+        return Optional.ofNullable(USER.get());
     }
+
+    public static void setUser(LoginUser user) {
+        USER.set(user);
+    }
+
+    public static void remove() {
+        USER.remove();
+    }
+
+    public static Long getUserId() {
+        return Optional.ofNullable(USER.get())
+                .map(LoginUser::getId)
+                .orElse(null);
+    }
+
 }

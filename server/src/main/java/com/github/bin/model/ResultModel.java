@@ -2,7 +2,6 @@ package com.github.bin.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -12,7 +11,6 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class ResultModel<T> {
     private int code;
@@ -20,7 +18,7 @@ public class ResultModel<T> {
     private T data;
 
     public ResultModel(T data) {
-        this(0, "成功", null);
+        this(0, "成功", data);
     }
 
     public ResultModel(int code, String msg) {
@@ -31,7 +29,15 @@ public class ResultModel<T> {
         return new ResultModel<>(data);
     }
 
+    public static <T> ResultModel<T> success() {
+        return new ResultModel<>(null);
+    }
+
     public static <T> ResultModel<T> fail(int code, String msg) {
         return new ResultModel<>(code, msg);
+    }
+
+    public static <T> ResultModel<T> fail(String msg) {
+        return new ResultModel<>(1, msg);
     }
 }

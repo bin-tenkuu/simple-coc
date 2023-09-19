@@ -1,7 +1,20 @@
 import axios from "axios";
+import {ElMessage} from "element-plus";
 
 const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
 const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
+
+!((() => {
+    let authorization = localStorage.getItem("authorization");
+    if (authorization != null && !Number.isNaN(Number(authorization))) {
+        axios.defaults.headers.common['authorization'] = authorization
+    } else {
+        getId().then(res => {
+            localStorage.setItem("authorization", res);
+            axios.defaults.headers.common['authorization'] = res
+        })
+    }
+})());
 
 /**
  *
@@ -9,11 +22,29 @@ const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : locatio
  * @returns {*}
  */
 function handleWarning(res) {
-    let header = res.headers['Warning'];
-    if (header) {
-        console.log(header)
+    let data = res.data;
+    if (!data.code) {
+        return data.data
+    } else if (data.code === 1) {
+        ElMessage({
+            message: `失败:${data.msg}`,
+            type: 'error',
+            showClose: true
+        });
     }
-    return res.data
+    return Promise.reject(data.msg)
+}
+
+/**
+ *
+ * @returns {Promise<string>}
+ */
+function getId() {
+    return axios.request({
+        url: "/api/id",
+        method: "get",
+        baseURL: origin
+    }).then(handleWarning);
 }
 
 /**
@@ -107,5 +138,25 @@ export function login(username, password) {
             username: username,
             password: password
         }
+    }).then(handleWarning)
+}
+
+export function logout() {
+    return axios.request({
+        url: "/api/logout",
+        method: "get",
+        baseURL: origin,
+    }).then(handleWarning)
+}
+
+/**
+ *
+ * @returns {Promise<string>}
+ */
+export function userInfo() {
+    return axios.request({
+        url: "/api/userInfo",
+        method: "get",
+        baseURL: origin,
     }).then(handleWarning)
 }

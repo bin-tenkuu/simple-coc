@@ -2,12 +2,8 @@ package com.github.bin.config;
 
 import com.github.bin.model.login.LoginUser;
 import com.github.bin.service.RedisService;
-import com.github.bin.util.IdWorker;
 import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
@@ -16,23 +12,15 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author bin
  * @since 2023/09/12
  */
 @Service
-@WebFilter(filterName = "UserLoginFilter", urlPatterns = "/*")
 public class UserLoginFilter implements Filter {
     private static final String AUTHORIZATION = "Authorization";
-    private static final IdWorker ID_WORKER = new IdWorker(0L);
-    private static final ThreadLocal<LoginUser> USER = new ThreadLocal<>();
     private static final Duration TIMEOUT = Duration.ofDays(1);
-
-    public static Optional<LoginUser> getUser() {
-        return Optional.ofNullable(USER.get());
-    }
 
     public static void refreshUser(final LoginUser user) {
         if (user != null) {
@@ -42,44 +30,27 @@ public class UserLoginFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws ServletException, IOException {
-        if (servletRequest instanceof HttpServletRequest request
-                && servletResponse instanceof HttpServletResponse response) {
-            val cookie = new Cookie(AUTHORIZATION, "");
-            val key = getToken(request);
-            if (key != null) {
-                cookie.setValue(key);
-                var user = RedisService.getValue("token:" + key, LoginUser.class, TIMEOUT);
+        if (servletRequest instanceof HttpServletRequest request) {
+            val token = getToken(request);
+            if (token != null) {
+                var user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
                 var renew = false;
                 if (user == null) {
                     user = new LoginUser();
-                    user.setToken(key);
+                    user.setToken(token);
                     renew = true;
                 }
-                USER.set(user);
+                LoginUser.setUser(user);
                 checkRequest(user, renew, request);
-                cookie.setMaxAge(0);
-                response.addCookie(cookie);
-            } else {
-                cookie.setValue(Long.toString(ID_WORKER.nextId()));
             }
-            cookie.setMaxAge((int) TIMEOUT.getSeconds());
-            response.addCookie(cookie);
         }
         chain.doFilter(servletRequest, servletResponse);
-        USER.remove();
+        LoginUser.remove();
     }
 
     @Nullable
     private static String getToken(HttpServletRequest request) {
-        val cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (AUTHORIZATION.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
+        return request.getHeader(AUTHORIZATION);
     }
 
     private static void checkRequest(

@@ -3,6 +3,8 @@ package com.github.bin.controller;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.model.IdAndName;
+import com.github.bin.model.ResultModel;
+import com.github.bin.model.login.LoginUser;
 import com.github.bin.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,29 +37,43 @@ public class RoomController {
 
     @Operation(summary = "获取房间列表")
     @GetMapping("/rooms")
-    public List<IdAndName> rooms() {
-        return RoomService.rooms().stream()
+    public ResultModel<List<IdAndName>> rooms() {
+        val list = RoomService.rooms().stream()
                 .map(room -> new IdAndName(room.getId(), room.getName()))
                 .toList();
+        return ResultModel.success(list);
     }
 
     @Operation(summary = "获取房间信息")
     @GetMapping("/room")
-    public Room getRoom(@RequestParam String id) {
-        return RoomService.getById(id);
+    public ResultModel<Room> getRoom(@RequestParam String id) {
+        val room = RoomService.getById(id);
+        if (room == null) {
+            return ResultModel.fail("房间不存在");
+        }
+        val roomUserId = room.getUserId();
+        val userId = LoginUser.getUserId();
+        if (Room.ALL_USER.equals(roomUserId) || userId == null || userId.equals(roomUserId)) {
+            return ResultModel.success(room);
+        }
+        return ResultModel.fail("房间不存在");
     }
 
     @Operation(summary = "创建/更新房间")
     @PostMapping("/room")
-    public boolean postRoom(@Valid @RequestBody Room room) {
+    public ResultModel<?> postRoom(@Valid @RequestBody Room room) {
         RoomService.saveOrUpdate(room);
-        return true;
+        return ResultModel.success();
     }
 
     @Operation(summary = "删除房间")
     @GetMapping("/room/del")
-    public boolean deleteRoom(@RequestParam String id) {
-        return RoomService.removeById(id);
+    public ResultModel<?> deleteRoom(@RequestParam String id) {
+        if (RoomService.removeById(id)) {
+            return ResultModel.success();
+        } else {
+            return ResultModel.fail("删除失败");
+        }
     }
 
     @Operation(summary = "导出房间聊天记录")

@@ -1,4 +1,5 @@
 <template id="app">
+    <head-menu activeIndex="admin"/>
     <el-form>
         <el-form-item label="房间Id:">
             <el-select v-model="room.id"
@@ -95,9 +96,11 @@
 <script>
 import {ElNotification} from "element-plus";
 import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
+import HeadMenu from "@/views/headMenu.vue";
 
 export default {
     name: 'Admin-page',
+    components: {HeadMenu},
     data() {
         getRooms().then(data => {
             this.rooms = data

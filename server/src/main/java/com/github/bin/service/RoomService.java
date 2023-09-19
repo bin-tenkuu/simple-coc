@@ -1,11 +1,13 @@
 package com.github.bin.service;
 
+import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.Message;
+import com.github.bin.model.login.LoginUser;
 import com.github.bin.util.MessageUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -75,7 +77,9 @@ public class RoomService {
     }
 
     public static List<Room> rooms() {
-        return roomMapper.selectList(null);
+        return new QueryChainWrapper<>(roomMapper)
+                .in(Room.USER_ID, Room.ALL_USER, LoginUser.getUserId())
+                .list();
     }
 
     @Nullable
