@@ -334,7 +334,9 @@ export default {
                 id: this.minId,
                 role: this.role.id
             })
-            this.clear()
+            if (this.id) {
+                this.clear()
+            }
         },
         editMsg(id) {
             this.id = id
