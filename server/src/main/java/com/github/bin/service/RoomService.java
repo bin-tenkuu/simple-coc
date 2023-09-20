@@ -9,6 +9,7 @@ import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.Message;
 import com.github.bin.model.login.LoginUser;
 import com.github.bin.util.MessageUtil;
+import com.github.bin.util.ThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
@@ -137,14 +138,16 @@ public class RoomService {
             // 更新角色，根据id获取历史消息
             roomConfig.setRole(id, defMsg.getRole());
             val list = HisMsgService.historyMsg(roomConfig.getId(), defMsg.getId(), 20);
-            try {
-                roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
-                for (val hisMsg : list) {
-                    roomConfig.send(id, MessageUtil.toMessage(hisMsg));
+            ThreadUtil.execute(() -> {
+                try {
+                    roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
+                    for (val hisMsg : list) {
+                        roomConfig.send(id, MessageUtil.toMessage(hisMsg));
+                    }
+                } catch (IOException e) {
+                    IOUtils.closeQuietly(session);
                 }
-            } catch (IOException e) {
-                IOUtils.closeQuietly(session);
-            }
+            });
         } else if (msg instanceof Message.Msg message) {
             RoomRole role = roomConfig.getRole(id);
             if (role == null) {

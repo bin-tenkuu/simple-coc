@@ -7,6 +7,7 @@ import com.github.bin.model.Message;
 import com.github.bin.util.IdWorker;
 import com.github.bin.util.JsonUtil;
 import com.github.bin.util.MessageUtil;
+import com.github.bin.util.ThreadUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -18,6 +19,7 @@ import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,10 +75,12 @@ public final class RoomConfig implements Closeable {
         log.info("{} ({}) 连接 room '{}' ", session.getId(), getRemoteAddr(session), getId());
     }
 
-    @SuppressWarnings("resource")
     public void removeClient(WebSocketSession session) {
-        roles.remove(session.getId());
+        val role = roles.remove(session.getId());
         clients.remove(session.getId());
+        if (role != null) {
+            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 离开房间");
+        }
         log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
     }
 
@@ -87,22 +91,26 @@ public final class RoomConfig implements Closeable {
 
     public void setRole(String session, @Nullable Integer roleId) {
         val role = room.getRoles().get(roleId);
-        roles.put(session, role);
+        val oldRole = roles.put(session, role);
+        if (oldRole == null) {
+            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
+        } else {
+            sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
+        }
         log.info("{} room '{}'，切换角色：{}", session, getId(), role);
     }
 
     public void sendAll(Message msg) {
         val json = JsonUtil.toJson(msg);
         val textMessage = new TextMessage(json);
-        val iterator = clients.values().iterator();
-        while (iterator.hasNext()) {
-            val client = iterator.next();
-            try {
-                send(client, textMessage);
-            } catch (IOException e) {
-                iterator.remove();
-                IOUtils.closeQuietly(client);
-            }
+        for (WebSocketSession session : new ArrayList<>(clients.values())) {
+            ThreadUtil.execute(() -> {
+                try {
+                    send(session, textMessage);
+                } catch (IOException e) {
+                    IOUtils.closeQuietly(session);
+                }
+            });
         }
     }
 
@@ -120,7 +128,7 @@ public final class RoomConfig implements Closeable {
 
     @Override
     public void close() {
-        for (val client : clients.values()) {
+        for (val client : new ArrayList<>(clients.values())) {
             IoUtil.close(client);
         }
         clients.clear();
@@ -130,6 +138,12 @@ public final class RoomConfig implements Closeable {
     public void sendAsBot(String msg) {
         val text = new Message.Text(null, RoomConfig.BOT_ROLE, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
+        sendAll(MessageUtil.toMessage(hisMsg));
+    }
+
+    public void sendSys(int roleId, String msg) {
+        val sys = new Message.Sys(null, roleId, msg);
+        val hisMsg = HisMsgService.saveOrUpdate(getId(), sys);
         sendAll(MessageUtil.toMessage(hisMsg));
     }
 
