@@ -30,6 +30,12 @@ module.exports = defineConfig({
             filename: 'login.html',
             title: '登录 - 云聊天室',
         },
+        userInfo: {
+            entry: 'src/view/userInfo.js',
+            template: 'public/index.html',
+            filename: 'userInfo.html',
+            title: '用户信息',
+        }
     },
     transpileDependencies: true,
     productionSourceMap: process.env.NODE_ENV !== 'production',

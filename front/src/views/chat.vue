@@ -1,4 +1,4 @@
-<template id="app">
+<template>
     <div v-if="ws==null">
         <el-input v-model="room.id" style="width: 20em" clearable>
             <template #prepend>房间：</template>

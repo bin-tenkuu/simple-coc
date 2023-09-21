@@ -1,4 +1,4 @@
-<template id="app">
+<template>
     <head-menu activeIndex="admin"/>
     <el-form>
         <el-form-item label="房间Id:">
