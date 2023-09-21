@@ -35,7 +35,7 @@ module.exports = defineConfig({
             template: 'public/index.html',
             filename: 'userInfo.html',
             title: '用户信息',
-        }
+        },
     },
     transpileDependencies: true,
     productionSourceMap: process.env.NODE_ENV !== 'production',
