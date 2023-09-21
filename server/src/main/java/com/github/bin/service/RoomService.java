@@ -1,11 +1,11 @@
 package com.github.bin.service;
 
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.mapper.master.RoomMapper;
+import com.github.bin.model.IdAndName;
 import com.github.bin.model.Message;
 import com.github.bin.model.login.LoginUser;
 import com.github.bin.util.MessageUtil;
@@ -77,10 +77,8 @@ public class RoomService {
         RoomService.roomMapper = roomMapper;
     }
 
-    public static List<Room> rooms() {
-        return new QueryChainWrapper<>(roomMapper)
-                .in(Room.USER_ID, Room.ALL_USER, LoginUser.getUserId())
-                .list();
+    public static List<IdAndName> rooms() {
+        return roomMapper.listIdAndName();
     }
 
     @Nullable
@@ -99,14 +97,16 @@ public class RoomService {
 
     public static void saveOrUpdate(Room room) {
         val id = room.getId();
-        val config = ROOM_MAP.get(id);
-        if (config != null) {
-            val old = config.getRoom();
+        val config = get(id);
+        val old = config.getRoom();
+        if (old != null) {
             old.setName(room.getName());
             old.setRoles(room.getRoles());
+            old.setArchive(room.getArchive());
             roomMapper.updateById(old);
             config.sendAll(new Message.RoomMessage(old));
         } else {
+            room.setUserId(LoginUser.getUserId());
             ROOM_MAP.put(id, new RoomConfig(room));
             roomMapper.insert(room);
             MsgDataSource.addDataSource(id);

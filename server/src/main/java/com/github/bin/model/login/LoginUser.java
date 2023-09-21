@@ -4,6 +4,7 @@ import com.github.bin.entity.master.SysUser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 @Setter
 @ToString(includeFieldNames = false)
 public class LoginUser {
+    private static final Long DEFAULT_ID = 0L;
     @ToString.Include
     private String token;
     private String remoteAddr;
@@ -23,7 +25,7 @@ public class LoginUser {
     private String userAgent;
 
     @ToString.Include
-    private Long id;
+    private Long id = DEFAULT_ID;
     @ToString.Include
     private String username;
     private String nickname;
@@ -54,10 +56,11 @@ public class LoginUser {
         USER.remove();
     }
 
+    @NotNull
     public static Long getUserId() {
         return Optional.ofNullable(USER.get())
                 .map(LoginUser::getId)
-                .orElse(null);
+                .orElse(DEFAULT_ID);
     }
 
 }

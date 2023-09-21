@@ -38,9 +38,7 @@ public class RoomController {
     @Operation(summary = "获取房间列表")
     @GetMapping("/rooms")
     public ResultModel<List<IdAndName>> rooms() {
-        val list = RoomService.rooms().stream()
-                .map(room -> new IdAndName(room.getId(), room.getName()))
-                .toList();
+        val list = RoomService.rooms();
         return ResultModel.success(list);
     }
 
@@ -53,7 +51,7 @@ public class RoomController {
         }
         val roomUserId = room.getUserId();
         val userId = LoginUser.getUserId();
-        if (Room.ALL_USER.equals(roomUserId) || userId == null || userId.equals(roomUserId)) {
+        if (Room.ALL_USER.equals(roomUserId) || userId.equals(roomUserId)) {
             return ResultModel.success(room);
         }
         return ResultModel.fail("房间不存在");

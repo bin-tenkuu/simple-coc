@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.compress.utils.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -33,18 +34,30 @@ public final class RoomConfig implements Closeable {
     public static final int DEFAULT_ROLE = -1;
     public static final int BOT_ROLE = -10;
 
-    private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
-    private final HashMap<String, RoomRole> roles = new HashMap<>();
+    @NotNull
+    private final ConcurrentHashMap<String, WebSocketSession> clients;
+    @NotNull
+    private final HashMap<String, RoomRole> roles;
     @Getter
-    public final IdWorker idWorker = new IdWorker(0L);
+    public final IdWorker idWorker;
     @Getter
     private final Room room;
     @Getter
     private volatile boolean hold;
 
+    @SuppressWarnings("DataFlowIssue")
     public RoomConfig(Room room) {
         this.room = room;
         this.hold = room != null;
+        if (hold) {
+            clients = new ConcurrentHashMap<>();
+            roles = new HashMap<>();
+            idWorker = new IdWorker(0L);
+        } else {
+            clients = null;
+            roles = null;
+            idWorker = null;
+        }
     }
 
     public boolean isEnable() {
@@ -101,6 +114,9 @@ public final class RoomConfig implements Closeable {
     }
 
     public void sendAll(Message msg) {
+        if (isArchive()) {
+            return;
+        }
         val json = JsonUtil.toJson(msg);
         val textMessage = new TextMessage(json);
         for (WebSocketSession session : new ArrayList<>(clients.values())) {
@@ -115,6 +131,9 @@ public final class RoomConfig implements Closeable {
     }
 
     public void send(String id, Message msg) throws IOException {
+        if (isArchive()) {
+            return;
+        }
         val json = JsonUtil.toJson(msg);
         val session = clients.get(id);
         send(session, new TextMessage(json));
@@ -136,12 +155,18 @@ public final class RoomConfig implements Closeable {
     }
 
     public void sendAsBot(String msg) {
+        if (isArchive()) {
+            return;
+        }
         val text = new Message.Text(null, RoomConfig.BOT_ROLE, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
         sendAll(MessageUtil.toMessage(hisMsg));
     }
 
     public void sendSys(int roleId, String msg) {
+        if (isArchive()) {
+            return;
+        }
         val sys = new Message.Sys(null, roleId, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), sys);
         sendAll(MessageUtil.toMessage(hisMsg));
@@ -151,5 +176,9 @@ public final class RoomConfig implements Closeable {
         return Optional.ofNullable(session.getRemoteAddress())
                 .map(InetSocketAddress::getHostName)
                 .orElse("unknown");
+    }
+
+    private boolean isArchive() {
+        return room.getArchive();
     }
 }

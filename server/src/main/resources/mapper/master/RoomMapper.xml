@@ -10,10 +10,16 @@
         <result column="name" property="name"/>
         <result column="roles" property="roles" typeHandler="com.github.bin.config.handler.RoomHandler"/>
         <result column="user_id" property="userId"/>
+        <result column="archive" property="archive"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, name, roles, user_id
+        id, name, roles, user_id, archive
     </sql>
+
+    <select id="listIdAndName" resultType="com.github.bin.model.IdAndName">
+        select id ,name
+        from room
+    </select>
 </mapper>

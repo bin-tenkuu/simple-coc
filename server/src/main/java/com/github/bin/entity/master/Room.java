@@ -1,9 +1,6 @@
 package com.github.bin.entity.master;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.github.bin.config.handler.RoomHandler;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.ibatis.type.JdbcType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,24 +23,29 @@ import java.util.Map;
 @TableName(value = "room", resultMap = "BaseResultMap")
 public class Room {
     @NotBlank
+    @NotNull
     @Pattern(regexp = "^\\w+$", message = "房间ID只能包含字母、数字、下划线")
     @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     @TableField("name")
+    @NotBlank
     private String name;
 
     @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
     private Map<Integer, RoomRole> roles = new HashMap<>();
 
-    @TableField(USER_ID)
+    @TableField(value = USER_ID, updateStrategy = FieldStrategy.NEVER)
     private Long userId;
     public static final String USER_ID = "user_id";
+    public static final Long ALL_USER = 0L;
+
+    @TableField(value = "archive", insertStrategy = FieldStrategy.NEVER)
+    private Boolean archive;
 
     public void addRole(RoomRole role) {
         roles.put(role.getId(), role);
     }
 
-    public static final Long ALL_USER = 0L;
 }
 

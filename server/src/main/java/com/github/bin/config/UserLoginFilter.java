@@ -29,11 +29,12 @@ public class UserLoginFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws ServletException, IOException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
+            throws ServletException, IOException {
         if (servletRequest instanceof HttpServletRequest request) {
             val token = getToken(request);
             if (token != null) {
-                var user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
+                LoginUser user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
                 var renew = false;
                 if (user == null) {
                     user = new LoginUser();
@@ -41,7 +42,9 @@ public class UserLoginFilter implements Filter {
                     renew = true;
                 }
                 LoginUser.setUser(user);
-                checkRequest(user, renew, request);
+                if (checkRequest(user, renew, request)) {
+                    refreshUser(user);
+                }
             }
         }
         chain.doFilter(servletRequest, servletResponse);
@@ -53,7 +56,7 @@ public class UserLoginFilter implements Filter {
         return request.getHeader(AUTHORIZATION);
     }
 
-    private static void checkRequest(
+    private static boolean checkRequest(
             LoginUser user, boolean renew,
             HttpServletRequest request
     ) {
@@ -72,9 +75,7 @@ public class UserLoginFilter implements Filter {
             user.setUserAgent(userAgent);
             renew = true;
         }
-        if (renew) {
-            refreshUser(user);
-        }
+        return renew;
     }
 
 }
