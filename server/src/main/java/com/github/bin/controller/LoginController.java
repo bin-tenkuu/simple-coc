@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2023/9/16
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class LoginController {
     private final SysUserMapper sysUserMapper;

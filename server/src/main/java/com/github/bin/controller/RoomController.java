@@ -27,20 +27,20 @@ import java.util.List;
  */
 @Tag(name = "room")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/room")
 @AllArgsConstructor
 @Slf4j
 public class RoomController {
 
     @Operation(summary = "获取房间列表")
-    @GetMapping("/rooms")
+    @GetMapping("/list")
     public ResultModel<List<IdAndName>> rooms() {
         val list = RoomService.rooms();
         return ResultModel.success(list);
     }
 
     @Operation(summary = "获取房间信息")
-    @GetMapping("/room")
+    @GetMapping("/info")
     public ResultModel<Room> getRoom(@RequestParam String id) {
         val room = RoomService.getById(id);
         if (room == null) {
@@ -55,14 +55,14 @@ public class RoomController {
     }
 
     @Operation(summary = "创建/更新房间")
-    @PostMapping("/room")
+    @PostMapping("/info")
     public ResultModel<?> postRoom(@Valid @RequestBody Room room) {
         RoomService.saveOrUpdate(room);
         return ResultModel.success();
     }
 
     @Operation(summary = "删除房间")
-    @GetMapping("/room/del")
+    @GetMapping("/del")
     public ResultModel<?> deleteRoom(@RequestParam String id) {
         if (RoomService.removeById(id)) {
             return ResultModel.success();
@@ -72,13 +72,13 @@ public class RoomController {
     }
 
     @Operation(summary = "导出房间聊天记录")
-    @GetMapping("/room/logs")
+    @GetMapping("/logs")
     public ResponseEntity<Resource> getRoomLogs(@RequestParam String id) {
         return RoomService.exportHistoryMsg(id);
     }
 
     @Operation(summary = "导出房间聊天记录原始数据")
-    @GetMapping("/room/logs/db")
+    @GetMapping("/logs/db")
     public ResponseEntity<Resource> getRoomLogsDb(@RequestParam String id) {
         val dbUrl = MsgDataSource.getDbUrl(id);
         val headers = new HttpHeaders();

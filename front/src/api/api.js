@@ -1,5 +1,6 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
+// region base
 
 const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
 const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
@@ -35,17 +36,17 @@ function handleWarning(res) {
     return Promise.reject(data.msg)
 }
 
+// endregion
+
 /**
- *
- * @returns {Promise<string>}
+ * @param {string} id
+ * @returns {WebSocket}
  */
-function getId() {
-    return axios.request({
-        url: "/api/id",
-        method: "get",
-        baseURL: origin
-    }).then(handleWarning);
+export function newWebSocket(id) {
+    return new WebSocket(`ws://${host}/ws/${id}`);
 }
+
+// region room
 
 /**
  *
@@ -53,7 +54,7 @@ function getId() {
  */
 export function getRooms() {
     return axios.request({
-        url: "/api/rooms",
+        url: "/api/room/list",
         method: "get",
         baseURL: origin
     }).then(handleWarning);
@@ -66,7 +67,7 @@ export function getRooms() {
  */
 export function getRoom(id) {
     return axios.request({
-        url: "/api/room",
+        url: "/api/room/info",
         method: "get",
         baseURL: origin,
         params: {
@@ -82,7 +83,7 @@ export function getRoom(id) {
  */
 export function saveRoom(room) {
     return axios.request({
-        url: "/api/room",
+        url: "/api/room/info",
         method: "post",
         baseURL: origin,
         data: room
@@ -114,14 +115,8 @@ export function downloadLog(id) {
     );
 }
 
-
-/**
- * @param {string} id
- * @returns {WebSocket}
- */
-export function newWebSocket(id) {
-    return new WebSocket(`ws://${host}/ws/${id}`);
-}
+// endregion
+// region user
 
 /**
  *
@@ -160,3 +155,38 @@ export function userInfo() {
         baseURL: origin,
     }).then(handleWarning)
 }
+
+/**
+ *
+ * @returns {Promise<string>}
+ */
+function getId() {
+    return axios.request({
+        url: "/api/id",
+        method: "get",
+        baseURL: origin
+    }).then(handleWarning);
+}
+
+// endregion
+// region chat
+
+/**
+ *
+ * @param roomId {string}
+ * @param msgId {number}
+ * @returns {Promise<Array<{type:string, msg:string, role:string}>>}
+ */
+export function getHistoryMsg(roomId, msgId) {
+    return axios.request({
+        url: "/api/chat/historyMsg",
+        method: "get",
+        baseURL: origin,
+        params: {
+            roomId: roomId,
+            msgId: msgId
+        }
+    }).then(handleWarning)
+}
+
+// endregion

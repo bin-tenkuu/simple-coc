@@ -42,7 +42,6 @@ public class ChatController {
     }
 
     @GetMapping("/sseRoom")
-
     public SseEmitter sseRoom() {
         log.info("sseRoom");
         SseEmitter emitter = new SseEmitter();

@@ -64,7 +64,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import {UsrTiktok} from "@/formats/UsrTiktok";
 import {UsrShake} from "@/formats/UsrShake";
 import {Ruby} from "@/formats/ruby";
-import {newWebSocket} from "@/api/api";
+import {getHistoryMsg, newWebSocket} from "@/api/api";
 
 Quill.register({
     "modules/htmlEditButton": htmlEditButton,
@@ -334,6 +334,14 @@ export default {
             this.quill.setText("", 'api')
         },
         sendHistory() {
+            getHistoryMsg(this.room.id, this.minId).then(msgs => {
+                for (const msg of Array.from(msgs)) {
+                    this.setMsg(msg)
+                }
+            })
+            if (this.ws == null) {
+                return
+            }
             this.send({
                 type: "default",
                 id: this.minId,
