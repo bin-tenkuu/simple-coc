@@ -90,9 +90,9 @@ public final class RoomConfig implements Closeable {
     public void removeClient(WebSocketSession session) {
         val role = roles.remove(session.getId());
         clients.remove(session.getId());
-        if (role != null) {
-            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 离开房间");
-        }
+//        if (role != null) {
+//            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 离开房间");
+//        }
         log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
     }
 
@@ -105,10 +105,10 @@ public final class RoomConfig implements Closeable {
         val role = room.getRoles().get(roleId);
         val oldRole = roles.put(session, role);
         if (oldRole == null) {
-            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
+//            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
             log.info("{} room '{}'，进入房间：{}", session, getId(), role);
         } else if (oldRole != role) {
-            sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
+//            sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
             log.info("{} room '{}'，切换角色：{} -> {}", session, getId(), oldRole, role);
         }
     }
