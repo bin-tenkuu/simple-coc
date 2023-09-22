@@ -1,7 +1,14 @@
 package com.github.bin.config;
 
-import lombok.RequiredArgsConstructor;
+import com.github.bin.controller.ChatWebSocketHandler;
+import com.github.bin.service.RoomService;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -9,21 +16,20 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
+import java.util.Map;
+
 /**
  * @author bin
  * @since 2023/08/22
  */
 @Component
-@RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketConfigurer {
-
-    private final WebSocketHandler socketHandler;
-    private final HandshakeInterceptor interceptor;
+@Slf4j
+public class WebSocketConfig implements WebSocketConfigurer, HandshakeInterceptor {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(socketHandler, "/ws/{roomId}")
-                .addInterceptors(interceptor)
+        registry.addHandler(new ChatWebSocketHandler(), "/ws/{roomId}")
+                .addInterceptors(this)
                 .setAllowedOrigins("*");
     }
 
@@ -35,5 +41,36 @@ public class WebSocketConfig implements WebSocketConfigurer {
         container.setMaxBinaryMessageBufferSize(512000);
         container.setMaxSessionIdleTimeout(15 * 60000L);
         return container;
+    }
+
+    @Override
+    public boolean beforeHandshake(
+            @NotNull ServerHttpRequest request,
+            @NotNull ServerHttpResponse response,
+            @NotNull WebSocketHandler wsHandler,
+            @NotNull Map<String, Object> attributes
+    ) {
+        if (request instanceof ServletServerHttpRequest serverHttpRequest) {
+            val roomId = serverHttpRequest.getURI().getPath().substring(4);
+            val remoteHost = serverHttpRequest.getServletRequest().getRemoteAddr();
+            var config = RoomService.get(roomId);
+            // 外部保证 room 是有效room
+            if (!config.isEnable()) {
+                log.warn("'{}' 尝试连接 room '{}' （不存在）", remoteHost, roomId);
+                return false;
+            }
+            attributes.put("roomId", roomId);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void afterHandshake(
+            @NotNull ServerHttpRequest request,
+            @NotNull ServerHttpResponse response,
+            @NotNull WebSocketHandler wsHandler,
+            Exception exception) {
+
     }
 }

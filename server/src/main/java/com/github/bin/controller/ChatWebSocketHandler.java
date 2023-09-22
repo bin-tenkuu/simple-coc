@@ -5,20 +5,16 @@ import com.github.bin.model.Message;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.service.RoomService;
 import com.github.bin.util.JsonUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
 /**
  * @author bin
  * @since 2023/08/22
  */
-@Component
 @Slf4j
-@RequiredArgsConstructor
 public class ChatWebSocketHandler implements WebSocketHandler {
 
     @Override
