@@ -11,7 +11,6 @@ import com.github.bin.util.ThreadUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -124,7 +123,7 @@ public final class RoomConfig implements Closeable {
                 try {
                     send(session, textMessage);
                 } catch (IOException e) {
-                    IOUtils.closeQuietly(session);
+                    IoUtil.close(session);
                 }
             });
         }

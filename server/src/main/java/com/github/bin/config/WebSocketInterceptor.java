@@ -34,6 +34,7 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
             val roomId = serverHttpRequest.getURI().getPath().substring(4);
             val remoteHost = serverHttpRequest.getServletRequest().getRemoteAddr();
             var config = RoomService.get(roomId);
+            // 外部保证 room 是有效room
             if (!config.isEnable()) {
                 log.warn("'{}' 尝试连接 room '{}' （不存在）", remoteHost, roomId);
                 return false;

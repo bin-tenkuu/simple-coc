@@ -31,7 +31,7 @@ module.exports = defineConfig({
             title: '登录 - 云聊天室',
         },
         userInfo: {
-            entry: 'src/view/userInfo.js',
+            entry: 'src/views/userInfo.js',
             template: 'public/index.html',
             filename: 'userInfo.html',
             title: '用户信息',

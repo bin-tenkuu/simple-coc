@@ -1,15 +1,13 @@
 <template>
-1
+    <span>userInfo</span>
 </template>
 <script>
 export default {
-    name: 'userInfo-page',
+    name: 'user-info',
     data() {
         return {}
     },
     methods: {}
 }
 </script>
-<style>
 
-</style>

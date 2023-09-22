@@ -3,32 +3,44 @@
     <el-form>
         <el-form-item label="房间Id:">
             <el-select v-model="room.id"
-                       allow-create
-                       default-first-option
-                       filterable
-                       clearable>
+                       allow-create default-first-option
+                       filterable clearable
+            >
                 <el-option v-for="it in rooms" :key="it.id" :label="it.id" :value="it.id" @click="getRoom(it.id)">
                     <span style="float: left">{{ it.id }}</span>
                     <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">
-            {{ it.name }}
-          </span>
+                        {{ it.name }}
+                    </span>
                 </el-option>
             </el-select>
         </el-form-item>
         <el-form-item label="房间名:" style="width: 25%;">
             <el-input v-model="room.name"></el-input>
         </el-form-item>
+        <el-tooltip
+                class="box-item"
+                effect="dark"
+                placement="bottom-start"
+        >
+            <template #content>
+                归档后，房间将不再接收任何消息，但是可以继续查看历史消息
+            </template>
+            <el-form-item label="归档:">
+                <el-switch v-model="room.archive"></el-switch>
+            </el-form-item>
+        </el-tooltip>
         <span class="dialog-footer">
-      <el-button type="primary" @click="setRoom">保存房间</el-button>
-      <el-button type="info" @click="downloadLog">导出日志</el-button>
-      <el-button type="danger" @click="deleteRoom">删除房间</el-button>
-    </span>
+            <el-button type="primary" @click="setRoom">保存房间</el-button>
+            <el-button type="info" @click="downloadLog">导出日志</el-button>
+            <el-button type="danger" @click="deleteRoom">删除房间</el-button>
+        </span>
     </el-form>
     <el-table
             :data="Object.values(room.roles)"
             style="width: 100%;"
             table-layout="auto"
-            border stripe>
+            border stripe
+    >
         <el-table-column fixed prop="id" label="id" style="min-width: 50px"/>
         <el-table-column prop="name" label="name" style="min-width: 100px">
             <template #default="{ row }">
@@ -85,10 +97,10 @@
             </el-form-item>
         </el-form>
         <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="roleDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="addRole">确认</el-button>
-      </span>
+            <span class="dialog-footer">
+              <el-button @click="roleDialog.visible = false">取消</el-button>
+              <el-button type="primary" @click="addRole">确认</el-button>
+            </span>
         </template>
     </el-dialog>
 </template>
@@ -118,6 +130,7 @@ export default {
                  * @type {Record<number, {id: number, name: string, color: string}>}
                  */
                 roles: {},
+                archive: false,
             },
             roleDialog: {
                 visible: false,

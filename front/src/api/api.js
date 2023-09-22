@@ -62,7 +62,7 @@ export function getRooms() {
 /**
  *
  * @param {string?} id
- * @returns {Promise<Array<{id: string, name: string}>>}
+ * @returns {Promise<{id: string, name: string, roles:any, archive: boolean}>}
  */
 export function getRoom(id) {
     return axios.request({

@@ -20,10 +20,10 @@ allprojects {
 
     tasks {
         java {
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
         }
-        val jvmVersion = "21"
+        val jvmVersion = "17"
         withType<JavaCompile> {
             options.apply {
 //                isVerbose = true
