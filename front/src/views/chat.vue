@@ -1,6 +1,12 @@
 <template>
+    <div ref="chatLogs" id="chatLogs"></div>
+    <el-divider>
+        <el-icon>
+            <StarFilled/>
+        </el-icon>
+    </el-divider>
     <div v-if="ws==null">
-        <el-input v-model="room.id" style="width: 20em" clearable>
+        <el-input v-model="room.id" style="width: 20em" clearable @change="editRoomId">
             <template #prepend>房间：</template>
         </el-input>
         <br>
@@ -10,36 +16,22 @@
         <br>
         <el-button type="primary" @click="connect">进入房间</el-button>
     </div>
-    <div ref="chatLogs" id="chatLogs"></div>
-    <el-divider>
-        <el-icon>
-            <StarFilled/>
-        </el-icon>
-    </el-divider>
-    <div v-if="ws">
-        <el-space>
-            <span>
-
-            </span>
-            {{ this.role.name }}
-            <br>
-            <label>输入框：</label>
-            <el-button
-                    type="primary"
-                    :disabled="hasmessage"
-                    @click="sendMessage"
-            >
-                {{ id ? "修改" : "发送" }} (Ctrl+Enter)
-            </el-button>
-            <el-switch
-                    v-model="scrollDown"
-                    size="large"
-                    inline-prompt
-                    active-text="保持底部"
-                    inactive-text="自由滚动"
-                    @change="scroll"
-            />
-        </el-space>
+    <el-space>
+        <span>
+            {{ role.name }}
+        </span>
+        <label>输入框：</label>
+        <el-button type="info" @click="sendHistory" :disabled="minId<=1">20条历史消息</el-button>
+        <el-switch
+                v-model="scrollDown"
+                size="large"
+                inline-prompt
+                active-text="保持底部"
+                inactive-text="自由滚动"
+                @change="scroll"
+        />
+    </el-space>
+    <div v-if="ws!=null">
         <quill-editor
                 v-model:content="message"
                 content-type="html"
@@ -50,8 +42,13 @@
                 @update:content="updateContent"
         >
         </quill-editor>
-        <br>
-        <el-button type="info" @click="sendHistory" :disabled="minId<=1">20条历史消息</el-button>
+        <el-button
+                :type="id ? 'warning': 'primary'"
+                :disabled="hasmessage"
+                @click="sendMessage"
+        >
+            {{ id ? "修改" : "发送" }} (Ctrl+Enter)
+        </el-button>
         <el-button type="info" @click="clear">{{ id ? "取消" : "清空" }}</el-button>
         <el-button type="danger" @click="disconnect">离开房间</el-button>
     </div>
@@ -75,7 +72,7 @@ Quill.register({
     'blots/shake': UsrShake,
     'blots/ruby': Ruby,
 });
-let whitelist = ['0.8em', false, '2em', '4em', '8em', '16em', '32em'];
+let whitelist = ['0.8em', false, '2em', '4em', '8em', '16em'];
 let SizeStyle = Quill.imports['attributors/style/size'];
 SizeStyle.whitelist = whitelist;
 Quill.register(SizeStyle, true)
@@ -199,10 +196,6 @@ export default {
                     type: 'success',
                     duration: 1000,
                 });
-                this.chatLogs.textContent = ""
-                this.msgs = []
-                this.minId = Number.MAX_SAFE_INTEGER
-                this.maxId = -1
                 this.sendHistory()
             }
             /**
@@ -285,8 +278,13 @@ export default {
          */
         setInnerMsg(element, msg) {
             const role = this.room.roles[msg.role]
-            let innerHTML = `<span>&lt;${role.name}&gt;:</span>`
-            element.setAttribute("style", `--color: ${role.color};`)
+            let innerHTML;
+            if (role != null) {
+                innerHTML = `<span>&lt;${role.name}&gt;:</span>`;
+                element.setAttribute("style", `--color: ${role.color};`)
+            } else {
+                innerHTML = ""
+            }
             switch (msg.type) {
                 case "text": {
                     if (+msg.role === +this.role.id) {
@@ -324,6 +322,13 @@ export default {
             this.ws.close()
             this.ws = null
         },
+        editRoomId() {
+            this.chatLogs.textContent = ""
+            this.msgs = []
+            this.minId = Number.MAX_SAFE_INTEGER
+            this.maxId = -1
+            this.clear()
+        },
         clear() {
             this.id = null
             this.quill.setText("", 'api')
@@ -334,15 +339,15 @@ export default {
                 id: this.minId,
                 role: this.role.id
             })
-            if (this.id) {
-                this.clear()
-            }
         },
         editMsg(id) {
             this.id = id
             this.message = this.msgs[id].msg
         },
         sendMessage() {
+            if (this.ws == null) {
+                return
+            }
             /**
              * @type {string}
              */

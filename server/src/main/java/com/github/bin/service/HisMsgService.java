@@ -24,12 +24,12 @@ public class HisMsgService {
         HisMsgService.hisMsgMapper = hisMsgMapper;
     }
 
-    private static void set(String tableName) {
-        MsgDataSource.set(tableName);
+    private static void set(String roomId) {
+        MsgDataSource.set(roomId);
     }
 
-    public static HisMsg saveOrUpdate(String tableName, Message.Msg msg) {
-        set(tableName);
+    public static HisMsg saveOrUpdate(String roomId, Message.Msg msg) {
+        set(roomId);
         HisMsg hisMsg;
         if (msg.getId() == null) {
             hisMsg = hisMsgMapper.insert(msg.getType(), msg.getMsg(), msg.getRole());
@@ -39,18 +39,18 @@ public class HisMsgService {
         return hisMsg;
     }
 
-    public static List<HisMsg> historyMsg(String tableName, Long id, int limit) {
-        set(tableName);
+    public static List<HisMsg> historyMsg(String roomId, Long id, int limit) {
+        set(roomId);
         return hisMsgMapper.historyMsg(id, limit);
     }
 
-    public static List<HisMsg> listAll(String tableName, long offset, long size) {
-        set(tableName);
+    public static List<HisMsg> listAll(String roomId, long offset, long size) {
+        set(roomId);
         return hisMsgMapper.listAll(offset, size);
     }
 
-    public static Long count(String tableName) {
-        set(tableName);
+    public static Long count(String roomId) {
+        set(roomId);
         return hisMsgMapper.count();
     }
 }

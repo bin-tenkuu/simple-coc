@@ -108,7 +108,7 @@
 <script>
 import {ElNotification} from "element-plus";
 import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
-import HeadMenu from "@/views/headMenu.vue";
+import HeadMenu from "@/component/headMenu.vue";
 
 export default {
     name: 'Admin-page',

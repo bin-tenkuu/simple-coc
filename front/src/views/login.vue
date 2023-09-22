@@ -19,7 +19,7 @@
 <script>
 import {ElMessage} from "element-plus";
 import {login, userInfo} from "@/api/api";
-import HeadMenu from "@/views/headMenu.vue";
+import HeadMenu from "@/component/headMenu.vue";
 
 export default {
     name: "login-page",

@@ -106,10 +106,11 @@ public final class RoomConfig implements Closeable {
         val oldRole = roles.put(session, role);
         if (oldRole == null) {
             sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
-        } else {
+            log.info("{} room '{}'，进入房间：{}", session, getId(), role);
+        } else if (oldRole != role) {
             sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
+            log.info("{} room '{}'，切换角色：{} -> {}", session, getId(), oldRole, role);
         }
-        log.info("{} room '{}'，切换角色：{}", session, getId(), role);
     }
 
     public void sendAll(Message msg) {
