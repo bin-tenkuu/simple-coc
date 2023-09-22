@@ -5,24 +5,37 @@
             mode="horizontal"
     >
         <template v-if="loginName == null">
-            <el-menu-item index="login" @click="handleSelect">
+            <el-sub-menu>
                 <template #title>
-                    <el-icon>
-                        <House/>
-                    </el-icon>
-                    <span>登陆</span>
+                    选择登录/注册
                 </template>
-            </el-menu-item>
+                <el-menu-item index="login" @click="handleSelect">
+                    <template #title>
+                        <el-icon>
+                            <House/>
+                        </el-icon>
+                        <span>登陆</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="register" @click="handleSelect">
+                    <template #title>
+                        <el-icon>
+                            <House/>
+                        </el-icon>
+                        <span>注册</span>
+                    </template>
+                </el-menu-item>
+            </el-sub-menu>
         </template>
         <template v-else>
-            <el-sub-menu index="user">
+            <el-sub-menu>
                 <template #title>
                     <el-icon>
                         <User/>
                     </el-icon>
                     用户:{{ loginName }}
                 </template>
-                <el-menu-item index="1">
+                <el-menu-item index="userInfo" @click="handleSelect">
                     <template #title>
                         <el-icon>
                             <Tools/>
@@ -30,7 +43,7 @@
                         <span>个人中心</span>
                     </template>
                 </el-menu-item>
-                <el-menu-item index="2" @click="handleLogout">
+                <el-menu-item index="logout" @click="handleLogout">
                     <template #title>
                         <el-icon>
                             <CloseBold/>
@@ -73,16 +86,20 @@ export default {
             default: "login"
         }
     },
-    data() {
+    setup() {
         userInfo().then((name) => {
             this.loginName = name
         })
+    },
+    data() {
         return {
             loginName: null,
             route: {
                 login: "/login.html",
                 admin: "/admin.html",
                 chat: "/chat.html",
+                userInfo: "/userInfo.html",
+                register: "/register.html",
             }
         }
     },
@@ -92,6 +109,7 @@ export default {
         },
         handleLogout() {
             logout().finally()
+            location.href = this.route["login"]
         }
     }
 }

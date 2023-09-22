@@ -23,6 +23,13 @@ public class LoginController {
     private final SysUserMapper sysUserMapper;
     private final PasswordEncoder passwordEncoder;
 
+    private static final IdWorker ID_WORKER = new IdWorker(0L);
+
+    @GetMapping("/id")
+    public ResultModel<Long> id() {
+        return ResultModel.success(ID_WORKER.nextId());
+    }
+
     @PostMapping("/login")
     public ResultModel<?> login(@RequestBody SysUser user) {
         val sysUser = sysUserMapper.findByUsername(user.getUsername());
@@ -56,10 +63,10 @@ public class LoginController {
                 .orElse(ResultModel.fail(2, "未登录"));
     }
 
-    private static final IdWorker ID_WORKER = new IdWorker(0L);
-
-    @GetMapping("/id")
-    public ResultModel<Long> id() {
-        return ResultModel.success(ID_WORKER.nextId());
+    @GetMapping("/info")
+    public ResultModel<SysUser> info() {
+        val sysUser = sysUserMapper.selectById(LoginUser.getUserId());
+        return ResultModel.success(sysUser);
     }
+
 }
