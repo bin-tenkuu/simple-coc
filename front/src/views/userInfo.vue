@@ -1,27 +1,64 @@
 <template>
     <head-menu activeIndex="userInfo"/>
-    <el-divider>
-        <el-icon>
-            <star-filled/>
-        </el-icon>
-        操作
-        <el-icon>
-            <star-filled/>
-        </el-icon>
-    </el-divider>
-    <el-divider>
-        <el-icon>
-            <star-filled/>
-        </el-icon>
-        用户信息修改
-        <el-icon>
-            <star-filled/>
-        </el-icon>
-    </el-divider>
-    <el-form>
+    <el-collapse v-model="collapse.activeName" accordion>
+        <el-collapse-item name="action">
+            <template #title>
+                <el-icon>
+                    <star-filled/>
+                </el-icon>
+                操作
+                <el-icon>
+                    <star-filled/>
+                </el-icon>
+            </template>
+        </el-collapse-item>
+        <el-collapse-item name="password">
+            <template #title>
+                <el-icon>
+                    <star-filled/>
+                </el-icon>
+                修改密码
+                <el-icon>
+                    <star-filled/>
+                </el-icon>
+            </template>
+            <el-form>
+                <el-form-item>
+                    <el-input
+                            type="text"
+                            v-model="password.newPassword"
+                            placeholder="新密码"
+                            minlength="1"
+                            maxlength="20"
+                            show-password
+                            autofocus
+                            clearable
+                    >
+                        <template #prepend>
+                            新密码
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-input
+                            type="text"
+                            v-model="password.repeatPassword"
+                            placeholder="重复新密码"
+                            minlength="1"
+                            maxlength="20"
+                            show-password
+                            autofocus
+                            clearable
+                    >
 
-    </el-form>
-
+                        <template #prepend>
+                            重复新密码
+                        </template>
+                    </el-input>
+                </el-form-item>
+            </el-form>
+        </el-collapse-item>
+    </el-collapse>
 </template>
 <script>
 import HeadMenu from "@/component/headMenu.vue";
@@ -31,7 +68,15 @@ export default {
     name: 'user-info',
     components: {StarFilled, HeadMenu},
     data() {
-        return {}
+        return {
+            collapse: {
+                activeName: "action"
+            },
+            password: {
+                newPassword: "",
+                repeatPassword: ""
+            }
+        }
     },
     methods: {}
 }

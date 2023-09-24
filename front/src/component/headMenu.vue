@@ -105,7 +105,12 @@ export default {
     },
     methods: {
         handleSelect(key) {
-            location.href = this.route[key.index]
+            let routeElement = this.route[key.index];
+            if (routeElement != null) {
+                location.href = routeElement
+            } else {
+                location.href = "/"
+            }
         },
         handleLogout() {
             logout().finally()

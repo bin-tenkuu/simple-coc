@@ -5,7 +5,7 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-group = "com.starhz"
+group = "com.github.bin"
 version = "1.0.0"
 
 dependencies {
