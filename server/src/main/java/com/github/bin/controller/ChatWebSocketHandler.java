@@ -10,6 +10,8 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.socket.*;
 
+import java.io.IOException;
+
 /**
  * @author bin
  * @since 2023/08/22
@@ -43,9 +45,13 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws
-            Exception {
-        log.warn("{} websocket 异常", session.getId(), e);
+    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws Exception {
+        if (e instanceof IOException) {
+            log.warn("{} websocket IO异常: {}: {}", session.getId(), e.getClass(), e.getMessage());
+        } else {
+            log.warn("{} websocket 异常", session.getId(), e);
+        }
+
         val roomConfig = getRoom(session);
         roomConfig.removeClient(session);
         if (session.isOpen()) {
