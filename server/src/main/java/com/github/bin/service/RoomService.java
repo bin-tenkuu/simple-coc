@@ -50,6 +50,15 @@ public class RoomService {
         return roomConfig;
     }
 
+    public static RoomConfig getSafe(String id) {
+        var roomConfig = get(id);
+        if (roomConfig.isEnable()) {
+            return roomConfig;
+        } else {
+            return null;
+        }
+    }
+
     public static Collection<RoomConfig> values() {
         return ROOM_MAP.values();
     }

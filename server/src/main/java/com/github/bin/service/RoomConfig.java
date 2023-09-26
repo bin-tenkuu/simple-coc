@@ -34,27 +34,22 @@ public final class RoomConfig implements Closeable {
     public static final int BOT_ROLE = -10;
 
     @NotNull
-    private final ConcurrentHashMap<String, WebSocketSession> clients;
+    private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
     @NotNull
-    private final HashMap<String, RoomRole> roles;
+    private final HashMap<String, RoomRole> roles = new HashMap<>();
     @Getter
-    public final IdWorker idWorker;
+    private final IdWorker idWorker;
     @Getter
     private final Room room;
     @Getter
     private volatile boolean hold;
 
-    @SuppressWarnings("DataFlowIssue")
     public RoomConfig(Room room) {
         this.room = room;
         this.hold = room != null;
         if (hold) {
-            clients = new ConcurrentHashMap<>();
-            roles = new HashMap<>();
             idWorker = new IdWorker(0L);
         } else {
-            clients = null;
-            roles = null;
             idWorker = null;
         }
     }

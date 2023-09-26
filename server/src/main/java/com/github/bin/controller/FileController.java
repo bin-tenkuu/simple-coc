@@ -44,12 +44,16 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestPart MultipartFile mutipartFile, @RequestParam String name) {
-        val roomConfig = RoomService.get(name);
-        if (!roomConfig.isEnable()) {
+    public String upload(
+            @RequestPart MultipartFile mutipartFile,
+            @RequestParam String path,
+            @RequestParam String name
+    ) {
+        val roomConfig = RoomService.getSafe(name);
+        if (roomConfig == null) {
             return "404";
         }
-        val filePath = name + "/" + roomConfig.getIdWorker().nextId();
+        val filePath = name + "/" + path;
         try {
             return fileService.uploadFile(filePath, mutipartFile);
         } catch (Exception e) {
