@@ -109,6 +109,7 @@ public class RoomService {
         val config = get(id);
         val old = config.getRoom();
         if (old != null) {
+            old.setId(room.getId());
             old.setName(room.getName());
             old.setRoles(room.getRoles());
             old.setArchive(room.getArchive());
@@ -171,7 +172,7 @@ public class RoomService {
                 return;
             }
             val roleId = role.getId();
-            val b = message instanceof Message.Text
+            val b = message.getType().equals(Message.TEXT)
                     && roleId != RoomConfig.BOT_ROLE
                     && message.getId() == null
                     && message.getMsg().startsWith(".");

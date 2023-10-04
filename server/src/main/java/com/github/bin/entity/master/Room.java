@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.apache.ibatis.type.JdbcType;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +43,9 @@ public class Room {
 
     @TableField(value = "archive", insertStrategy = FieldStrategy.NEVER)
     private Boolean archive;
+
+    @TableField(value = "create_date", update = "CURRENT_DATE")
+    private LocalDate updateDate;
 
     public void addRole(RoomRole role) {
         roles.put(role.getId(), role);

@@ -26,8 +26,24 @@
                 <el-form-item>
                     <el-input
                             type="text"
+                            v-model="password.oldPassword"
+                            placeholder="旧密码(1-20字符)"
+                            minlength="1"
+                            maxlength="20"
+                            show-password
+                            autofocus
+                            clearable
+                    >
+                        <template #prepend>
+                            旧密码
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-input
+                            type="text"
                             v-model="password.newPassword"
-                            placeholder="新密码"
+                            placeholder="新密码(1-20字符)"
                             minlength="1"
                             maxlength="20"
                             show-password
@@ -42,15 +58,14 @@
                 <el-form-item>
                     <el-input
                             type="text"
-                            v-model="password.repeatPassword"
-                            placeholder="重复新密码"
+                            v-model="password.confirmPassword"
+                            placeholder="重复新密码(1-20字符)"
                             minlength="1"
                             maxlength="20"
                             show-password
                             autofocus
                             clearable
                     >
-
                         <template #prepend>
                             重复新密码
                         </template>
@@ -73,12 +88,15 @@ export default {
                 activeName: "action"
             },
             password: {
+                oldPassword: "",
                 newPassword: "",
-                repeatPassword: ""
+                confirmPassword: ""
             }
         }
     },
-    methods: {}
+    methods: {
+
+    }
 }
 </script>
 

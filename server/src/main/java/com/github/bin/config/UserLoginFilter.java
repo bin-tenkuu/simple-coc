@@ -6,6 +6,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +21,25 @@ import java.util.Objects;
  */
 @Service
 public class UserLoginFilter implements Filter {
-    private static final String AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION = "Authorization";
     private static final Duration TIMEOUT = Duration.ofDays(1);
 
     public static void refreshUser(final LoginUser user) {
         if (user != null) {
             RedisService.setValue("token:" + user.getToken(), user, TIMEOUT);
         }
+    }
+
+    @Bean
+    public FilterRegistrationBean<UserLoginFilter> filterRegistrationBean() {
+        val registration = new FilterRegistrationBean<>(this);
+        //过滤器名称
+        registration.setName("UserLoginFilter");
+        //拦截路径
+        registration.addUrlPatterns("/api/*");
+        //设置顺序
+        registration.setOrder(10);
+        return registration;
     }
 
     @Override
@@ -53,7 +67,11 @@ public class UserLoginFilter implements Filter {
 
     @Nullable
     private static String getToken(HttpServletRequest request) {
-        return request.getHeader(AUTHORIZATION);
+        val token = request.getHeader(AUTHORIZATION);
+        if (token != null) {
+            return token;
+        }
+        return request.getParameter(AUTHORIZATION);
     }
 
     private static boolean checkRequest(

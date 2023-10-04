@@ -54,7 +54,6 @@ tasks {
         archiveBaseName.set("server")
         archiveAppendix.set("exec")
         archiveVersion.set("")
-//        exclude(configurations.runtimeClasspath.get().map { it.name })
         exclude("*.jar")
         mainClass = "com.github.bin.ApplicationStarter"
         dependsOn("copyLib")

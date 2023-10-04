@@ -19,17 +19,19 @@ import java.util.List;
 @JsonSubTypes(
         value = {
                 @JsonSubTypes.Type(value = Message.Default.class, name = Message.DEFAULT),
-                @JsonSubTypes.Type(value = Message.Text.class, name = Message.TEXT),
-                @JsonSubTypes.Type(value = Message.Pic.class, name = Message.PIC),
-                @JsonSubTypes.Type(value = Message.Sys.class, name = Message.SYS),
                 @JsonSubTypes.Type(value = Message.Msgs.class, name = Message.MSGS),
                 @JsonSubTypes.Type(value = Message.RoomMessage.class, name = Message.ROOM),
+                @JsonSubTypes.Type(value = Message.Msg.class, names = {
+                        Message.TEXT,
+                        Message.PIC,
+                        Message.SYS,
+                }),
         },
         failOnRepeatedNames = true
 )
 public sealed interface Message
         permits Message.Default,
-        Message.Msg, Message.Text, Message.Pic, Message.Sys,
+        Message.Msg,
         Message.Msgs, Message.RoomMessage {
     String DEFAULT = "default";
     String TEXT = "text";
@@ -37,22 +39,6 @@ public sealed interface Message
     String SYS = "sys";
     String MSGS = "msgs";
     String ROOM = "room";
-
-    sealed interface Msg extends Message {
-        String getType();
-
-        Long getId();
-
-        void setId(Long id);
-
-        int getRole();
-
-        void setRole(int role);
-
-        String getMsg();
-
-        void setMsg(String msg);
-    }
 
     @Getter
     @Setter
@@ -65,34 +51,23 @@ public sealed interface Message
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    final class Text implements Message, Msg {
-        private final String type = TEXT;
-        private Long id;
-        private int role = -1;
-        private String msg = "";
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    final class Pic implements Message, Msg {
-        private final String type = PIC;
+    final class Msg implements Message {
+        private String type;
         private Long id;
         private int role = -1;
         private String msg = "";
 
-    }
+        public static Msg text(Long id, int role, String msg) {
+            return new Msg(TEXT, id, role, msg);
+        }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    final class Sys implements Message, Msg {
-        private final String type = SYS;
-        private Long id;
-        private int role = -1;
-        private String msg = "";
+        public static Msg pic(Long id, int role, String msg) {
+            return new Msg(PIC, id, role, msg);
+        }
+
+        public static Msg sys(Long id, int role, String msg) {
+            return new Msg(SYS, id, role, msg);
+        }
     }
 
     @Getter
@@ -105,6 +80,9 @@ public sealed interface Message
         }
     }
 
-    record RoomMessage(Room room) implements Message {
+    @Getter
+    @AllArgsConstructor
+    final class RoomMessage implements Message {
+        private final Room room;
     }
 }

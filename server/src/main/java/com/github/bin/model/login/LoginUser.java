@@ -4,6 +4,7 @@ import com.github.bin.entity.master.SysUser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -17,7 +18,7 @@ import java.util.Optional;
 @Setter
 @ToString(includeFieldNames = false)
 public class LoginUser {
-    private static final Long DEFAULT_ID = 0L;
+    public static final Long DEFAULT_ID = 0L;
     @ToString.Include
     private String token;
     private String remoteAddr;
@@ -44,8 +45,14 @@ public class LoginUser {
 
     private static final ThreadLocal<LoginUser> USER = new ThreadLocal<>();
 
+    @Contract(pure = true)
     public static Optional<LoginUser> getUser() {
         return Optional.ofNullable(USER.get());
+    }
+
+    @Contract(pure = true)
+    public static boolean isLogin() {
+        return USER.get() != null;
     }
 
     public static void setUser(LoginUser user) {
@@ -57,6 +64,7 @@ public class LoginUser {
     }
 
     @NotNull
+    @Contract(pure = true)
     public static Long getUserId() {
         return Optional.ofNullable(USER.get())
                 .map(LoginUser::getId)

@@ -15,9 +15,9 @@ public interface MessageUtil {
         val msg = hisMsg.getMsg();
         val role = hisMsg.getRole();
         return switch (hisMsg.getType()) {
-            case Message.TEXT -> new Message.Text(id, role, msg);
-            case Message.PIC -> new Message.Pic(id, role, msg);
-            case Message.SYS -> new Message.Sys(id, role, msg);
+            case Message.TEXT -> Message.Msg.text(id, role, msg);
+            case Message.PIC -> Message.Msg.pic(id, role, msg);
+            case Message.SYS -> Message.Msg.sys(id, role, msg);
             default -> new Message.Msgs();
         };
     }

@@ -153,7 +153,7 @@ public final class RoomConfig implements Closeable {
         if (isArchive()) {
             return;
         }
-        val text = new Message.Text(null, RoomConfig.BOT_ROLE, msg);
+        val text = Message.Msg.text(null, RoomConfig.BOT_ROLE, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
         sendAll(MessageUtil.toMessage(hisMsg));
     }
@@ -162,7 +162,7 @@ public final class RoomConfig implements Closeable {
         if (isArchive()) {
             return;
         }
-        val sys = new Message.Sys(null, roleId, msg);
+        val sys = Message.Msg.sys(null, roleId, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), sys);
         sendAll(MessageUtil.toMessage(hisMsg));
     }

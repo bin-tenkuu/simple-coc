@@ -21,8 +21,15 @@
     </sql>
 
     <select id="findByUsername" resultMap="BaseResultMap">
-        select <include refid="Base_Column_List"/>
+        select
+        <include refid="Base_Column_List"/>
         from sys_user
         where username = #{username}
     </select>
+
+    <update id="updatePassword">
+        update sys_user
+        set password = #{password}
+        where id = #{id}
+    </update>
 </mapper>

@@ -86,5 +86,10 @@ public final class RedisService {
         return opsForHash(String.class).entries(key);
     }
 
+    public static void removeHash(String key, String value) {
+        opsForHash(String.class).delete(key, value);
+    }
+
     // endregion
+
 }
