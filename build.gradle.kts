@@ -14,7 +14,7 @@ allprojects {
         mavenLocal()
         maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
     }
-    val jvmVersion = "17"
+    val jvmVersion = "21"
     java {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(jvmVersion))

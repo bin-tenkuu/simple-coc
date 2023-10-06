@@ -23,7 +23,7 @@ dependencies {
 //    implementation("org.springframework.security:spring-security-core")
     // lombok
     compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
     compileOnly("org.jetbrains:annotations:24.0.1")
     // sql
     implementation("org.postgresql:postgresql:42.5.4")
