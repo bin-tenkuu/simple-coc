@@ -1,6 +1,5 @@
 package com.github.bin.controller;
 
-import com.github.bin.config.UserLoginFilter;
 import com.github.bin.entity.master.SysUser;
 import com.github.bin.model.ResultModel;
 import com.github.bin.model.login.ChangePassword;
@@ -41,7 +40,7 @@ public class LoginController {
         if (passwordEncoder.matches(user.getPassword(), sysUser.getPassword())) {
             val token = String.valueOf(ID_WORKER.nextId());
             val loginUser = new LoginUser(token, sysUser);
-            UserLoginFilter.refreshUser(loginUser);
+            LoginUser.refreshUser(loginUser);
             return ResultModel.success(token);
         }
         return ResultModel.fail("用户名或密码错误");
@@ -49,19 +48,14 @@ public class LoginController {
 
     @GetMapping("/logout")
     public ResultModel<?> logout() {
-        LoginUser.getUser().ifPresent(loginUser -> {
-            loginUser.setSysUser(null);
-            UserLoginFilter.refreshUser(loginUser);
-        });
+        LoginUser.removeByToken(LoginUser.getUser());
         return ResultModel.success();
     }
 
     @GetMapping("/userInfo")
-    public ResultModel<String> userInfo() {
-        return LoginUser.getUser()
-                .map(LoginUser::getNickname)
-                .map(ResultModel::success)
-                .orElse(ResultModel.fail(2, "未登录"));
+    public ResultModel<LoginUser> userInfo() {
+        val user = LoginUser.getUser();
+        return ResultModel.success(user != null ? user : new LoginUser());
     }
 
     @GetMapping("/info")

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * @author bin
@@ -40,6 +41,10 @@ public final class RoomConfig implements Closeable {
     private final Room room;
     @Getter
     private volatile boolean hold;
+    /**
+     * 顶部消息,随意修改且不保存，不参与其他操作
+     */
+    public String topMessage;
 
     public RoomConfig(Room room) {
         this.room = room;
@@ -84,20 +89,24 @@ public final class RoomConfig implements Closeable {
         hold = true;
         val role = room.getRoles().get(roleId);
         val wrapper = new SessionWrapper(idWorker.nextId(), session, role);
-        sessions.put(id, wrapper);
-        val message = MessageOut.ElNotification.of(
-                "进入房间",
-                String.format("%s 进入房间", wrapper.role.getName()),
-                ElType.I, ElPosition.BL
-        );
-        sendAll(message);
-        log.info("{} ({}) room '{}'，进入房间：{}", wrapper.id, getRemoteAddr(session), getRoomId(), role);
+        val last = sessions.put(id, wrapper);
+        if (last == null) {
+            val message = MessageOut.ElNotification.of(
+                    String.format("%s 进入房间", wrapper.role.getName()),
+                    ElType.I, ElPosition.BL
+            );
+            sendAll(message);
+            log.info("{} ({}) room '{}'，进入角色：{}",
+                    wrapper.id, getRemoteAddr(session), getRoomId(), role);
+        } else if (!Objects.equals(wrapper.role, last.role)) {
+            log.info("{} ({}) room '{}'，切换角色：{} -> {}",
+                    wrapper.id, getRemoteAddr(session), getRoomId(), role, last.role);
+        }
     }
 
     public void removeClient(WebSocketSession session) {
         val wrapper = sessions.remove(session.getId());
         val message = MessageOut.ElNotification.of(
-                "离开房间",
                 String.format("%s 离开房间", wrapper.role.getName()),
                 ElType.W, ElPosition.BL
         );

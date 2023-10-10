@@ -22,8 +22,8 @@ public final class RedisService {
         RedisService.redis = redisTemplate;
     }
 
-    public static void setTimeout(String key, Duration timeout) {
-        redis.expire(key, timeout);
+    public static void remove(String key) {
+        redis.unlink(key);
     }
 
     // region Value

@@ -4,7 +4,7 @@
             class="el-menu-demo"
             mode="horizontal"
     >
-        <template v-if="loginName == null">
+        <template v-if="userInfo.id == null">
             <el-sub-menu>
                 <template #title>
                     选择登录/注册
@@ -33,7 +33,7 @@
                     <el-icon>
                         <User/>
                     </el-icon>
-                    用户:{{ loginName }}
+                    用户:{{ userInfo.nickname }}
                 </template>
                 <el-menu-item index="userInfo" @click="handleSelect">
                     <template #title>
@@ -87,13 +87,17 @@ export default {
         }
     },
     setup() {
-        userInfo().then((name) => {
-            this.loginName = name
+        userInfo().then((userInfo) => {
+            this.userInfo = userInfo
         })
     },
     data() {
         return {
-            loginName: null,
+            userInfo: {
+                id: null,
+                username: null,
+                nickname: null
+            },
             route: {
                 login: "/login.html",
                 admin: "/admin.html",

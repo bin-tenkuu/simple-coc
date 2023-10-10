@@ -18,20 +18,12 @@
 </template>
 <script>
 import {ElMessage} from "element-plus";
-import {login, userInfo} from "@/api/api";
+import {login} from "@/api/api";
 import HeadMenu from "@/component/headMenu.vue";
 
 export default {
     name: "login-page",
     components: {HeadMenu},
-    setup() {
-        userInfo().then((name) => {
-            this.loginName = name
-        })
-        return {
-            loginName: null
-        }
-    },
     data() {
         return {
             username: "",

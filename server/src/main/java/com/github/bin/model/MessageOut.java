@@ -22,6 +22,7 @@ public sealed interface MessageOut {
     final class RoomMessage implements MessageOut {
         private final String type = ROOM;
         private final Room room;
+        private final String topMessage;
     }
 
     @Getter
@@ -33,8 +34,8 @@ public sealed interface MessageOut {
         private final String elType;
         private final String position;
 
-        public static ElNotification of(String title, String message, ElType elType, ElPosition position) {
-            return new ElNotification(title, message, elType.getValue(), position.getValue());
+        public static ElNotification of(String title, ElType elType, ElPosition position) {
+            return new ElNotification(title, null, elType.getValue(), position.getValue());
         }
     }
 

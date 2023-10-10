@@ -94,6 +94,7 @@ export function newWebSocket() {
  * @property {string} id -
  * @property {string} name -
  * @property {Map<number,Role>} roles -
+ * @property {string} userId -
  * @property {boolean} archive -
  */
 
@@ -204,7 +205,7 @@ export function logout() {
 
 /**
  *
- * @returns {Promise<string>}
+ * @returns {Promise<{id: string, username: string, nickname: string}>}
  */
 export function userInfo() {
     return axios.request({

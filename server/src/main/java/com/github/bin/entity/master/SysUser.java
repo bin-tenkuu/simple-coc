@@ -8,12 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author bin
@@ -23,7 +19,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @TableName(value = "sys_user", resultMap = "BaseResultMap")
-public class SysUser implements UserDetails {
+public class SysUser {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     @TableField("user_name")
@@ -40,28 +36,4 @@ public class SysUser implements UserDetails {
     private LocalDateTime updateTime;
     @TableField("is_enable")
     private Boolean isEnable;
-
-    @TableField(exist = false)
-    private List<GrantedAuthority> authorities = new ArrayList<>();
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return false;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return isEnable;
-    }
-
 }

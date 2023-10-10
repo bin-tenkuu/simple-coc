@@ -1,10 +1,7 @@
 package com.github.bin.entity.master;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * @author bin
@@ -12,9 +9,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomRole {
+
+    @EqualsAndHashCode.Include
     private int id;
 
     @TableField("name")

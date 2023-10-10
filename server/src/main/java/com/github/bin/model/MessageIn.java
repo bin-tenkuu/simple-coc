@@ -50,4 +50,11 @@ public sealed interface MessageIn {
         private int role = -1;
         private String msg = "";
     }
+
+    @Getter
+    @Setter
+    final class TopMessage implements MessageIn {
+        private String topMessage;
+        private String token;
+    }
 }

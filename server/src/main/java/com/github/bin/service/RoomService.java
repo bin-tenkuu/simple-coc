@@ -81,6 +81,8 @@ public class RoomService {
     }
 
     // endregion
+    // region RoomMapper
+
     private static RoomMapper roomMapper;
 
     @Autowired
@@ -116,7 +118,7 @@ public class RoomService {
             old.setRoles(room.getRoles());
             old.setArchive(room.getArchive());
             roomMapper.updateById(old);
-            config.sendAll(new MessageOut.RoomMessage(old));
+            config.sendAll(new MessageOut.RoomMessage(old, config.topMessage));
         } else {
             room.setUserId(LoginUser.getUserId());
             ROOM_MAP.put(id, new RoomConfig(room));
@@ -125,39 +127,21 @@ public class RoomService {
         }
     }
 
-    public static ResponseEntity<Resource> exportHistoryMsg(String id) {
-        val fileName = "logs/room/" + id + ".zip";
-        val file = new File(fileName);
-        if (!file.isFile()) {
-            val config = getById(id);
-            if (config == null) {
-                return ResponseEntity.ok(null);
-            }
-            createRoomLog(file, id, config.getRoles());
-        }
-        addFile(file);
-        val headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=room_" + id + ".zip");
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new FileSystemResource(file));
-    }
-
+    // endregion
     // region handleMessage
 
     public static void handleMessage(WebSocketSession session, MessageIn msg) {
         switch (msg) {
             case MessageIn.Default defMsg -> handleMessage(session, defMsg);
             case MessageIn.Msg message -> handleMessage(session, message);
-            default -> {
-            }
+            case MessageIn.TopMessage topMessage -> handleMessage(session, topMessage);
+            default -> IOUtils.closeQuietly(session);
         }
     }
 
     private static void handleMessage(WebSocketSession session, MessageIn.Default defMsg) {
         val lastRoomConfig = getRoom(session);
-        if (lastRoomConfig != null) {
+        if (lastRoomConfig != null && !lastRoomConfig.getRoomId().equals(defMsg.getRoomId())) {
             lastRoomConfig.removeClient(session);
         }
         val roomConfig = get(defMsg.getRoomId());
@@ -172,7 +156,7 @@ public class RoomService {
         val list = HisMsgService.historyMsg(roomConfig.getRoomId(), defMsg.getId(), 20);
         ThreadUtil.execute(roomConfig, config -> {
             try {
-                config.send(id, new MessageOut.RoomMessage(config.getRoom()));
+                config.send(id, new MessageOut.RoomMessage(config.getRoom(), roomConfig.topMessage));
                 for (val hisMsg : list) {
                     config.send(id, MessageUtil.toMessage(hisMsg));
                 }
@@ -201,7 +185,7 @@ public class RoomService {
             role = roomRole.copy(message.getRole());
             roomConfig.getRoom().addRole(role);
             roomMapper.updateById(roomConfig.getRoom());
-            roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom()));
+            roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
             return;
         }
         val roleId = role.getId();
@@ -215,6 +199,16 @@ public class RoomService {
         if (b) {
             CommandServer.handleBot(roomConfig, id, message.getMsg().substring(1).trim());
         }
+    }
+
+    private static void handleMessage(WebSocketSession session, MessageIn.TopMessage topMessage) {
+        val roomConfig = getRoom(session);
+        if (roomConfig == null) {
+            IOUtils.closeQuietly(session);
+            return;
+        }
+        roomConfig.topMessage = topMessage.getTopMessage();
+        roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
     }
 
     public static void handleClose(WebSocketSession session) {
@@ -232,10 +226,30 @@ public class RoomService {
     private static RoomConfig getRoom(WebSocketSession session) {
         val roomId = (String) session.getAttributes().get("roomId");
         return getSafe(roomId);
-
     }
 
     // endregion
+    // region LogFile
+
+    public static ResponseEntity<Resource> exportHistoryMsg(String id) {
+        val fileName = "logs/room/" + id + ".zip";
+        val file = new File(fileName);
+        if (!file.isFile()) {
+            val config = getById(id);
+            if (config == null) {
+                return ResponseEntity.ok(null);
+            }
+            createRoomLog(file, id, config.getRoles());
+        }
+        addFile(file);
+        val headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=room_" + id + ".zip");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new FileSystemResource(file));
+    }
+
     private static void createRoomLog(File file, String id, Map<Integer, RoomRole> roles) {
         //noinspection ResultOfMethodCallIgnored
         file.getParentFile().mkdir();
@@ -280,4 +294,5 @@ public class RoomService {
         return sb.toString();
     }
 
+    // endregion
 }

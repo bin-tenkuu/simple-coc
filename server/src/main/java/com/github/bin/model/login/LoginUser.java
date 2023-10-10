@@ -1,13 +1,17 @@
 package com.github.bin.model.login;
 
+import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.SysUser;
+import com.github.bin.service.RedisService;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.Optional;
 
 /**
@@ -20,7 +24,6 @@ import java.util.Optional;
 @ToString(includeFieldNames = false)
 @NoArgsConstructor
 public class LoginUser {
-    public static final Long DEFAULT_ID = 0L;
     @ToString.Include
     private String token;
 
@@ -49,9 +52,28 @@ public class LoginUser {
 
     private static final ThreadLocal<LoginUser> USER = new ThreadLocal<>();
 
+    private static final Duration TIMEOUT = Duration.ofDays(1);
+
+    @Nullable
+    public static LoginUser getByToken(String token) {
+        return RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
+    }
+
+    public static void removeByToken(LoginUser user) {
+        if (user != null) {
+            RedisService.remove("token:" + user.token);
+        }
+    }
+
+    public static void refreshUser(final LoginUser user) {
+        if (user != null) {
+            RedisService.setValue("token:" + user.token, user, TIMEOUT);
+        }
+    }
+
     @Contract(pure = true)
-    public static Optional<LoginUser> getUser() {
-        return Optional.ofNullable(USER.get());
+    public static LoginUser getUser() {
+        return USER.get();
     }
 
     public static void setUser(LoginUser user) {
@@ -67,7 +89,7 @@ public class LoginUser {
     public static Long getUserId() {
         return Optional.ofNullable(USER.get())
                 .map(LoginUser::getId)
-                .orElse(DEFAULT_ID);
+                .orElse(Room.ALL_USER);
     }
 
 }

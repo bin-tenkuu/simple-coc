@@ -1,7 +1,6 @@
 package com.github.bin.config;
 
 import com.github.bin.model.login.LoginUser;
-import com.github.bin.service.RedisService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.val;
@@ -11,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.Duration;
 
 /**
  * @author bin
@@ -20,13 +18,6 @@ import java.time.Duration;
 @Service
 public class UserLoginFilter implements Filter {
     public static final String AUTHORIZATION = "Authorization";
-    private static final Duration TIMEOUT = Duration.ofDays(1);
-
-    public static void refreshUser(final LoginUser user) {
-        if (user != null) {
-            RedisService.setValue("token:" + user.getToken(), user, TIMEOUT);
-        }
-    }
 
     @Bean
     public FilterRegistrationBean<UserLoginFilter> filterRegistrationBean() {
@@ -46,10 +37,10 @@ public class UserLoginFilter implements Filter {
         if (servletRequest instanceof HttpServletRequest request) {
             val token = getToken(request);
             if (token != null) {
-                val user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
+                val user = LoginUser.getByToken(token);
                 if (user != null) {
                     LoginUser.setUser(user);
-                    refreshUser(user);
+                    LoginUser.refreshUser(user);
                     chain.doFilter(servletRequest, servletResponse);
                     LoginUser.remove();
                     return;

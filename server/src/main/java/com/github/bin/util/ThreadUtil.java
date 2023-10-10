@@ -26,6 +26,10 @@ public class ThreadUtil {
         EXECUTOR.setKeepAliveTime(1, TimeUnit.MINUTES);
     }
 
+    public static void execute(Runnable runnable) {
+        EXECUTOR.execute(runnable);
+    }
+
     public static <T> void execute(T t, Consumer<T> consumer) {
         EXECUTOR.execute(() -> consumer.accept(t));
     }

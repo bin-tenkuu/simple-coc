@@ -1,5 +1,9 @@
 <template>
-    <div ref="chatLogs" id="chatLogs"></div>
+    <el-affix style="width: 100%" class="chatLogs">
+        <!--<div class="chatLogs" v-html="message"></div>-->
+    </el-affix>
+    <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
+    <!--<div class="chatLogs" v-html="message"></div>-->
     <el-divider>
         <el-icon>
             <StarFilled/>
@@ -85,8 +89,6 @@ export default {
              * @type {HTMLDivElement}
              */
             chatLogs: ref(),
-            // 使用文档碎片节点优化性能
-            // chatLogs2: document.createDocumentFragment(),
         }
     },
     data() {
@@ -114,13 +116,14 @@ export default {
                     // noinspection JSUnresolvedReference
                     ElNotification({
                         title: json.title,
-                        message: json.msg,
+                        message: json.message,
                         type: json.elType,
                         position: json.position,
                     });
                     break;
-                case 'room':
+                case 'room': {
                     this.room = json["room"];
+                    this.topMessage = json["msg"];
                     let role = this.room.roles[this.role.id];
                     if (role != null) {
                         this.role.name = role.name
@@ -131,16 +134,14 @@ export default {
                     }
                     document.title = `${this.room.name} - ${this.role.name}`
                     break;
+                }
                 default:
                     this.setMsg(json)
                     break;
             }
         }
         return {
-            edit: {
-                inputVisible: false,
-                inputValue: "",
-            },
+            topMessage: null,
             room: {
                 id: "default",
                 name: "default",
@@ -162,9 +163,9 @@ export default {
             maxId: -1,
             scrollDown: true,
             /**
-             * @type {[{type:string,msg:string,role:string}]}
+             * @type {Array<HTMLDivElement>}
              */
-            msgs: [],
+            logHtmlNode: [],
             id: null,
             message: "<p><br></p>",
             hasmessage: true,
@@ -224,30 +225,34 @@ export default {
     },
     methods: {
         setMsg(json) {
-            if (json.type === 'msgs') {
-                try {
-                    for (const msg of Array.from(json.msgs)) {
-                        this.setMsg(msg)
-                    }
-                } catch (e) {
-                    console.error(json, e)
-                }
-            } else {
-                let jsonId = +json.id;
-                if (this.maxId < jsonId) {
-                    for (let i = this.maxId; i <= jsonId; i++) {
-                        this.chatLogs.appendChild(document.createElement("div"))
-                    }
+            let jsonId = +json.id;
+            let element = this.logHtmlNode[jsonId];
+            if (element == null) {
+                element = document.createElement("div");
+                this.logHtmlNode[jsonId] = element
+                if (this.logHtmlNode.length === 0) {
+                    this.chatLogs.appendChild(element)
+                    this.maxId = jsonId
+                    this.minId = jsonId
+                } else if (this.maxId < jsonId) {
+                    this.chatLogs.appendChild(element)
                     this.scroll()
                     this.maxId = jsonId
-                }
-                if (this.minId == null || this.minId > jsonId) {
+                } else if (jsonId < this.minId) {
+                    this.chatLogs.insertBefore(element, this.logHtmlNode[this.minId])
                     this.minId = jsonId
+                } else {
+                    // 中间消息需要手动查找后一个消息
+                    for (let i = jsonId; i < this.maxId; i++) {
+                        let item = this.logHtmlNode[i];
+                        if (item != null) {
+                            this.chatLogs.insertBefore(element, item)
+                            break;
+                        }
+                    }
                 }
-                let element = this.chatLogs.children[jsonId];
-                this.setInnerMsg(element, json)
-                this.msgs[jsonId] = json
             }
+            this.setInnerMsg(element, json)
         },
         /**
          *
@@ -274,10 +279,6 @@ export default {
                     innerHTML += "<span>" + msg.msg.replace(/\n/g, "<br/>") + "</span>"
                     break
                 }
-                case "pic": {
-                    innerHTML += `<img alt='img' src='${msg.msg}'/>`
-                    break
-                }
                 case "sys": {
                     innerHTML = `<i>${msg.msg}</i>`
                     break
@@ -295,7 +296,7 @@ export default {
         },
         editRoomId() {
             this.chatLogs.textContent = ""
-            this.msgs = []
+            this.logHtmlNode = []
             this.minId = Number.MAX_SAFE_INTEGER
             this.maxId = -1
             this.clear()
@@ -314,7 +315,7 @@ export default {
         },
         editMsg(id) {
             this.id = id
-            this.message = this.msgs[id].msg
+            this.message = this.logHtmlNode[id].lastElementChild.innerHTML
         },
         sendMessage() {
             /**
@@ -399,42 +400,42 @@ p {
     width: 100%;
 }
 
-#chatLogs > div:empty {
+.chatLogs > div:empty {
     display: none;
 }
 
-#chatLogs > div {
+.chatLogs > div {
     color: var(--color);
     padding: 0;
     display: flex;
     margin: 5px;
 }
 
-#chatLogs > div.edit:hover {
+.chatLogs > div.edit:hover {
     border: 1px solid #a0cfff;
     cursor: pointer;
 }
 
-#chatLogs > div.edit {
+.chatLogs > div.edit {
     border: 0;
     outline: 0;
 }
 
-#chatLogs > div:hover > .el-icon {
+.chatLogs > div:hover > .el-icon {
     display: inline;
     color: #a0cfff;
 }
 
-#chatLogs > div > .el-icon {
+.chatLogs > div > .el-icon {
     display: none;
 }
 
-#chatLogs > div > :nth-child(1) {
+.chatLogs > div > :nth-child(1) {
     font-weight: bold;
     margin-right: 10px;
 }
 
-#chatLogs > div > :nth-child(2) {
+.chatLogs > div > :nth-child(2) {
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
