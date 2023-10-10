@@ -32,23 +32,17 @@ public class LoginController {
 
     private static final IdWorker ID_WORKER = new IdWorker(0L);
 
-    @GetMapping("/id")
-    public ResultModel<Long> id() {
-        return ResultModel.success(ID_WORKER.nextId());
-    }
-
     @PostMapping("/login")
-    public ResultModel<?> login(@RequestBody LoginModel user) {
+    public ResultModel<String> login(@RequestBody LoginModel user) {
         val sysUser = sysUserService.findByUsername(user.getUsername());
         if (sysUser == null) {
             return ResultModel.fail("用户不存在");
         }
         if (passwordEncoder.matches(user.getPassword(), sysUser.getPassword())) {
-            LoginUser.getUser().ifPresent(loginUser -> {
-                loginUser.setSysUser(sysUser);
-                UserLoginFilter.refreshUser(loginUser);
-            });
-            return ResultModel.success();
+            val token = String.valueOf(ID_WORKER.nextId());
+            val loginUser = new LoginUser(token, sysUser);
+            UserLoginFilter.refreshUser(loginUser);
+            return ResultModel.success(token);
         }
         return ResultModel.fail("用户名或密码错误");
     }

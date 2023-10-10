@@ -8,12 +8,10 @@ import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Objects;
 
 /**
  * @author bin
@@ -48,52 +46,22 @@ public class UserLoginFilter implements Filter {
         if (servletRequest instanceof HttpServletRequest request) {
             val token = getToken(request);
             if (token != null) {
-                LoginUser user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
-                var renew = false;
-                if (user == null) {
-                    user = new LoginUser();
-                    user.setToken(token);
-                    renew = true;
-                }
-                LoginUser.setUser(user);
-                if (checkRequest(user, renew, request)) {
+                val user = RedisService.getValue("token:" + token, LoginUser.class, TIMEOUT);
+                if (user != null) {
+                    LoginUser.setUser(user);
                     refreshUser(user);
+                    chain.doFilter(servletRequest, servletResponse);
+                    LoginUser.remove();
+                    return;
                 }
             }
         }
         chain.doFilter(servletRequest, servletResponse);
-        LoginUser.remove();
     }
 
     @Nullable
     private static String getToken(HttpServletRequest request) {
-        val token = request.getHeader(AUTHORIZATION);
-        if (token != null) {
-            return token;
-        }
-        return request.getParameter(AUTHORIZATION);
-    }
-
-    private static boolean checkRequest(
-            LoginUser user, boolean renew,
-            HttpServletRequest request
-    ) {
-        val remoteAddr = request.getRemoteAddr();
-        if (renew || !Objects.equals(user.getRemoteAddr(), remoteAddr)) {
-            user.setRemoteAddr(remoteAddr);
-            renew = true;
-        }
-        val remoteHost = request.getRemoteHost();
-        if (renew || !Objects.equals(user.getRemoteHost(), remoteHost)) {
-            user.setRemoteHost(remoteHost);
-            renew = true;
-        }
-        val userAgent = request.getHeader(HttpHeaders.USER_AGENT);
-        if (renew || !Objects.equals(user.getUserAgent(), userAgent)) {
-            user.setUserAgent(userAgent);
-            renew = true;
-        }
-        return renew;
+        return request.getHeader(AUTHORIZATION);
     }
 
 }

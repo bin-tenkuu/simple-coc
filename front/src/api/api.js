@@ -10,11 +10,6 @@ const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : locatio
     let authorization = localStorage.getItem("authorization");
     if (authorization != null && !Number.isNaN(Number(authorization))) {
         axios.defaults.headers.common['authorization'] = authorization
-    } else {
-        getId().then(res => {
-            localStorage.setItem("authorization", res);
-            axios.defaults.headers.common['authorization'] = res
-        })
     }
 })());
 
@@ -193,7 +188,10 @@ export function login(username, password) {
             username: username,
             password: password
         }
-    }).then(handleWarning)
+    }).then(handleWarning).then(res => {
+        localStorage.setItem("authorization", res);
+        axios.defaults.headers.common['authorization'] = res
+    })
 }
 
 export function logout() {
@@ -213,45 +211,6 @@ export function userInfo() {
         url: "/api/userInfo",
         method: "get",
         baseURL: origin,
-    }).then(handleWarning)
-}
-
-/**
- *
- * @returns {Promise<string>}
- */
-function getId() {
-    return axios.request({
-        url: "/api/id",
-        method: "get",
-        baseURL: origin
-    }).then(handleWarning);
-}
-
-// endregion
-// region chat
-
-/**
- * @typedef {Object} Message
- * @property {string} type -
- * @property {string} msg -
- * @property {number} role -
- */
-/**
- *
- * @param roomId {string}
- * @param msgId {number}
- * @returns {Promise<Array<Message>>}
- */
-export function getHistoryMsg(roomId, msgId) {
-    return axios.request({
-        url: "/api/chat/historyMsg",
-        method: "get",
-        baseURL: origin,
-        params: {
-            roomId: roomId,
-            msgId: msgId
-        }
     }).then(handleWarning)
 }
 
