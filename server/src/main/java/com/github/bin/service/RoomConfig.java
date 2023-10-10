@@ -85,10 +85,6 @@ public final class RoomConfig implements Closeable {
         return wrapper == null ? null : wrapper.role;
     }
 
-    public boolean isArchive() {
-        return room.getArchive();
-    }
-
     public void addClient(String id, WebSocketSession session, Integer roleId) {
         hold = true;
         val role = room.getRoles().get(roleId);
@@ -156,7 +152,7 @@ public final class RoomConfig implements Closeable {
     }
 
     public void sendAsBot(MsgType type, String msg) {
-        if (isArchive()) {
+        if (getRoom().getArchive()) {
             return;
         }
         val text = new MessageIn.Msg(type, null, BOT_ROLE, msg);

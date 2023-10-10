@@ -22,17 +22,18 @@ public class GcRoomTask {
         while (iterator.hasNext()) {
             val room = iterator.next();
             if (!room.isHold()) {
-                log.info("清理房间: {}", room.getRoomId());
                 room.close();
                 iterator.remove();
+                sb.append("\n").append("清理房间: ").append(room.getRoomId());
             } else if (room.isEmpty()) {
-                log.info("准备清理房间: {}", room.getRoomId());
                 room.unHold();
-                sb.append("\n").append(room.getRoomId()).append(" : ").append("准备清理");
+                sb.append("\n").append("准备清理房间: ").append(room.getRoomId());
             } else {
                 sb.append("\n").append(room.getRoomId()).append(" : ").append(room.size()).append(" 个连接");
             }
         }
-        log.info(sb.toString());
+        if (!sb.isEmpty()) {
+            log.info(sb.toString());
+        }
     }
 }

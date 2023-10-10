@@ -1,6 +1,6 @@
 <template>
     <head-menu activeIndex="userInfo"/>
-    <el-collapse v-model="collapse.activeName" accordion>
+    <el-collapse v-model="collapse.activeName">
         <el-collapse-item name="action">
             <template #title>
                 <el-icon>
@@ -85,7 +85,7 @@ export default {
     data() {
         return {
             collapse: {
-                activeName: "action"
+                activeName: ["action", "password"]
             },
             password: {
                 oldPassword: "",
@@ -94,9 +94,7 @@ export default {
             }
         }
     },
-    methods: {
-
-    }
+    methods: {}
 }
 </script>
 

@@ -134,17 +134,17 @@ public class RoomService {
         switch (msg) {
             case MessageIn.Default defMsg -> handleMessage(session, defMsg);
             case MessageIn.Msg message -> handleMessage(session, message);
-            case MessageIn.TopMessage topMessage -> handleMessage(session, topMessage);
+            case MessageIn.Top top -> handleMessage(session, top);
             default -> IOUtils.closeQuietly(session);
         }
     }
 
     private static void handleMessage(WebSocketSession session, MessageIn.Default defMsg) {
-        val lastRoomConfig = getRoom(session);
-        if (lastRoomConfig != null && !lastRoomConfig.getRoomId().equals(defMsg.getRoomId())) {
-            lastRoomConfig.removeClient(session);
+        var roomConfig = getRoom(session);
+        if (roomConfig != null && !roomConfig.getRoomId().equals(defMsg.getRoomId())) {
+            roomConfig.removeClient(session);
         }
-        val roomConfig = get(defMsg.getRoomId());
+        roomConfig = get(defMsg.getRoomId());
         if (!roomConfig.isEnable()) {
             IOUtils.closeQuietly(session);
             return;
@@ -156,7 +156,7 @@ public class RoomService {
         val list = HisMsgService.historyMsg(roomConfig.getRoomId(), defMsg.getId(), 20);
         ThreadUtil.execute(roomConfig, config -> {
             try {
-                config.send(id, new MessageOut.RoomMessage(config.getRoom(), roomConfig.topMessage));
+                config.send(id, new MessageOut.RoomMessage(config.getRoom(), config.topMessage));
                 for (val hisMsg : list) {
                     config.send(id, MessageUtil.toMessage(hisMsg));
                 }
@@ -172,7 +172,7 @@ public class RoomService {
             IOUtils.closeQuietly(session);
             return;
         }
-        if (roomConfig.isArchive()) {
+        if (roomConfig.getRoom().getArchive()) {
             return;
         }
         val id = session.getId();
@@ -201,13 +201,22 @@ public class RoomService {
         }
     }
 
-    private static void handleMessage(WebSocketSession session, MessageIn.TopMessage topMessage) {
+    private static void handleMessage(WebSocketSession session, MessageIn.Top top) {
         val roomConfig = getRoom(session);
         if (roomConfig == null) {
             IOUtils.closeQuietly(session);
             return;
         }
-        roomConfig.topMessage = topMessage.getTopMessage();
+        val user = LoginUser.getByToken(top.getToken());
+        val roomUserId = roomConfig.getRoom().getUserId();
+        if (!roomUserId.equals(0L)) {
+            if (user == null || user.getId() == null
+                    || !Objects.equals(roomUserId, user.getId())) {
+                IOUtils.closeQuietly(session);
+                return;
+            }
+        }
+        roomConfig.topMessage = top.getMessage();
         roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
     }
 

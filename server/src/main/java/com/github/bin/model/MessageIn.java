@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
                         MessageIn.PIC,
                         MessageIn.SYS,
                 }),
+                @JsonSubTypes.Type(value = MessageIn.Top.class, name = MessageIn.TOP),
         },
         failOnRepeatedNames = true
 )
@@ -30,6 +31,7 @@ public sealed interface MessageIn {
     String TEXT = "text";
     String PIC = "pic";
     String SYS = "sys";
+    String TOP = "top";
 
     @Getter
     @Setter
@@ -53,8 +55,8 @@ public sealed interface MessageIn {
 
     @Getter
     @Setter
-    final class TopMessage implements MessageIn {
-        private String topMessage;
+    final class Top implements MessageIn {
+        private String message;
         private String token;
     }
 }

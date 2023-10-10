@@ -1,6 +1,6 @@
 <template>
-    <el-affix style="width: 100%" class="chatLogs">
-        <div :class="token!=null?'edit':''" v-html="topMessage"></div>
+    <el-affix style="width: 100%;background: rgba(255,255,255,0.5);" class="chatLogs">
+        <div v-html="topMessage"></div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="ws.connected" class="chatLogs">
@@ -32,7 +32,7 @@
             {{ role.name }}
         </span>
         <label>输入框：</label>
-        <el-button type="info" @click="sendHistory" :disabled="minId<=1">20条历史消息</el-button>
+        <el-button type="info" @click="sendHistory(minId)" :disabled="minId<=1">20条历史消息</el-button>
         <el-switch
                 v-model="scrollDown"
                 size="large"
@@ -59,6 +59,13 @@
                 @click="sendMessage"
         >
             {{ id ? "修改" : "发送" }} (Ctrl+Enter)
+        </el-button>
+        <el-button
+                type="success"
+                :disabled="hasmessage"
+                @click="sendTopMessage"
+        >
+            作为顶部消息发送
         </el-button>
         <el-button type="info" @click="clear">{{ id ? "取消" : "清空" }}</el-button>
         <el-button type="danger" @click="ws.disconnect()">离开房间</el-button>
@@ -87,6 +94,11 @@ let whitelist = ['0.8em', false, '2em', '4em', '8em', '16em'];
 let SizeStyle = Quill.imports['attributors/style/size'];
 SizeStyle.whitelist = whitelist;
 Quill.register(SizeStyle, true)
+
+/**
+ * @type {Array<HTMLDivElement>}
+ */
+let logHtmlNode = [];
 export default {
     name: 'Index-page',
     components: {Key, Edit, Plus, StarFilled, QuillEditor},
@@ -115,7 +127,7 @@ export default {
                 duration: 1000,
                 showClose: true,
             });
-            this.sendHistory()
+            this.sendHistory(null)
         }
         ws.onMessage = (json) => {
             switch (json.type) {
@@ -130,7 +142,7 @@ export default {
                     break;
                 case 'room': {
                     this.room = json["room"];
-                    this.topMessage = json["msg"];
+                    this.topMessage = json["topMessage"];
                     let role = this.room.roles[this.role.id];
                     if (role != null) {
                         this.role.name = role.name
@@ -148,7 +160,7 @@ export default {
             }
         }
         return {
-            topMessage: null,
+            topMessage: "",
             token: localStorage.getItem("authorization"),
             room: {
                 id: "default",
@@ -167,13 +179,9 @@ export default {
              * @type {WsWrapper}
              */
             ws: ws,
-            minId: Number.MAX_SAFE_INTEGER,
-            maxId: -1,
+            minId: null,
+            maxId: null,
             scrollDown: true,
-            /**
-             * @type {Array<HTMLDivElement>}
-             */
-            logHtmlNode: [],
             id: null,
             message: "<p><br></p>",
             hasmessage: true,
@@ -234,11 +242,11 @@ export default {
     methods: {
         setMsg(json) {
             let jsonId = +json.id;
-            let element = this.logHtmlNode[jsonId];
+            let element = logHtmlNode[jsonId];
             if (element == null) {
                 element = document.createElement("div");
-                this.logHtmlNode[jsonId] = element
-                if (this.logHtmlNode.length === 0) {
+                this.setInnerMsg(element, json)
+                if (logHtmlNode.length === 0) {
                     this.chatLogs.appendChild(element)
                     this.maxId = jsonId
                     this.minId = jsonId
@@ -247,20 +255,22 @@ export default {
                     this.scroll()
                     this.maxId = jsonId
                 } else if (jsonId < this.minId) {
-                    this.chatLogs.insertBefore(element, this.logHtmlNode[this.minId])
+                    this.chatLogs.insertBefore(element, logHtmlNode[this.minId])
                     this.minId = jsonId
                 } else {
                     // 中间消息需要手动查找后一个消息
                     for (let i = jsonId; i < this.maxId; i++) {
-                        let item = this.logHtmlNode[i];
+                        let item = logHtmlNode[i];
                         if (item != null) {
                             this.chatLogs.insertBefore(element, item)
                             break;
                         }
                     }
                 }
+                logHtmlNode[jsonId] = element
+            } else {
+                this.setInnerMsg(element, json)
             }
-            this.setInnerMsg(element, json)
             this.scroll()
         },
         /**
@@ -305,26 +315,26 @@ export default {
         },
         editRoomId() {
             this.chatLogs.textContent = ""
-            this.logHtmlNode = []
+            logHtmlNode = []
             this.minId = Number.MAX_SAFE_INTEGER
-            this.maxId = -1
+            this.maxId = null
             this.clear()
         },
         clear() {
             this.id = null
             this.quill.setText("", 'api')
         },
-        sendHistory() {
+        sendHistory(id) {
             this.ws.send({
                 type: "default",
-                id: this.minId,
+                id: id,
                 roomId: this.room.id,
                 role: this.role.id
             })
         },
         editMsg(id) {
             this.id = id
-            this.message = this.logHtmlNode[id].lastElementChild.innerHTML
+            this.message = logHtmlNode[id].lastElementChild.innerHTML
         },
         sendMessage() {
             /**
@@ -368,7 +378,22 @@ export default {
                     this.clear()
                 }
             }
-
+        },
+        sendTopMessage() {
+            let json = null
+            let trim = this.message;
+            if (trim.length !== 0) {
+                json = {
+                    type: "top",
+                    token: this.token,
+                    message: trim,
+                }
+            }
+            if (json != null) {
+                if (this.ws.send(json)) {
+                    this.clear()
+                }
+            }
         },
         editorReady(quill) {
             this.quill = quill

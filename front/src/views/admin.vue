@@ -15,7 +15,7 @@
             </el-select>
         </el-form-item>
         <el-form-item label="房间名:" style="width: 25%;">
-            <el-input v-model="room.name"></el-input>
+            <el-input v-model="room.name" :disabled="!room.enable"></el-input>
         </el-form-item>
         <el-tooltip
                 class="box-item"
@@ -26,13 +26,13 @@
                 归档后，房间将不再接收任何消息，但是可以继续查看历史消息
             </template>
             <el-form-item label="归档:">
-                <el-switch v-model="room.archive"></el-switch>
+                <el-switch v-model="room.archive" :disabled="!room.enable"></el-switch>
             </el-form-item>
         </el-tooltip>
         <span class="dialog-footer">
-            <el-button type="primary" @click="setRoom">保存房间</el-button>
+            <el-button type="primary" @click="setRoom" :disabled="!room.enable">保存房间</el-button>
             <el-button type="info" @click="downloadLog">导出日志</el-button>
-            <el-button type="danger" @click="deleteRoom">删除房间</el-button>
+            <el-button type="danger" @click="deleteRoom" :disabled="!room.enable">删除房间</el-button>
         </span>
     </el-form>
     <el-table
@@ -52,22 +52,26 @@
                 <el-color-picker v-model="row.color" show-alpha></el-color-picker>
             </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="240">
+        <el-table-column fixed="right" label="操作" width="240" v-if="room.enable">
             <template #default="{row}">
                 <el-button
                         type="info"
-                        @click="editRole(row.id)">
+                        @click="editRole(row.id)"
+                        :disabled="!room.enable"
+                >
                     编辑
                 </el-button>
                 <el-button
                         type="danger"
-                        @click="deleteRole(row.id)">
+                        @click="deleteRole(row.id)"
+                        :disabled="!room.enable"
+                >
                     删除
                 </el-button>
             </template>
         </el-table-column>
     </el-table>
-    <el-button style="width: 100%" @click="roleDialog.visible=true">
+    <el-button style="width: 100%" @click="roleDialog.visible=true" :disabled="!room.enable">
         Add Item
     </el-button>
     <el-dialog v-model="roleDialog.visible">
@@ -131,6 +135,7 @@ export default {
                  */
                 roles: {},
                 archive: false,
+                enable: true
             },
             roleDialog: {
                 visible: false,

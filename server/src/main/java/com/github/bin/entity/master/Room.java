@@ -36,7 +36,7 @@ public class Room {
     @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
     private Map<Integer, RoomRole> roles = new HashMap<>();
 
-    @TableField(value = USER_ID, updateStrategy = FieldStrategy.NEVER)
+    @TableField(value = USER_ID, insertStrategy = FieldStrategy.IGNORED, updateStrategy = FieldStrategy.NEVER)
     private Long userId;
     public static final String USER_ID = "user_id";
     public static final Long ALL_USER = 0L;
@@ -44,12 +44,24 @@ public class Room {
     @TableField(value = "archive", insertStrategy = FieldStrategy.NEVER)
     private Boolean archive;
 
-    @TableField(value = "create_date", update = "CURRENT_DATE")
+    @TableField(value = "update_date", update = "CURRENT_DATE")
     private LocalDate updateDate;
+
+    @TableField(exist = false)
+    private Boolean enable;
 
     public void addRole(RoomRole role) {
         roles.put(role.getId(), role);
     }
 
+    public Room(Room room) {
+        this.id = room.id;
+        this.name = room.name;
+        this.roles = room.roles;
+        this.userId = room.userId;
+        this.archive = room.archive;
+        this.updateDate = room.updateDate;
+        this.enable = room.enable;
+    }
 }
 

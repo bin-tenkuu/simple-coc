@@ -48,15 +48,24 @@ public class RoomController {
         }
         val roomUserId = room.getUserId();
         val userId = LoginUser.getUserId();
-        if (Room.ALL_USER.equals(roomUserId) || userId.equals(roomUserId)) {
-            return ResultModel.success(room);
-        }
-        return ResultModel.fail("房间不存在");
+        val copy = new Room(room);
+        copy.setEnable(roomUserId.equals(userId) || Room.ALL_USER.equals(roomUserId));
+        return ResultModel.success(copy);
     }
 
     @Operation(summary = "创建/更新房间")
     @PostMapping("/info")
     public ResultModel<?> postRoom(@Valid @RequestBody Room room) {
+        val userId = LoginUser.getUserId();
+        val lastRoom = RoomService.getById(room.getId());
+        if (lastRoom != null) {
+            val lastRoomUserId = lastRoom.getUserId();
+            if (!Room.ALL_USER.equals(lastRoomUserId)) {
+                if (!userId.equals(lastRoomUserId)) {
+                    return ResultModel.fail("无权限修改");
+                }
+            }
+        }
         RoomService.saveOrUpdate(room);
         return ResultModel.success();
     }

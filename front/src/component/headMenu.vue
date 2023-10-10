@@ -17,14 +17,14 @@
                         <span>登陆</span>
                     </template>
                 </el-menu-item>
-                <el-menu-item index="register" @click="handleSelect">
+                <!--<el-menu-item index="register" @click="handleSelect">
                     <template #title>
                         <el-icon>
                             <House/>
                         </el-icon>
                         <span>注册</span>
                     </template>
-                </el-menu-item>
+                </el-menu-item>-->
             </el-sub-menu>
         </template>
         <template v-else>
@@ -87,18 +87,16 @@ export default {
         }
     },
     data() {
-        let info = {
-            id: null,
-            username: null,
-            nickname: null
-        }
         userInfo().then((userInfo) => {
-            info.id = userInfo.id
-            info.username = userInfo.username
-            info.nickname = userInfo.nickname
+            this.userInfo = userInfo
+            console.log(this.userInfo, '|', userInfo)
         })
         return {
-            userInfo: info,
+            userInfo: {
+                id: null,
+                username: null,
+                nickname: null
+            },
             route: {
                 login: "/login.html",
                 admin: "/admin.html",
