@@ -1,6 +1,6 @@
 <template>
     <el-affix style="width: 100%" class="chatLogs">
-        <!--<div class="chatLogs" v-html="message"></div>-->
+        <div v-html="topMessage"></div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="ws.connected" class="chatLogs">
@@ -260,6 +260,7 @@ export default {
                 }
             }
             this.setInnerMsg(element, json)
+            this.scroll()
         },
         /**
          *
