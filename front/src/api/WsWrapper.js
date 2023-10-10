@@ -23,10 +23,18 @@ export class WsWrapper {
     connect() {
         this.connected = true
         let ws = this.ws = new WebSocket(this.url);
-        ws.addEventListener('open', (ev) => this.onOpen(ev))
-        ws.addEventListener('message', (ev) => this.onMessage(ev))
-        ws.addEventListener('close', (ev) => this.onClose(ev))
-        ws.addEventListener('error', (ev) => this.onError(ev))
+        ws.addEventListener('open', ev => {
+            return this.onOpen(ev);
+        })
+        ws.addEventListener('message', ev => {
+            return this.onMessage(JSON.parse(ev.data));
+        })
+        ws.addEventListener('close', ev => {
+            return this.onClose(ev);
+        })
+        ws.addEventListener('error', ev => {
+            return this.onError(ev);
+        })
     }
 
     /**
@@ -62,9 +70,9 @@ export class WsWrapper {
 
     /**
      * @this {WsWrapper}
-     * @param ev {WebSocket.MessageEvent}
+     * @param json {*}
      */
-    onMessage(ev) {
+    onMessage(json) {
     }
 
     /**

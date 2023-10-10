@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
+import com.github.bin.enums.MsgType;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.IdAndName;
-import com.github.bin.model.Message;
+import com.github.bin.model.MessageIn;
+import com.github.bin.model.MessageOut;
 import com.github.bin.model.login.LoginUser;
 import com.github.bin.util.MessageUtil;
 import com.github.bin.util.ThreadUtil;
@@ -114,7 +116,7 @@ public class RoomService {
             old.setRoles(room.getRoles());
             old.setArchive(room.getArchive());
             roomMapper.updateById(old);
-            config.sendAll(new Message.RoomMessage(old));
+            config.sendAll(new MessageOut.RoomMessage(old));
         } else {
             room.setUserId(LoginUser.getUserId());
             ROOM_MAP.put(id, new RoomConfig(room));
@@ -144,31 +146,35 @@ public class RoomService {
 
     // region handleMessage
 
-    public static void handleMessage(WebSocketSession session, Message msg) {
+    public static void handleMessage(WebSocketSession session, MessageIn msg) {
         switch (msg) {
-            case Message.Default defMsg -> handleMessage(session, defMsg);
-            case Message.Msg message -> handleMessage(session, message);
+            case MessageIn.Default defMsg -> handleMessage(session, defMsg);
+            case MessageIn.Msg message -> handleMessage(session, message);
             default -> {
             }
         }
     }
 
-    private static void handleMessage(WebSocketSession session, Message.Default defMsg) {
+    private static void handleMessage(WebSocketSession session, MessageIn.Default defMsg) {
+        val lastRoomConfig = getRoom(session);
+        if (lastRoomConfig != null) {
+            lastRoomConfig.removeClient(session);
+        }
         val roomConfig = get(defMsg.getRoomId());
         if (!roomConfig.isEnable()) {
             IOUtils.closeQuietly(session);
             return;
         }
         val id = session.getId();
-        setRoomId(session, defMsg.getRoomId());
+        setRoomId(session, roomConfig.getRoomId());
         // 更新角色，根据id获取历史消息
         roomConfig.addClient(id, session, defMsg.getRole());
-        val list = HisMsgService.historyMsg(roomConfig.getId(), defMsg.getId(), 20);
-        ThreadUtil.execute(() -> {
+        val list = HisMsgService.historyMsg(roomConfig.getRoomId(), defMsg.getId(), 20);
+        ThreadUtil.execute(roomConfig, config -> {
             try {
-                roomConfig.send(id, new Message.RoomMessage(roomConfig.getRoom()));
+                config.send(id, new MessageOut.RoomMessage(config.getRoom()));
                 for (val hisMsg : list) {
-                    roomConfig.send(id, MessageUtil.toMessage(hisMsg));
+                    config.send(id, MessageUtil.toMessage(hisMsg));
                 }
             } catch (IOException e) {
                 IOUtils.closeQuietly(session);
@@ -176,10 +182,13 @@ public class RoomService {
         });
     }
 
-    private static void handleMessage(WebSocketSession session, Message.Msg message) {
-        RoomConfig roomConfig = getSafe(getRoomId(session));
+    private static void handleMessage(WebSocketSession session, MessageIn.Msg message) {
+        RoomConfig roomConfig = getRoom(session);
         if (roomConfig == null) {
             IOUtils.closeQuietly(session);
+            return;
+        }
+        if (roomConfig.isArchive()) {
             return;
         }
         val id = session.getId();
@@ -192,16 +201,16 @@ public class RoomService {
             role = roomRole.copy(message.getRole());
             roomConfig.getRoom().addRole(role);
             roomMapper.updateById(roomConfig.getRoom());
-            roomConfig.sendAll(new Message.RoomMessage(roomConfig.getRoom()));
+            roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom()));
             return;
         }
         val roleId = role.getId();
-        val b = message.getType().equals(Message.TEXT)
+        val b = message.getType() == MsgType.text
                 && roleId != RoomConfig.BOT_ROLE
                 && message.getId() == null
                 && message.getMsg().startsWith(".");
         message.setRole(roleId);
-        val hisMsg = HisMsgService.saveOrUpdate(roomConfig.getId(), message);
+        val hisMsg = HisMsgService.saveOrUpdate(roomConfig.getRoomId(), message);
         roomConfig.sendAll(MessageUtil.toMessage(hisMsg));
         if (b) {
             CommandServer.handleBot(roomConfig, id, message.getMsg().substring(1).trim());
@@ -209,8 +218,7 @@ public class RoomService {
     }
 
     public static void handleClose(WebSocketSession session) {
-        val roomId = getRoomId(session);
-        val roomConfig = getSafe(roomId);
+        val roomConfig = getRoom(session);
         if (roomConfig != null) {
             roomConfig.removeClient(session);
         }
@@ -221,8 +229,10 @@ public class RoomService {
     }
 
     @Nullable
-    private static String getRoomId(WebSocketSession session) {
-        return (String) session.getAttributes().get("roomId");
+    private static RoomConfig getRoom(WebSocketSession session) {
+        val roomId = (String) session.getAttributes().get("roomId");
+        return getSafe(roomId);
+
     }
 
     // endregion
@@ -258,7 +268,7 @@ public class RoomService {
         }
     }
 
-    private static String toHtml(Message.MsgType type, String msg, RoomRole role) {
+    private static String toHtml(MsgType type, String msg, RoomRole role) {
         StringBuilder sb = new StringBuilder();
         val name = role.getName();
         val user = "<span>&lt;" + name + "&gt;:</span>";

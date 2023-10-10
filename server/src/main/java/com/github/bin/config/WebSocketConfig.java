@@ -1,7 +1,7 @@
 package com.github.bin.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.bin.model.Message;
+import com.github.bin.model.MessageIn;
 import com.github.bin.service.RoomService;
 import com.github.bin.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -75,10 +75,6 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
 
     @Override
     public void afterConnectionEstablished(@NotNull WebSocketSession session) {
-        val remoteAddress = session.getRemoteAddress();
-        if (remoteAddress != null) {
-            log.warn("'{}' 连接", remoteAddress.getHostString());
-        }
     }
 
     @Override
@@ -88,7 +84,7 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
         if (message instanceof TextMessage textMessage) {
             val payload = textMessage.getPayload();
             try {
-                val msg = JsonUtil.toBean(payload, Message.class);
+                val msg = JsonUtil.toBean(payload, MessageIn.class);
                 RoomService.handleMessage(session, msg);
             } catch (JsonProcessingException e) {
                 session.close(new CloseStatus(4000, "消息格式错误"));
@@ -102,9 +98,9 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
     @Override
     public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws Exception {
         if (e instanceof IOException) {
-            log.warn("{} websocket IO异常: {}: {}", session.getId(), e.getClass(), e.getMessage());
+            log.warn("websocket IO异常: {}: {}", e.getClass(), e.getMessage());
         } else {
-            log.warn("{} websocket 异常", session.getId(), e);
+            log.warn("websocket 异常", e);
         }
         if (session.isOpen()) {
             session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
@@ -113,10 +109,6 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
 
     @Override
     public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) {
-        val remoteAddress = session.getRemoteAddress();
-        if (remoteAddress != null) {
-            log.warn("'{}' 断开", remoteAddress.getHostString());
-        }
         RoomService.handleClose(session);
     }
 

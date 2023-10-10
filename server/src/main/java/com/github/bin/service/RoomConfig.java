@@ -3,7 +3,11 @@ package com.github.bin.service;
 import cn.hutool.core.io.IoUtil;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
-import com.github.bin.model.Message;
+import com.github.bin.enums.ElPosition;
+import com.github.bin.enums.ElType;
+import com.github.bin.enums.MsgType;
+import com.github.bin.model.MessageIn;
+import com.github.bin.model.MessageOut;
 import com.github.bin.util.IdWorker;
 import com.github.bin.util.JsonUtil;
 import com.github.bin.util.MessageUtil;
@@ -11,7 +15,6 @@ import com.github.bin.util.ThreadUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -21,8 +24,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author bin
@@ -33,12 +34,8 @@ public final class RoomConfig implements Closeable {
     public static final int DEFAULT_ROLE = -1;
     public static final int BOT_ROLE = -10;
 
-    @NotNull
-    private final ConcurrentHashMap<String, WebSocketSession> clients = new ConcurrentHashMap<>();
-    @NotNull
-    private final HashMap<String, RoomRole> roles = new HashMap<>();
-    @Getter
-    private final IdWorker idWorker;
+    private final HashMap<String, SessionWrapper> sessions = new HashMap<>();
+    private final IdWorker idWorker = new IdWorker(0L);
     @Getter
     private final Room room;
     @Getter
@@ -47,12 +44,9 @@ public final class RoomConfig implements Closeable {
     public RoomConfig(Room room) {
         this.room = room;
         this.hold = room != null;
-        if (hold) {
-            idWorker = new IdWorker(0L);
-        } else {
-            idWorker = null;
-        }
     }
+
+    // region client
 
     public boolean isEnable() {
         return room != null;
@@ -69,54 +63,55 @@ public final class RoomConfig implements Closeable {
     }
 
     public boolean isEmpty() {
-        return clients.isEmpty();
+        return sessions.isEmpty();
     }
 
-    public String getId() {
+    public String getRoomId() {
         return room.getId();
+    }
+
+    @Nullable
+    public RoomRole getRole(String id) {
+        val wrapper = sessions.get(id);
+        return wrapper == null ? null : wrapper.role;
+    }
+
+    public boolean isArchive() {
+        return room.getArchive();
     }
 
     public void addClient(String id, WebSocketSession session, Integer roleId) {
         hold = true;
-        clients.put(id, session);
-        setRole(id, roleId);
+        val role = room.getRoles().get(roleId);
+        val wrapper = new SessionWrapper(idWorker.nextId(), session, role);
+        sessions.put(id, wrapper);
+        val message = MessageOut.ElNotification.of(
+                "进入房间",
+                String.format("%s 进入房间", wrapper.role.getName()),
+                ElType.I, ElPosition.BL
+        );
+        sendAll(message);
+        log.info("{} ({}) room '{}'，进入房间：{}", wrapper.id, getRemoteAddr(session), getRoomId(), role);
     }
 
     public void removeClient(WebSocketSession session) {
-        val role = roles.remove(session.getId());
-        //noinspection resource
-        clients.remove(session.getId());
-//        if (role != null) {
-//            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 离开房间");
-//        }
-        log.info("{} ({}) 断开连接", session.getId(), getRemoteAddr(session));
+        val wrapper = sessions.remove(session.getId());
+        val message = MessageOut.ElNotification.of(
+                "离开房间",
+                String.format("%s 离开房间", wrapper.role.getName()),
+                ElType.W, ElPosition.BL
+        );
+        sendAll(message);
+        log.info("{} ({}) 断开连接", wrapper.id, getRemoteAddr(session));
     }
 
-    @Nullable
-    public RoomRole getRole(String session) {
-        return roles.get(session);
-    }
+    // endregion
+    // region send
 
-    public void setRole(String id, @Nullable Integer roleId) {
-        val role = room.getRoles().get(roleId);
-        val oldRole = roles.put(id, role);
-        if (oldRole == null) {
-//            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
-            log.info("{} room '{}'，进入房间：{}", id, getId(), role);
-        } else if (oldRole != role) {
-//            sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
-            log.info("{} room '{}'，切换角色：{} -> {}", id, getId(), oldRole, role);
-        }
-    }
-
-    public void sendAll(Message msg) {
-        if (isArchive()) {
-            return;
-        }
-        val json = JsonUtil.toJson(msg);
-        val textMessage = new TextMessage(json);
-        for (WebSocketSession session : new ArrayList<>(clients.values())) {
-            ThreadUtil.execute(() -> {
+    public void sendAll(MessageOut msg) {
+        val textMessage = toMessage(msg);
+        for (val wrapper : new ArrayList<>(sessions.values())) {
+            ThreadUtil.execute(wrapper.session, (session) -> {
                 try {
                     send(session, textMessage);
                 } catch (IOException e) {
@@ -126,13 +121,15 @@ public final class RoomConfig implements Closeable {
         }
     }
 
-    public void send(String id, Message msg) throws IOException {
-        if (isArchive()) {
-            return;
-        }
+    public void send(String id, MessageOut msg) throws IOException {
+        val textMessage = toMessage(msg);
+        val wrapper = sessions.get(id);
+        send(wrapper.session, textMessage);
+    }
+
+    private static TextMessage toMessage(MessageOut msg) {
         val json = JsonUtil.toJson(msg);
-        val session = clients.get(id);
-        send(session, new TextMessage(json));
+        return new TextMessage(json);
     }
 
     private static void send(WebSocketSession session, TextMessage textMessage) throws IOException {
@@ -141,40 +138,34 @@ public final class RoomConfig implements Closeable {
         }
     }
 
+    public void sendAsBot(String msg) {
+        sendAsBot(MsgType.text, msg);
+    }
+
+    public void sendAsBot(MsgType type, String msg) {
+        if (isArchive()) {
+            return;
+        }
+        val text = new MessageIn.Msg(type, null, BOT_ROLE, msg);
+        val hisMsg = HisMsgService.saveOrUpdate(getRoomId(), text);
+        sendAll(MessageUtil.toMessage(hisMsg));
+    }
+
+    // endregion
+
     @Override
     public void close() {
-        for (val client : new ArrayList<>(clients.values())) {
-            IoUtil.close(client);
+        for (val wrapper : new ArrayList<>(sessions.values())) {
+            IoUtil.close(wrapper.session);
         }
-        clients.clear();
-        roles.clear();
+        sessions.clear();
     }
 
-    public void sendAsBot(String msg) {
-        if (isArchive()) {
-            return;
-        }
-        val text = Message.MsgType.text.create(BOT_ROLE, msg);
-        val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
-        sendAll(MessageUtil.toMessage(hisMsg));
+    private static String getRemoteAddr(WebSocketSession session) {
+        InetSocketAddress remoteAddress = session.getRemoteAddress();
+        return remoteAddress != null ? remoteAddress.getHostName() : "unknown";
     }
 
-    public void sendSys(int roleId, String msg) {
-        if (isArchive()) {
-            return;
-        }
-        val sys = Message.MsgType.sys.create(null, roleId, msg);
-        val hisMsg = HisMsgService.saveOrUpdate(getId(), sys);
-        sendAll(MessageUtil.toMessage(hisMsg));
-    }
-
-    private String getRemoteAddr(WebSocketSession session) {
-        return Optional.ofNullable(session.getRemoteAddress())
-                .map(InetSocketAddress::getHostName)
-                .orElse("unknown");
-    }
-
-    private boolean isArchive() {
-        return room.getArchive();
+    private record SessionWrapper(long id, WebSocketSession session, RoomRole role) {
     }
 }

@@ -1,6 +1,6 @@
 package com.github.bin.controller;
 
-import com.github.bin.model.Message;
+import com.github.bin.model.MessageOut;
 import com.github.bin.model.ResultModel;
 import com.github.bin.service.HisMsgService;
 import com.github.bin.util.MessageUtil;
@@ -30,7 +30,7 @@ import java.util.List;
 public class ChatController {
 
     @GetMapping("/historyMsg")
-    public ResultModel<List<Message>> historyMsg(
+    public ResultModel<List<MessageOut.Msg>> historyMsg(
             @RequestParam String roomId,
             @RequestParam(required = false) Long msgId
     ) {

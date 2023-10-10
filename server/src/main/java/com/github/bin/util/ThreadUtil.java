@@ -4,6 +4,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * @author bin
@@ -25,7 +26,7 @@ public class ThreadUtil {
         EXECUTOR.setKeepAliveTime(1, TimeUnit.MINUTES);
     }
 
-    public static void execute(Runnable runnable) {
-        EXECUTOR.execute(runnable);
+    public static <T> void execute(T t, Consumer<T> consumer) {
+        EXECUTOR.execute(() -> consumer.accept(t));
     }
 }

@@ -3,7 +3,7 @@ package com.github.bin.service;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.msg.HisMsgMapper;
-import com.github.bin.model.Message;
+import com.github.bin.model.MessageIn;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,11 +28,11 @@ public class HisMsgService {
         MsgDataSource.set(roomId);
     }
 
-    public static HisMsg saveOrUpdate(String roomId, Message.Msg msg) {
+    public static HisMsg saveOrUpdate(String roomId, MessageIn.Msg msg) {
         set(roomId);
         HisMsg hisMsg;
         if (msg.getId() == null) {
-            hisMsg = hisMsgMapper.insert(msg.getType(), msg.getMsg(), msg.getRole());
+            hisMsg = hisMsgMapper.insert(msg.getType().name(), msg.getMsg(), msg.getRole());
         } else {
             hisMsg = hisMsgMapper.update(msg.getId(), msg.getMsg(), msg.getRole());
         }

@@ -1,8 +1,7 @@
 package com.github.bin.util;
 
 import com.github.bin.entity.msg.HisMsg;
-import com.github.bin.model.Message;
-import lombok.val;
+import com.github.bin.model.MessageOut;
 
 /**
  * @author bin
@@ -10,11 +9,8 @@ import lombok.val;
  */
 public interface MessageUtil {
 
-    static Message toMessage(HisMsg hisMsg) {
-        val id = hisMsg.getId();
-        val msg = hisMsg.getMsg();
-        val role = hisMsg.getRole();
-        return hisMsg.getType().create(id, role, msg);
+    static MessageOut.Msg toMessage(HisMsg hisMsg) {
+        return new MessageOut.Msg(hisMsg.getType().name(), hisMsg.getId(), hisMsg.getRole(), hisMsg.getMsg());
     }
 
 }

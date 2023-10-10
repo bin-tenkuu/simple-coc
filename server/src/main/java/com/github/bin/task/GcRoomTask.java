@@ -21,10 +21,11 @@ public class GcRoomTask {
         while (iterator.hasNext()) {
             val room = iterator.next();
             if (!room.isHold()) {
-                log.info("清理房间: {}", room.getId());
+                log.info("清理房间: {}", room.getRoomId());
+                room.close();
                 iterator.remove();
             } else if (room.isEmpty()) {
-                log.info("准备清理房间: {}", room.getId());
+                log.info("准备清理房间: {}", room.getRoomId());
                 room.unHold();
             }
         }

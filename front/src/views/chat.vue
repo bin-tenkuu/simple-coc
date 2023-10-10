@@ -56,7 +56,7 @@
 
 <script>
 import {Edit, Key, Plus, StarFilled} from '@element-plus/icons-vue'
-import {ElMessage} from "element-plus";
+import {ElMessage, ElNotification} from "element-plus";
 import {ref} from "vue";
 import {Quill, QuillEditor} from '@vueup/vue-quill';
 import htmlEditButton from "quill-html-edit-button";
@@ -108,21 +108,32 @@ export default {
             });
             this.sendHistory()
         }
-        ws.onMessage = (ev) => {
-            const json = JSON.parse(ev.data);
-            if (json.type === 'room') {
-                this.room = json["room"];
-                let role = this.room.roles[this.role.id];
-                if (role != null) {
-                    this.role.name = role.name
-                    this.role.color = role.color
-                } else {
-                    this.role.name = `unknown-${this.role.id}`
-                    this.role.color = "black"
-                }
-                document.title = `${this.room.name} - ${this.role.name}`
-            } else {
-                this.setMsg(json)
+        ws.onMessage = (json) => {
+            switch (json.type) {
+                case 'notify':
+                    // noinspection JSUnresolvedReference
+                    ElNotification({
+                        title: json.title,
+                        message: json.msg,
+                        type: json.elType,
+                        position: json.position,
+                    });
+                    break;
+                case 'room':
+                    this.room = json["room"];
+                    let role = this.room.roles[this.role.id];
+                    if (role != null) {
+                        this.role.name = role.name
+                        this.role.color = role.color
+                    } else {
+                        this.role.name = `unknown-${this.role.id}`
+                        this.role.color = "black"
+                    }
+                    document.title = `${this.room.name} - ${this.role.name}`
+                    break;
+                default:
+                    this.setMsg(json)
+                    break;
             }
         }
         return {
