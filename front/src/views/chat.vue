@@ -5,7 +5,7 @@
             <StarFilled/>
         </el-icon>
     </el-divider>
-    <div v-if="ws==null">
+    <div v-if="!ws.connected">
         <el-input v-model="room.id" style="width: 20em" clearable @change="editRoomId">
             <template #prepend>房间：</template>
         </el-input>
@@ -14,7 +14,7 @@
             <template #prepend>角色：</template>
         </el-input>
         <br>
-        <el-button type="primary" @click="connect">进入房间</el-button>
+        <el-button type="primary" @click="ws.connect()">进入房间</el-button>
     </div>
     <el-space>
         <span>
@@ -31,7 +31,7 @@
                 @change="scroll"
         />
     </el-space>
-    <div v-if="ws!=null">
+    <div v-if="ws.connected">
         <quill-editor
                 v-model:content="message"
                 content-type="html"
@@ -50,7 +50,7 @@
             {{ id ? "修改" : "发送" }} (Ctrl+Enter)
         </el-button>
         <el-button type="info" @click="clear">{{ id ? "取消" : "清空" }}</el-button>
-        <el-button type="danger" @click="disconnect">离开房间</el-button>
+        <el-button type="danger" @click="ws.disconnect()">离开房间</el-button>
     </div>
 </template>
 
@@ -64,7 +64,7 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import {UsrTiktok} from "@/formats/UsrTiktok";
 import {UsrShake} from "@/formats/UsrShake";
 import {Ruby} from "@/formats/ruby";
-import {getHistoryMsg, newWebSocket} from "@/api/api";
+import {newWebSocket} from "@/api/api";
 
 Quill.register({
     "modules/htmlEditButton": htmlEditButton,
@@ -98,6 +98,33 @@ export default {
                 e.preventDefault()
             }
         })
+        let ws = newWebSocket();
+        ws.onOpen = () => {
+            ElMessage({
+                message: `连接成功`,
+                type: 'success',
+                duration: 1000,
+                showClose: true,
+            });
+            this.sendHistory()
+        }
+        ws.onMessage = (ev) => {
+            const json = JSON.parse(ev.data);
+            if (json.type === 'room') {
+                this.room = json["room"];
+                let role = this.room.roles[this.role.id];
+                if (role != null) {
+                    this.role.name = role.name
+                    this.role.color = role.color
+                } else {
+                    this.role.name = `unknown-${this.role.id}`
+                    this.role.color = "black"
+                }
+                document.title = `${this.room.name} - ${this.role.name}`
+            } else {
+                this.setMsg(json)
+            }
+        }
         return {
             edit: {
                 inputVisible: false,
@@ -107,7 +134,7 @@ export default {
                 id: "default",
                 name: "default",
                 /**
-                 * @type {Record<string, {id: string, name: string, color: string}>}
+                 * @type {Record<string, Role>}
                  */
                 roles: {},
             },
@@ -117,9 +144,9 @@ export default {
                 color: "",
             },
             /**
-             * @type {WebSocket}
+             * @type {WsWrapper}
              */
-            ws: null,
+            ws: ws,
             minId: Number.MAX_SAFE_INTEGER,
             maxId: -1,
             scrollDown: true,
@@ -185,66 +212,6 @@ export default {
         }
     },
     methods: {
-        connect() {
-            if (this.ws != null) {
-                return
-            }
-            const ws = this.ws = newWebSocket(this.room.id);
-            ws.onopen = () => {
-                ElMessage({
-                    message: `连接成功`,
-                    type: 'success',
-                    duration: 1000,
-                });
-                this.sendHistory()
-            }
-            /**
-             * @param ev {WebSocket.CloseEvent}
-             */
-            ws.onclose = (ev) => {
-                if (ev.code === 1000) {
-                    ElMessage({
-                        message: `断开连接`,
-                        duration: 1000,
-                    });
-                } else {
-                    ElMessage({
-                        message: `断开连接(${ev.code}):${ev.reason}`,
-                        type: 'error',
-                        showClose: true
-                    });
-                }
-                this.disconnect()
-            }
-            /**
-             * @param ev {WebSocket.ErrorEvent}
-             */
-            ws.onerror = (ev) => {
-                ElMessage({
-                    message: `连接出错:${ev.message}`,
-                    type: 'error',
-                    showClose: true
-                });
-                this.disconnect()
-            }
-            ws.onmessage = (ev) => {
-                const json = JSON.parse(ev.data);
-                if (json.type === 'room') {
-                    this.room = json["room"];
-                    let role = this.room.roles[this.role.id];
-                    if (role != null) {
-                        this.role.name = role.name
-                        this.role.color = role.color
-                    } else {
-                        this.role.name = `unknown-${this.role.id}`
-                        this.role.color = "black"
-                    }
-                    document.title = `${this.room.name} - ${this.role.name}`
-                } else {
-                    this.setMsg(json)
-                }
-            }
-        },
         setMsg(json) {
             if (json.type === 'msgs') {
                 try {
@@ -315,13 +282,6 @@ export default {
                 window.scrollTo(0, document.documentElement.scrollHeight)
             }
         },
-        disconnect() {
-            if (this.ws == null) {
-                return
-            }
-            this.ws.close()
-            this.ws = null
-        },
         editRoomId() {
             this.chatLogs.textContent = ""
             this.msgs = []
@@ -334,17 +294,10 @@ export default {
             this.quill.setText("", 'api')
         },
         sendHistory() {
-            getHistoryMsg(this.room.id, this.minId).then(msgs => {
-                for (const msg of Array.from(msgs)) {
-                    this.setMsg(msg)
-                }
-            })
-            if (this.ws == null) {
-                return
-            }
-            this.send({
+            this.ws.send({
                 type: "default",
                 id: this.minId,
+                roomId: this.room.id,
                 role: this.role.id
             })
         },
@@ -353,48 +306,48 @@ export default {
             this.message = this.msgs[id].msg
         },
         sendMessage() {
-            if (this.ws == null) {
-                return
-            }
             /**
              * @type {string}
              */
             let text = this.quill.getText(0, 3);
+            let json = null
             if (text.startsWith(".")) {
                 text = this.quill.getText();
                 if (text.length > 1) {
-                    this.send({
+                    json = {
                         id: this.id,
                         type: "text",
                         role: this.role.id,
                         msg: text,
-                    })
+                    }
                 }
             } else if (text.startsWith("/me")) {
                 text = this.quill.getText(3);
                 if (text.length > 1) {
-                    this.send({
+                    json = {
                         id: this.id,
                         type: "sys",
                         role: this.role.id,
                         msg: `*${this.role.name} ${text}`,
-                    })
+                    }
                 }
             } else {
                 let trim = this.message;
                 if (trim.length !== 0) {
-                    this.send({
+                    json = {
                         id: this.id,
                         type: "text",
                         role: this.role.id,
                         msg: trim,
-                    })
+                    }
                 }
             }
-            this.clear()
-        },
-        send(json) {
-            this.ws.send(JSON.stringify(json))
+            if (json != null) {
+                if (this.ws.send(json)) {
+                    this.clear()
+                }
+            }
+
         },
         editorReady(quill) {
             this.quill = quill

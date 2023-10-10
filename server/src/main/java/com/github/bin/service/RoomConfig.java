@@ -76,14 +76,15 @@ public final class RoomConfig implements Closeable {
         return room.getId();
     }
 
-    public void addClient(WebSocketSession session) {
+    public void addClient(String id, WebSocketSession session, Integer roleId) {
         hold = true;
-        clients.put(session.getId(), session);
-        log.info("{} ({}) 连接 room '{}' ", session.getId(), getRemoteAddr(session), getId());
+        clients.put(id, session);
+        setRole(id, roleId);
     }
 
     public void removeClient(WebSocketSession session) {
         val role = roles.remove(session.getId());
+        //noinspection resource
         clients.remove(session.getId());
 //        if (role != null) {
 //            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 离开房间");
@@ -96,15 +97,15 @@ public final class RoomConfig implements Closeable {
         return roles.get(session);
     }
 
-    public void setRole(String session, @Nullable Integer roleId) {
+    public void setRole(String id, @Nullable Integer roleId) {
         val role = room.getRoles().get(roleId);
-        val oldRole = roles.put(session, role);
+        val oldRole = roles.put(id, role);
         if (oldRole == null) {
 //            sendSys(role.getId(), "&gt;&gt; " + role.getName() + " 进入房间");
-            log.info("{} room '{}'，进入房间：{}", session, getId(), role);
+            log.info("{} room '{}'，进入房间：{}", id, getId(), role);
         } else if (oldRole != role) {
 //            sendSys(role.getId(), "&gt;&gt; " + oldRole.getName() + " 角色变为 " + role.getName());
-            log.info("{} room '{}'，切换角色：{} -> {}", session, getId(), oldRole, role);
+            log.info("{} room '{}'，切换角色：{} -> {}", id, getId(), oldRole, role);
         }
     }
 
@@ -153,7 +154,7 @@ public final class RoomConfig implements Closeable {
         if (isArchive()) {
             return;
         }
-        val text = Message.Msg.text(null, RoomConfig.BOT_ROLE, msg);
+        val text = Message.MsgType.text.create(BOT_ROLE, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), text);
         sendAll(MessageUtil.toMessage(hisMsg));
     }
@@ -162,7 +163,7 @@ public final class RoomConfig implements Closeable {
         if (isArchive()) {
             return;
         }
-        val sys = Message.Msg.sys(null, roleId, msg);
+        val sys = Message.MsgType.sys.create(null, roleId, msg);
         val hisMsg = HisMsgService.saveOrUpdate(getId(), sys);
         sendAll(MessageUtil.toMessage(hisMsg));
     }

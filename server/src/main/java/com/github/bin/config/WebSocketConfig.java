@@ -1,21 +1,23 @@
 package com.github.bin.config;
 
-import com.github.bin.controller.ChatWebSocketHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.bin.model.Message;
 import com.github.bin.service.RoomService;
+import com.github.bin.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -24,14 +26,17 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class WebSocketConfig implements WebSocketConfigurer, HandshakeInterceptor {
+public class WebSocketConfig implements WebSocketConfigurer, HandshakeInterceptor, WebSocketHandler {
+
+    // region WebSocketConfigurer
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ChatWebSocketHandler(), "/ws/{roomId}")
+        registry.addHandler(this, "/ws")
                 .addInterceptors(this)
                 .setAllowedOrigins("*");
     }
+    // endregion
 
     @Bean
     public ServletServerContainerFactoryBean createWebSocketContainer() {
@@ -43,6 +48,8 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
         return container;
     }
 
+    // region HandshakeInterceptor
+
     @Override
     public boolean beforeHandshake(
             @NotNull ServerHttpRequest request,
@@ -50,19 +57,7 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
             @NotNull WebSocketHandler wsHandler,
             @NotNull Map<String, Object> attributes
     ) {
-        if (request instanceof ServletServerHttpRequest serverHttpRequest) {
-            val roomId = serverHttpRequest.getURI().getPath().substring(4);
-            val remoteHost = serverHttpRequest.getServletRequest().getRemoteAddr();
-            var config = RoomService.getSafe(roomId);
-            // 外部保证 room 是有效room
-            if (config == null) {
-                log.warn("'{}' 尝试连接 room '{}' （不存在）", remoteHost, roomId);
-                return false;
-            }
-            attributes.put("roomId", roomId);
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -70,7 +65,64 @@ public class WebSocketConfig implements WebSocketConfigurer, HandshakeIntercepto
             @NotNull ServerHttpRequest request,
             @NotNull ServerHttpResponse response,
             @NotNull WebSocketHandler wsHandler,
-            Exception exception) {
+            Exception exception
+    ) {
 
     }
+    // endregion
+
+    // region WebSocketHandler
+
+    @Override
+    public void afterConnectionEstablished(@NotNull WebSocketSession session) {
+        val remoteAddress = session.getRemoteAddress();
+        if (remoteAddress != null) {
+            log.warn("'{}' 连接", remoteAddress.getHostString());
+        }
+    }
+
+    @Override
+    public void handleMessage(
+            @NotNull WebSocketSession session, @NotNull WebSocketMessage<?> message
+    ) throws Exception {
+        if (message instanceof TextMessage textMessage) {
+            val payload = textMessage.getPayload();
+            try {
+                val msg = JsonUtil.toBean(payload, Message.class);
+                RoomService.handleMessage(session, msg);
+            } catch (JsonProcessingException e) {
+                session.close(new CloseStatus(4000, "消息格式错误"));
+            } catch (Exception e) {
+                log.warn("{} 消息处理错误: '{}'", session.getId(), payload, e);
+                session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
+            }
+        }
+    }
+
+    @Override
+    public void handleTransportError(@NotNull WebSocketSession session, @NotNull Throwable e) throws Exception {
+        if (e instanceof IOException) {
+            log.warn("{} websocket IO异常: {}: {}", session.getId(), e.getClass(), e.getMessage());
+        } else {
+            log.warn("{} websocket 异常", session.getId(), e);
+        }
+        if (session.isOpen()) {
+            session.close(new CloseStatus(4000, "服务器错误:" + e.getMessage()));
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) {
+        val remoteAddress = session.getRemoteAddress();
+        if (remoteAddress != null) {
+            log.warn("'{}' 断开", remoteAddress.getHostString());
+        }
+        RoomService.handleClose(session);
+    }
+
+    @Override
+    public boolean supportsPartialMessages() {
+        return false;
+    }
+    // endregion
 }

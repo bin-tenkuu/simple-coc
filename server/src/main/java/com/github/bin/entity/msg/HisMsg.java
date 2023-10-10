@@ -3,6 +3,7 @@ package com.github.bin.entity.msg;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.github.bin.model.Message;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 public class HisMsg {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    private String type;
+    private Message.MsgType type;
     private String msg;
     private Integer role;
     private LocalDateTime createTime;

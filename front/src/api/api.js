@@ -1,5 +1,6 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import {WsWrapper} from "@/api/WsWrapper";
 // region base
 
 const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
@@ -39,18 +40,77 @@ function handleWarning(res) {
 // endregion
 
 /**
- * @param {string} id
- * @returns {WebSocket}
+ * @returns {WsWrapper}
  */
-export function newWebSocket(id) {
-    return new WebSocket(`ws://${host}/ws/${id}`);
+export function newWebSocket() {
+    let ws = new WsWrapper(`ws://${host}/ws`)
+    /**
+     * @this {WsWrapper}
+     * @param ev {WebSocket.CloseEvent}
+     */
+    ws.onClose = function (ev) {
+        this.ws = null;
+        if (this.connected) {
+            if (ev.code === 1000) {
+                ElMessage({
+                    message: `断开连接，重连中...`,
+                    duration: 1000,
+                    showClose: true,
+                });
+            } else {
+                ElMessage({
+                    message: `断开连接，重连中...(${ev.code}):${ev.reason}`,
+                    type: 'error',
+                    showClose: true,
+                });
+            }
+            this.connect()
+        } else {
+            if (ev.code === 1000) {
+                ElMessage({
+                    message: `断开连接`,
+                    duration: 1000,
+                    showClose: true,
+                });
+            } else {
+                ElMessage({
+                    message: `断开连接(${ev.code}):${ev.reason}`,
+                    type: 'error',
+                    showClose: true,
+                });
+            }
+        }
+    }
+    ws.onError = function (ev) {
+        ElMessage({
+            message: `连接出错:${ev.message}`,
+            type: 'error',
+            showClose: true,
+        });
+    }
+    return ws;
 }
 
 // region room
 
 /**
  *
- * @returns {Promise<Array<{id: string, name: string}>>}
+ * @typedef {Object} Room
+ * @property {string} id -
+ * @property {string} name -
+ * @property {Map<number,Role>} roles -
+ * @property {boolean} archive -
+ */
+
+/**
+ * @typedef {Object} Role
+ * @property {number} id -
+ * @property {string} name -
+ * @property {string} color -
+ */
+/**
+ *
+ * @returns {Promise<Array<Room>>}
  */
 export function getRooms() {
     return axios.request({
@@ -63,7 +123,7 @@ export function getRooms() {
 /**
  *
  * @param {string?} id
- * @returns {Promise<{id: string, name: string, roles:any, archive: boolean}>}
+ * @returns {Promise<Room>}
  */
 export function getRoom(id) {
     return axios.request({
@@ -172,10 +232,16 @@ function getId() {
 // region chat
 
 /**
+ * @typedef {Object} Message
+ * @property {string} type -
+ * @property {string} msg -
+ * @property {number} role -
+ */
+/**
  *
  * @param roomId {string}
  * @param msgId {number}
- * @returns {Promise<Array<{type:string, msg:string, role:string}>>}
+ * @returns {Promise<Array<Message>>}
  */
 export function getHistoryMsg(roomId, msgId) {
     return axios.request({

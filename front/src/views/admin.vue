@@ -127,7 +127,7 @@ export default {
                 id: "default",
                 name: "",
                 /**
-                 * @type {Record<number, {id: number, name: string, color: string}>}
+                 * @type {Record<number, Role>}
                  */
                 roles: {},
                 archive: false,
