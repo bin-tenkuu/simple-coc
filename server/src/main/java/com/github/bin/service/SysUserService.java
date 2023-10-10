@@ -36,7 +36,7 @@ public class SysUserService extends ServiceImpl<SysUserMapper, SysUser> implemen
         return code;
     }
 
-    private boolean checkInviteCodeAndRemove(String inviteCode) {
+    public boolean checkInviteCodeAndRemove(String inviteCode) {
         val code = InviteCode.parse(inviteCode);
         if (code == null) {
             log.warn("邀请码格式错误: '{}'", inviteCode);

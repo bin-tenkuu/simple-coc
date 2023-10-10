@@ -71,6 +71,10 @@ public final class RoomConfig implements Closeable {
         return sessions.isEmpty();
     }
 
+    public int size() {
+        return sessions.size();
+    }
+
     public String getRoomId() {
         return room.getId();
     }

@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class GcRoomTask {
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
     public void gcRoom() {
+        val sb = new StringBuilder();
         val iterator = RoomService.values().iterator();
         while (iterator.hasNext()) {
             val room = iterator.next();
@@ -27,7 +28,11 @@ public class GcRoomTask {
             } else if (room.isEmpty()) {
                 log.info("准备清理房间: {}", room.getRoomId());
                 room.unHold();
+                sb.append("\n").append(room.getRoomId()).append(" : ").append("准备清理");
+            } else {
+                sb.append("\n").append(room.getRoomId()).append(" : ").append(room.size()).append(" 个连接");
             }
         }
+        log.info(sb.toString());
     }
 }

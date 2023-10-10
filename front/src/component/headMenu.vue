@@ -86,18 +86,19 @@ export default {
             default: "login"
         }
     },
-    setup() {
-        userInfo().then((userInfo) => {
-            this.userInfo = userInfo
-        })
-    },
     data() {
+        let info = {
+            id: null,
+            username: null,
+            nickname: null
+        }
+        userInfo().then((userInfo) => {
+            info.id = userInfo.id
+            info.username = userInfo.username
+            info.nickname = userInfo.nickname
+        })
         return {
-            userInfo: {
-                id: null,
-                username: null,
-                nickname: null
-            },
+            userInfo: info,
             route: {
                 login: "/login.html",
                 admin: "/admin.html",

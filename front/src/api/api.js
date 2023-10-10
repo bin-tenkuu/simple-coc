@@ -182,7 +182,7 @@ export function downloadLog(id) {
  */
 export function login(username, password) {
     return axios.request({
-        url: "/api/login",
+        url: "/api/user/login",
         method: "post",
         baseURL: origin,
         data: {
@@ -197,7 +197,7 @@ export function login(username, password) {
 
 export function logout() {
     return axios.request({
-        url: "/api/logout",
+        url: "/api/user/logout",
         method: "get",
         baseURL: origin,
     }).then(handleWarning)
@@ -209,7 +209,7 @@ export function logout() {
  */
 export function userInfo() {
     return axios.request({
-        url: "/api/userInfo",
+        url: "/api/user/userInfo",
         method: "get",
         baseURL: origin,
     }).then(handleWarning)

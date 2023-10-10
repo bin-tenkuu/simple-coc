@@ -81,6 +81,12 @@ public class LoginController {
         return ResultModel.success();
     }
 
+    @GetMapping("/generateInviteCode")
+    public ResultModel<?> generateInviteCode() {
+        val code = sysUserService.generateInviteCode();
+        return ResultModel.success(code);
+    }
+
     @PostMapping("/register")
     public ResultModel<?> register(@RequestBody @Valid @NotNull RegisterUser registerUser) {
         var sysUser = sysUserService.findByUsername(registerUser.getUsername());
@@ -89,6 +95,9 @@ public class LoginController {
         }
         if (!registerUser.getPassword().equals(registerUser.getConfirmPassword())) {
             return ResultModel.fail("两次密码不一致");
+        }
+        if (!sysUserService.checkInviteCodeAndRemove(registerUser.getInviteCode())) {
+            return ResultModel.fail("邀请码错误或不存在");
         }
         sysUser = new SysUser();
         sysUser.setUsername(registerUser.getUsername());

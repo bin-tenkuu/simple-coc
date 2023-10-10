@@ -1,6 +1,6 @@
 <template>
     <el-affix style="width: 100%" class="chatLogs">
-        <div v-html="topMessage"></div>
+        <div :class="token!=null?'edit':''" v-html="topMessage"></div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="ws.connected" class="chatLogs">
@@ -149,6 +149,7 @@ export default {
         }
         return {
             topMessage: null,
+            token: localStorage.getItem("authorization"),
             room: {
                 id: "default",
                 name: "default",
