@@ -3,7 +3,14 @@
         <!--<div class="chatLogs" v-html="message"></div>-->
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
-    <!--<div class="chatLogs" v-html="message"></div>-->
+    <div v-if="ws.connected" class="chatLogs">
+        <span v-if="id">修改</span>
+        <span v-else>发送</span>
+        <div v-bind:style="{'--color': role.color}">
+            <span>&lt;{{ role.name }}&gt;:</span>
+            <div v-html="message"></div>
+        </div>
+    </div>
     <el-divider>
         <el-icon>
             <StarFilled/>
