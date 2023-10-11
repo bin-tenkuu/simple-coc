@@ -1,6 +1,8 @@
 <template>
-    <el-affix style="background: #fff;" class="chatLogs" @click="message=topMessage">
-        <div style="background: #fff;" v-html="topMessage"></div>
+    <el-affix class="chatLogs" @click="message=topMessage">
+        <div style="background: #fff;">
+            <div v-html="topMessage"></div>
+        </div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="extraButton.showMessage && ws.connected" class="chatLogs">
@@ -40,7 +42,8 @@
                 active-text="保持底部"
                 inactive-text="自由滚动"
                 @change="scroll"
-        /><el-switch
+        />
+        <el-switch
                 v-model="extraButton.showMessage"
                 size="large"
                 inline-prompt
