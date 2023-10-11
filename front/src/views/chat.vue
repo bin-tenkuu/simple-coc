@@ -3,7 +3,7 @@
         <div style="background: #fff;" v-html="topMessage"></div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
-    <div v-if="ws.connected" class="chatLogs">
+    <div v-if="extraButton.showMessage && ws.connected" class="chatLogs">
         <span v-if="id">修改</span>
         <span v-else>发送</span>
         <div v-bind:style="{'--color': role.color}">
@@ -34,11 +34,18 @@
         <label>输入框：</label>
         <el-button type="info" @click="sendHistory(minId)" :disabled="minId<=1">20条历史消息</el-button>
         <el-switch
-                v-model="scrollDown"
+                v-model="extraButton.scrollDown"
                 size="large"
                 inline-prompt
                 active-text="保持底部"
                 inactive-text="自由滚动"
+                @change="scroll"
+        /><el-switch
+                v-model="extraButton.showMessage"
+                size="large"
+                inline-prompt
+                active-text="所见即所得"
+                inactive-text="隐藏消息"
                 @change="scroll"
         />
     </el-space>
@@ -182,7 +189,10 @@ export default {
             ws: ws,
             minId: null,
             maxId: null,
-            scrollDown: true,
+            extraButton: {
+                scrollDown: true,
+                showMessage: false,
+            },
             id: null,
             message: "<p><br></p>",
             hasmessage: true,
@@ -310,7 +320,7 @@ export default {
             element.innerHTML = innerHTML
         },
         scroll() {
-            if (this.scrollDown) {
+            if (this.extraButton.scrollDown) {
                 window.scrollTo(0, document.documentElement.scrollHeight)
             }
         },
