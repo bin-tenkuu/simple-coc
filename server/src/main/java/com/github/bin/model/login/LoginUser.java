@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
-import java.util.Optional;
 
 /**
  * @author bin
@@ -87,9 +86,11 @@ public class LoginUser {
     @NotNull
     @Contract(pure = true)
     public static Long getUserId() {
-        return Optional.ofNullable(USER.get())
-                .map(LoginUser::getId)
-                .orElse(Room.ALL_USER);
+        LoginUser value = USER.get();
+        if (value != null) {
+            return value.getId();
+        }
+        return Room.ALL_USER;
     }
 
 }
