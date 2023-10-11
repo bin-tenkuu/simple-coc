@@ -93,7 +93,7 @@ public final class RoomConfig implements Closeable {
         if (last == null) {
             val message = MessageOut.ElNotification.of(
                     String.format("%s 进入房间", wrapper.role.getName()),
-                    ElType.I, ElPosition.BL
+                    ElType.I, ElPosition.TR
             );
             sendAll(message);
             log.info("{} ({}) room '{}'，进入角色：{}",
@@ -108,7 +108,7 @@ public final class RoomConfig implements Closeable {
         val wrapper = sessions.remove(session.getId());
         val message = MessageOut.ElNotification.of(
                 String.format("%s 离开房间", wrapper.role.getName()),
-                ElType.W, ElPosition.BL
+                ElType.W, ElPosition.TR
         );
         sendAll(message);
         log.info("{} ({}) 断开连接", wrapper.id, getRemoteAddr(session));

@@ -1,6 +1,6 @@
 <template>
-    <el-affix style="width: 100%;background: rgba(255,255,255,0.5);" class="chatLogs">
-        <div v-html="topMessage"></div>
+    <el-affix style="background: #fff;" class="chatLogs" @click="message=topMessage">
+        <div style="background: #fff;" v-html="topMessage"></div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="ws.connected" class="chatLogs">
