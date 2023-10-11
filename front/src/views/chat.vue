@@ -62,6 +62,7 @@
         </el-button>
         <el-button
                 type="success"
+                v-if="token != null"
                 :disabled="hasmessage"
                 @click="sendTopMessage"
         >
