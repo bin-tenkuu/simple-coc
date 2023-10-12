@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
+    "@tinymce/tinymce-vue": "^5.1.1",
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.4.0",
     "core-js": "^3.8.3",
     "element-plus": "^2.3.12",
     "quill-html-edit-button": "^2.2.12",
+    "tinymce": "^6.7.0",
     "unplugin-auto-import": "^0.16.4",
     "unplugin-vue-components": "^0.25.1",
     "vue": "^3.3.4"

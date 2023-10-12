@@ -1,17 +1,17 @@
 <template>
     <el-affix class="chatLogs" @click="message=topMessage">
         <div style="background: #fff;">
-            <div v-html="topMessage"></div>
+            <span v-html="topMessage"></span>
         </div>
     </el-affix>
     <div ref="chatLogs" id="chatLogs" class="chatLogs"></div>
     <div v-if="extraButton.showMessage && ws.connected" class="chatLogs">
         <span v-if="id">修改</span>
         <span v-else>发送</span>
-        <div v-bind:style="{'--color': role.color}">
+        <span v-bind:style="{'--color': role.color}">
             <span>&lt;{{ role.name }}&gt;:</span>
-            <div v-html="message"></div>
-        </div>
+            <span v-html="message"></span>
+        </span>
     </div>
     <el-divider>
         <el-icon>

@@ -14,9 +14,15 @@ module.exports = defineConfig({
         },
         chat: {
             entry: 'src/views/chat.js',
-            template: 'public/index.html',
+            template: 'public/chat.html',
             filename: 'chat.html',
             title: '聊天室 - 云聊天室',
+        },
+        chat2: {
+            entry: 'src/views/chat2.js',
+            template: 'public/chat2.html',
+            filename: 'chat2.html',
+            title: '聊天室2 - 云聊天室',
         },
         admin: {
             entry: 'src/views/admin.js',
