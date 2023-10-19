@@ -32,7 +32,7 @@ public class ChatController {
     @GetMapping("/historyMsg")
     public ResultModel<List<MessageOut.Msg>> historyMsg(
             @RequestParam String roomId,
-            @RequestParam(required = false) Long msgId
+            @RequestParam(required = false) Integer msgId
     ) {
         val list = HisMsgService.historyMsg(roomId, msgId, 20)
                 .stream()

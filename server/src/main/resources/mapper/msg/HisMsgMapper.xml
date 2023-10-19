@@ -55,4 +55,11 @@
         select count(*)
         from his_msg
     </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from his_msg
+        where id = #{id}
+    </select>
 </mapper>

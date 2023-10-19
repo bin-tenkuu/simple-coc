@@ -13,31 +13,31 @@ import org.jetbrains.annotations.Nullable;
  * @author bin
  * @since 2023/08/22
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(
         value = {
                 @JsonSubTypes.Type(value = MessageIn.Default.class, name = MessageIn.DEFAULT),
                 @JsonSubTypes.Type(value = MessageIn.Msg.class, names = {
                         MessageIn.TEXT,
-                        MessageIn.PIC,
                         MessageIn.SYS,
                 }),
                 @JsonSubTypes.Type(value = MessageIn.Top.class, name = MessageIn.TOP),
+                @JsonSubTypes.Type(value = MessageIn.His.class, name = MessageIn.HIS),
         },
         failOnRepeatedNames = true
 )
 public sealed interface MessageIn {
     String DEFAULT = "default";
     String TEXT = "text";
-    String PIC = "pic";
     String SYS = "sys";
     String TOP = "top";
+    String HIS = "his";
 
     @Getter
     @Setter
     final class Default implements MessageIn {
         private String roomId;
-        private Long id;
+        private Integer id;
         private Integer role;
     }
 
@@ -48,7 +48,7 @@ public sealed interface MessageIn {
     final class Msg implements MessageIn {
         private MsgType type;
         @Nullable
-        private Long id;
+        private Integer id;
         private int role = -1;
         private String msg = "";
     }
@@ -58,5 +58,10 @@ public sealed interface MessageIn {
     final class Top implements MessageIn {
         private String message;
         private String token;
+    }
+
+    @Getter
+    @Setter
+    final class His implements MessageIn {
     }
 }

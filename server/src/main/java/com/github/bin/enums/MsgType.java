@@ -6,6 +6,5 @@ package com.github.bin.enums;
  */
 public enum MsgType {
     text,
-    pic,
     sys,
 }

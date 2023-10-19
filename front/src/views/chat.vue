@@ -35,6 +35,7 @@
         </span>
         <label>输入框：</label>
         <el-button type="info" @click="sendHistory(minId)" :disabled="minId<=1">20条历史消息</el-button>
+        <el-button type="info" @click="sendHisAll" :disabled="minId<=1">全部历史消息</el-button>
         <el-switch
                 v-model="extraButton.scrollDown"
                 size="large"
@@ -346,6 +347,11 @@ export default {
                 role: this.role.id
             })
         },
+        sendHisAll() {
+            this.ws.send({
+                type: "his",
+            })
+        },
         editMsg(id) {
             this.id = id
             this.message = logHtmlNode[id].lastElementChild.innerHTML
@@ -355,7 +361,7 @@ export default {
              * @type {string}
              */
             let text = this.quill.getText(0, 3);
-            let json = null
+            let json
             if (text.startsWith(".")) {
                 text = this.quill.getText();
                 if (text.length > 1) {
@@ -394,16 +400,13 @@ export default {
             }
         },
         sendTopMessage() {
-            let json = null
             let trim = this.message;
             if (trim.length !== 0) {
-                json = {
+                let json = {
                     type: "top",
                     token: this.token,
                     message: trim,
-                }
-            }
-            if (json != null) {
+                };
                 if (this.ws.send(json)) {
                     this.clear()
                 }

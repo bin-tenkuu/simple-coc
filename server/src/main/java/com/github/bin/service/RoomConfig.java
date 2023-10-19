@@ -90,28 +90,33 @@ public final class RoomConfig implements Closeable {
         val role = room.getRoles().get(roleId);
         val wrapper = new SessionWrapper(idWorker.nextId(), session, role);
         val last = sessions.put(id, wrapper);
-        if (last == null) {
-            val message = MessageOut.ElNotification.of(
-                    String.format("%s 进入房间", wrapper.role.getName()),
-                    ElType.I, ElPosition.TR
-            );
-            sendAll(message);
-            log.info("{} ({}) room '{}'，进入角色：{}",
-                    wrapper.id, getRemoteAddr(session), getRoomId(), role);
-        } else if (!Objects.equals(wrapper.role, last.role)) {
-            log.info("{} ({}) room '{}'，切换角色：{} -> {}",
-                    wrapper.id, getRemoteAddr(session), getRoomId(), role, last.role);
+        if (role != null) {
+            if (last == null) {
+                val message = MessageOut.ElNotification.of(
+                        String.format("%s 进入房间", role.getName()),
+                        ElType.I, ElPosition.TR
+                );
+                sendAll(message);
+                log.info("{} ({}) room '{}'，进入角色：{}",
+                        wrapper.id, getRemoteAddr(session), getRoomId(), role);
+            } else if (!Objects.equals(role, last.role)) {
+                log.info("{} ({}) room '{}'，切换角色：{} -> {}",
+                        wrapper.id, getRemoteAddr(session), getRoomId(), role, last.role);
+            }
         }
     }
 
     public void removeClient(WebSocketSession session) {
         val wrapper = sessions.remove(session.getId());
-        val message = MessageOut.ElNotification.of(
-                String.format("%s 离开房间", wrapper.role.getName()),
-                ElType.W, ElPosition.TR
-        );
-        sendAll(message);
-        log.info("{} ({}) 断开连接", wrapper.id, getRemoteAddr(session));
+        val role = wrapper.role;
+        if (role != null) {
+            val message = MessageOut.ElNotification.of(
+                    String.format("%s 离开房间", role.getName()),
+                    ElType.W, ElPosition.TR
+            );
+            sendAll(message);
+            log.info("{} ({}) 断开连接", wrapper.id, getRemoteAddr(session));
+        }
     }
 
     // endregion
@@ -120,7 +125,8 @@ public final class RoomConfig implements Closeable {
     public void sendAll(MessageOut msg) {
         val textMessage = toMessage(msg);
         for (val wrapper : new ArrayList<>(sessions.values())) {
-            ThreadUtil.execute(wrapper.session, (session) -> {
+            val session = wrapper.session;
+            ThreadUtil.execute(() -> {
                 try {
                     send(session, textMessage);
                 } catch (IOException e) {
@@ -133,12 +139,19 @@ public final class RoomConfig implements Closeable {
     public void send(String id, MessageOut msg) throws IOException {
         val textMessage = toMessage(msg);
         val wrapper = sessions.get(id);
-        send(wrapper.session, textMessage);
+        if (wrapper != null) {
+            send(wrapper.session, textMessage);
+        }
     }
 
     private static TextMessage toMessage(MessageOut msg) {
         val json = JsonUtil.toJson(msg);
         return new TextMessage(json);
+    }
+
+    public static void send(WebSocketSession session, MessageOut msg) throws IOException {
+        val textMessage = toMessage(msg);
+        session.sendMessage(textMessage);
     }
 
     private static void send(WebSocketSession session, TextMessage textMessage) throws IOException {

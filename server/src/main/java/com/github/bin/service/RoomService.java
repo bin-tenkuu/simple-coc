@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
+import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.enums.MsgType;
 import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.IdAndName;
@@ -135,6 +136,7 @@ public class RoomService {
             case MessageIn.Default defMsg -> handleMessage(session, defMsg);
             case MessageIn.Msg message -> handleMessage(session, message);
             case MessageIn.Top top -> handleMessage(session, top);
+            case MessageIn.His his -> handleMessage(session, his);
             default -> IOUtils.closeQuietly(session);
         }
     }
@@ -220,6 +222,33 @@ public class RoomService {
         roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
     }
 
+    private static void handleMessage(WebSocketSession session, MessageIn.His his) {
+        val roomConfig = getRoom(session);
+        if (roomConfig == null) {
+            IOUtils.closeQuietly(session);
+            return;
+        }
+        if (roomConfig.getRoom().getArchive()) {
+            return;
+        }
+        val roomId = roomConfig.getRoomId();
+        ThreadUtil.execute(() -> {
+            try {
+                int i = 1;
+                HisMsg msg = HisMsgService.getById(roomId, i);
+                while (msg != null && session.isOpen()) {
+                    RoomConfig.send(session, MessageUtil.toMessage(msg));
+                    i++;
+                    msg = HisMsgService.getById(roomId, i);
+                    Thread.sleep(100);
+                }
+            } catch (IOException | InterruptedException e) {
+                IOUtils.closeQuietly(session);
+            }
+        });
+
+    }
+
     public static void handleClose(WebSocketSession session) {
         val roomConfig = getRoom(session);
         if (roomConfig != null) {
@@ -297,7 +326,6 @@ public class RoomService {
         val user = "<span>&lt;" + name + "&gt;:</span>";
         switch (type) {
             case text -> sb.append(user).append("<span>").append(msg).append("</span>");
-            case pic -> sb.append(user).append("<img alt='img' src='").append(msg).append("'/>");
             case sys -> sb.append("<i>").append(msg).append("</i>");
         }
         return sb.toString();

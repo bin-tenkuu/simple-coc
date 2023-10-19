@@ -39,7 +39,7 @@ export class WsWrapper {
 
     /**
      *
-     * @param json {Object}
+     * @param json {{type:string} & Object}
      * @return {boolean}
      */
     send(json) {

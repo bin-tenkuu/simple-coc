@@ -30,6 +30,9 @@ public class ThreadUtil {
         EXECUTOR.execute(runnable);
     }
 
+    /**
+     * 用于传入可变字段
+     */
     public static <T> void execute(T t, Consumer<T> consumer) {
         EXECUTOR.execute(() -> consumer.accept(t));
     }

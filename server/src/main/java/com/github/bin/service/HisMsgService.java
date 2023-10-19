@@ -39,7 +39,7 @@ public class HisMsgService {
         return hisMsg;
     }
 
-    public static List<HisMsg> historyMsg(String roomId, Long id, int limit) {
+    public static List<HisMsg> historyMsg(String roomId, Integer id, int limit) {
         set(roomId);
         return hisMsgMapper.historyMsg(id, limit);
     }
@@ -47,6 +47,11 @@ public class HisMsgService {
     public static List<HisMsg> listAll(String roomId, long offset, long size) {
         set(roomId);
         return hisMsgMapper.listAll(offset, size);
+    }
+
+    public static HisMsg getById(String roomId, int id) {
+        set(roomId);
+        return hisMsgMapper.getById(id);
     }
 
     public static Long count(String roomId) {
