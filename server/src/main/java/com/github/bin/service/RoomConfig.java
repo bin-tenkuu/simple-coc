@@ -108,6 +108,9 @@ public final class RoomConfig implements Closeable {
 
     public void removeClient(WebSocketSession session) {
         val wrapper = sessions.remove(session.getId());
+        if (wrapper == null) {
+            return;
+        }
         val role = wrapper.role;
         if (role != null) {
             val message = MessageOut.ElNotification.of(

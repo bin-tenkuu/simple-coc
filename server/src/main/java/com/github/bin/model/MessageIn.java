@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
  * @author bin
  * @since 2023/08/22
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true)
 @JsonSubTypes(
         value = {
                 @JsonSubTypes.Type(value = MessageIn.Default.class, name = MessageIn.DEFAULT),
