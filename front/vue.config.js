@@ -8,7 +8,7 @@ module.exports = defineConfig({
     pages: {
         index: {
             entry: 'src/index.js',
-            template: 'public/index.html',
+            template: 'public/chat.html',
             filename: 'index.html',
             title: '首页 - 云聊天室',
         },

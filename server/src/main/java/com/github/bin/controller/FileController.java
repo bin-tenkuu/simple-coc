@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,20 +24,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileController {
     private final FileService fileService;
 
-    @GetMapping("/download")
-    public ResponseEntity<InputStreamResource> download(@RequestParam String filePath) {
-        try {
-            return fileService.downloadFile(filePath);
-        } catch (Exception e) {
-            log.warn("download file failed", e);
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @GetMapping("/download/{*path}")
-    public ResponseEntity<InputStreamResource> downloadByPath(@PathVariable String path) {
+    public ResponseEntity<InputStreamResource> downloadByPath(
+            @PathVariable String path, @RequestHeader HttpHeaders headers,
+            @RequestParam(required = false, defaultValue = "false") boolean download
+    ) {
         try {
-            return fileService.downloadFile(path);
+            return fileService.downloadFile(path, headers, download);
         } catch (Exception e) {
             log.warn("download file failed", e);
             return ResponseEntity.badRequest().build();

@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
 /**
@@ -25,36 +24,41 @@ import java.security.GeneralSecurityException;
  */
 @Service
 public class FileService {
-    private final String bucket;
+    private static final String BUCKET = "chat";
     private final MinioClient minioClient;
 
     public FileService(MinIoConfig config) {
         minioClient = config.getClient();
-        this.bucket = config.getBucket();
     }
 
-    public ResponseEntity<InputStreamResource> downloadFile(String filePath)
+    public ResponseEntity<InputStreamResource> downloadFile(String filePath, HttpHeaders headers, boolean download)
             throws MinioException, IOException, GeneralSecurityException {
         val statObject = minioClient.statObject(StatObjectArgs.builder()
-                .bucket(bucket)
+                .bucket(BUCKET)
                 .object(filePath)
                 .build());
         val getObject = minioClient.getObject(GetObjectArgs.builder()
-                .bucket(bucket)
+                .bucket(BUCKET)
                 .object(filePath)
                 .build());
         val index = filePath.lastIndexOf('/');
         val filename = (index >= 0) ? filePath.substring(index) : filePath;
-        val headers = new HttpHeaders();
-        headers.setETag("\"" + statObject.etag() + "\"");
-        headers.setContentLength(statObject.size());
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename(filename, StandardCharsets.UTF_8)
-                .build());
-        headers.setLastModified(statObject.lastModified());
-        headers.setContentType(MediaType.valueOf(statObject.contentType()));
+        val respHeaders = new HttpHeaders();
+        respHeaders.setContentLength(statObject.size());
+        if (download) {
+            respHeaders.setContentDisposition(ContentDisposition.attachment()
+                    .filename(filename)
+                    .build());
+            respHeaders.setContentType(MediaType.valueOf(statObject.contentType()));
+        } else {
+            respHeaders.setContentDisposition(ContentDisposition.inline()
+                    .filename(filename)
+                    .build());
+            respHeaders.setContentType(headers.getAccept().getFirst());
+        }
+        respHeaders.setLastModified(statObject.lastModified());
         return ResponseEntity.ok()
-                .headers(headers)
+                .headers(respHeaders)
                 .body(new InputStreamResource(getObject));
     }
 
@@ -62,7 +66,7 @@ public class FileService {
             throws MinioException, IOException, GeneralSecurityException {
         try (val it = mutipartFile.getInputStream()) {
             minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucket)
+                    .bucket(BUCKET)
                     .object(filePath)
                     .stream(it, mutipartFile.getSize(), -1)
                     .contentType(mutipartFile.getContentType())

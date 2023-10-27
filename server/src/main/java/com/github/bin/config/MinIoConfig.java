@@ -18,7 +18,6 @@ public class MinIoConfig {
     private String endpoint;
     private String accessKey;
     private String secretKey;
-    private String bucket;
 
     public MinioClient getClient() {
         return MinioClient.builder()
