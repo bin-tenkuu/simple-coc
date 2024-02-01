@@ -56,9 +56,10 @@ tasks {
         archiveVersion.set("")
         exclude("*.jar")
         mainClass = "com.github.bin.ApplicationStarter"
-        dependsOn("copyLib")
+//        dependsOn("copyLib")
         manifest {
             attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { "lib/" + it.name }
+//            attributes["Class-Path"] = "./lib.jar"
         }
     }
 }

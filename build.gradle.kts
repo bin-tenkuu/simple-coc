@@ -14,10 +14,11 @@ allprojects {
         mavenLocal()
         maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
     }
-    val jvmVersion = "21"
     java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(jvmVersion))
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
     tasks {
@@ -25,6 +26,7 @@ allprojects {
             options.apply {
                 encoding = "UTF-8"
             }
+            val jvmVersion = "21"
             sourceCompatibility = jvmVersion
             targetCompatibility = jvmVersion
         }
