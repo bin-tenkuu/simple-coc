@@ -1,6 +1,5 @@
 package com.github.bin.service;
 
-import com.baomidou.dynamic.datasource.toolkit.DynamicDataSourceContextHolder;
 import com.github.bin.config.datasource.DynamicRoutingDataSource;
 import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.mapper.msg.HisMsgMapper;
@@ -50,15 +49,15 @@ public class HisMsgService {
 
     public static void addDataSource(String name) {
         val url = getDbUrl(name);
-        val dbFile = new File(url);
-        if (!dbFile.exists()) {
-            try {
-                Files.copy(Path.of("sql/hisMsg.db"), dbFile.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        val dbFile = new File(url);
+//        if (!dbFile.exists()) {
+//            try {
+//                Files.copy(Path.of("sql/hisMsg.db"), dbFile.toPath(),
+//                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
         val sqLiteDataSource = new SQLiteDataSource();
         sqLiteDataSource.setUrl("jdbc:sqlite:" + url);
         sqLiteDataSource.setSharedCache(true);
@@ -67,7 +66,7 @@ public class HisMsgService {
         sqLiteDataSource.setLegacyFileFormat(false);
         sqLiteDataSource.setLegacyAlterTable(false);
         DATA_SOURCE.addDataSource(name, sqLiteDataSource);
-        DynamicDataSourceContextHolder.push(name);
+        DynamicRoutingDataSource.push(name);
         sql("""
                 create table if not exists his_msg
                 (
@@ -87,7 +86,7 @@ public class HisMsgService {
         if (!DATA_SOURCE.getDataSourceMap().containsKey(name)) {
             addDataSource(name);
         }
-        DynamicDataSourceContextHolder.push(name);
+        DynamicRoutingDataSource.push(name);
     }
 
     public static void removeDataSource(String name) {
