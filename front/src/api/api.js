@@ -2,9 +2,10 @@ import axios from "axios";
 import {ElMessage} from "element-plus";
 import {WsWrapper} from "@/api/WsWrapper";
 // region base
-
-const origin = process.env.NODE_ENV === 'development' ? "http://127.0.0.1:8088" : location.origin
-const host = process.env.NODE_ENV === 'development' ? "127.0.0.1:8088" : location.host
+const devAPI = "127.0.0.1:8088";
+// const devApi = "127.0.0.1:8088";
+const origin = process.env.NODE_ENV === 'development' ? "http://" + devAPI : location.origin
+const host = process.env.NODE_ENV === 'development' ? devAPI : location.host
 
 !((() => {
     let authorization = localStorage.getItem("authorization");
