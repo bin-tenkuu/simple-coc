@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
-import com.github.bin.config.MsgDataSource;
+import com.github.bin.service.HisMsgService;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -46,7 +46,7 @@ public class HisMsgConfigDataSource {
     @Bean("msgSqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory() throws Exception {
         val bean = new MybatisSqlSessionFactoryBean();
-        bean.setDataSource(MsgDataSource.DATA_SOURCE);
+        bean.setDataSource(HisMsgService.DATA_SOURCE);
         val resolver = new PathMatchingResourcePatternResolver();
         bean.setMapperLocations(resolver.getResources("classpath*:mapper/msg/*.xml"));
         modify(bean);

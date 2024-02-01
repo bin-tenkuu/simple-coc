@@ -21,6 +21,8 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-security")
 //    implementation("org.springframework.security:spring-security-core")
+//    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     // lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
@@ -33,7 +35,7 @@ dependencies {
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.1.0")
     // hutool全家桶: https://hutool.cn/docs/#/
-    implementation("cn.hutool:hutool-core:5.8.16")
+    implementation("cn.hutool:hutool-core:5.8.25")
     // minio
     implementation("io.minio:minio:8.5.2")
 }

@@ -172,6 +172,16 @@ export function downloadLog(id) {
     );
 }
 
+/**
+ * @param {string} id
+ */
+export function downloadRawLog(id) {
+    window.open(
+        `${origin}/api/room/logs/db?id=${id}`,
+        '_self'
+    );
+}
+
 // endregion
 // region user
 

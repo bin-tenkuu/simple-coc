@@ -33,6 +33,7 @@
             <el-button type="primary" @click="setRoom" :disabled="!room.enable">保存房间</el-button>
             <el-button type="info" @click="downloadLog">导出日志</el-button>
             <el-button type="danger" @click="deleteRoom" :disabled="!room.enable">删除房间</el-button>
+            <el-button type="info" @click="downloadRawLog">导出原始日志</el-button>
         </span>
     </el-form>
     <el-table
@@ -111,7 +112,7 @@
 
 <script>
 import {ElNotification} from "element-plus";
-import {deleteRoom, downloadLog, getRoom, getRooms, saveRoom} from "@/api/api";
+import {deleteRoom, downloadLog, downloadRawLog, getRoom, getRooms, saveRoom} from "@/api/api";
 import HeadMenu from "@/component/headMenu.vue";
 
 export default {
@@ -165,6 +166,9 @@ export default {
         },
         downloadLog() {
             downloadLog(this.room.id)
+        },
+        downloadRawLog() {
+            downloadRawLog(this.room.id)
         },
         deleteRoom() {
             deleteRoom(this.room.id).then(() => {

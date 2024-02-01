@@ -1,10 +1,10 @@
 package com.github.bin.controller;
 
-import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.model.IdAndName;
 import com.github.bin.model.ResultModel;
 import com.github.bin.model.login.LoginUser;
+import com.github.bin.service.HisMsgService;
 import com.github.bin.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -89,7 +89,7 @@ public class RoomController {
     @Operation(summary = "导出房间聊天记录原始数据")
     @GetMapping("/logs/db")
     public ResponseEntity<Resource> getRoomLogsDb(@RequestParam String id) {
-        val dbUrl = MsgDataSource.getDbUrl(id);
+        val dbUrl = HisMsgService.getDbUrl(id);
         val headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=hisMsg_" + id + ".db");
         return ResponseEntity.ok()

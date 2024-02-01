@@ -1,7 +1,6 @@
 package com.github.bin.service;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.github.bin.config.MsgDataSource;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.entity.msg.HisMsg;
@@ -102,10 +101,15 @@ public class RoomService {
     }
 
     public static boolean removeById(String id) {
+        val room = roomMapper.selectById(id);
+        if (room == null) {
+            return true;
+        }
         val roomConfig = ROOM_MAP.remove(id);
         if (roomConfig != null) {
             roomConfig.close();
         }
+        HisMsgService.removeDataSource(HisMsgService.getDbUrl(id));
         return SqlHelper.retBool(roomMapper.deleteById(id));
     }
 
@@ -124,7 +128,7 @@ public class RoomService {
             room.setUserId(LoginUser.getUserId());
             ROOM_MAP.put(id, new RoomConfig(room));
             roomMapper.insert(room);
-            MsgDataSource.addDataSource(id);
+            HisMsgService.addDataSource(id);
         }
     }
 
@@ -213,7 +217,7 @@ public class RoomService {
         val roomUserId = roomConfig.getRoom().getUserId();
         if (!roomUserId.equals(0L)) {
             if (user == null || user.getId() == null
-                    || !Objects.equals(roomUserId, user.getId())) {
+                || !Objects.equals(roomUserId, user.getId())) {
                 IOUtils.closeQuietly(session);
                 return;
             }
