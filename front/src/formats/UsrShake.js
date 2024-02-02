@@ -5,8 +5,8 @@ const Embed = Quill.import('blots/embed');
 export class UsrShake extends Embed {
     static blotName = "shake"
     static tagName = "span"
-    // static className = "usr-shake"
-    static allowedChildren = [Embed, UsrShake]
+    static className = "usr-shake-parent"
+    // static allowedChildren = [Embed]
 
     constructor(node) {
         super(node);
@@ -15,24 +15,28 @@ export class UsrShake extends Embed {
     }
 
     static create(value) {
+        /**
+         * @type {HTMLSpanElement}
+         */
         let node = super.create();
-        node.setAttribute('contenteditable', 'false');
+        // node.setAttribute('contenteditable', 'false')
+        // node.setAttribute("class","usr-shake")
         if (typeof value === 'string') {
-            node.innerHTML = this.transformValue(value);
+            node.innerHTML = value;
         }
         return node;
-    }
-
-    static transformValue(value) {
-        return value.replace(/(.) */g, "<span>$1</span>")
     }
 
     static formats() {
         return true;
     }
 
+    /**
+     *
+     * @param {HTMLSpanElement} domNode
+     */
     static value(domNode) {
-        return domNode.innerText.replace(/<\/?span[^>]*>/g, "");
+        return domNode.children.item(0).innerHTML;
     }
 
 }

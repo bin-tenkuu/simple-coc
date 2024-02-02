@@ -2,8 +2,8 @@ import axios from "axios";
 import {ElMessage} from "element-plus";
 import {WsWrapper} from "@/api/WsWrapper";
 // region base
-const devAPI = "127.0.0.1:8088";
-// const devApi = "127.0.0.1:8088";
+// const devAPI = "127.0.0.1:8088";
+const devAPI = "v.binsrc.club:8088";
 const origin = process.env.NODE_ENV === 'development' ? "http://" + devAPI : location.origin
 const host = process.env.NODE_ENV === 'development' ? devAPI : location.host
 

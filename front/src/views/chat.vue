@@ -227,7 +227,8 @@ export default {
                                 let index = this.quill.getSelection().index || 0;
                                 this.quill.insertText(index, " ", "api");
                                 let value = prompt("输入 shake 的字");
-                                this.quill.insertEmbed(index + 1, 'shake', value, "api")
+                                // this.quill.insertEmbed(index + 1, 'shake', value, "api")
+                                this.quill.insertEmbed(index + 1, 'shake', value.replace(/(.) */g, "<span>$1</span>"), "api")
                                 this.quill.insertText(index + 2, " ", "api");
                             },
                             ruby() {

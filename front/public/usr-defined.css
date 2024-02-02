@@ -23,6 +23,7 @@
 /* region moveShake*/
 
 .usr-shake > * {
+    white-space: initial;
     display: inline-block;
     color: var(--color);
     -webkit-animation: moveShadow 0.6s linear infinite, shake 0.15s linear infinite;

@@ -11,8 +11,8 @@ version = "1.0.0"
 allprojects {
     apply(plugin = "java")
     repositories {
-        mavenLocal()
         maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
+        mavenLocal()
     }
     java {
         sourceCompatibility = JavaVersion.VERSION_21
