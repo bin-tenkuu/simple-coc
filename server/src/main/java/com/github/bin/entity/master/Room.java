@@ -36,9 +36,8 @@ public class Room {
     @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
     private Map<Integer, RoomRole> roles = new HashMap<>();
 
-    @TableField(value = USER_ID, insertStrategy = FieldStrategy.IGNORED, updateStrategy = FieldStrategy.NEVER)
+    @TableField(value = "user_id", insertStrategy = FieldStrategy.IGNORED, updateStrategy = FieldStrategy.NEVER)
     private Long userId;
-    public static final String USER_ID = "user_id";
     public static final Long ALL_USER = 0L;
 
     @TableField(value = "archive", insertStrategy = FieldStrategy.NEVER)

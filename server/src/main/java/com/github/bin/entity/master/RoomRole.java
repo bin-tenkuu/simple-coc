@@ -10,10 +10,12 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomRole {
 
+    @ToString.Include
     @EqualsAndHashCode.Include
     private int id;
 
@@ -27,10 +29,4 @@ public class RoomRole {
         return new RoomRole(id, name, color);
     }
 
-    @Override
-    public String toString() {
-        return "RoomRole(" +
-                "id=" + id +
-                ')';
-    }
 }
