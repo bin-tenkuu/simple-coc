@@ -14,7 +14,7 @@ import com.github.bin.util.MessageUtil;
 import com.github.bin.util.ThreadUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -140,7 +140,7 @@ public class RoomService {
             case MessageIn.Default defMsg -> handleMessage(session, defMsg);
             case MessageIn.Msg message -> handleMessage(session, message);
             case MessageIn.Top top -> handleMessage(session, top);
-            case MessageIn.His his -> handleMessage(session, his);
+            case MessageIn.His ignored -> handleMessage(session);
             default -> IOUtils.closeQuietly(session);
         }
     }
@@ -226,7 +226,7 @@ public class RoomService {
         roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
     }
 
-    private static void handleMessage(WebSocketSession session, MessageIn.His his) {
+    private static void handleMessage(WebSocketSession session) {
         val roomConfig = getRoom(session);
         if (roomConfig == null) {
             IOUtils.closeQuietly(session);
@@ -244,9 +244,9 @@ public class RoomService {
                     RoomConfig.send(session, MessageUtil.toMessage(msg));
                     i++;
                     msg = HisMsgService.getById(roomId, i);
-                    Thread.sleep(100);
+                    Thread.yield();
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 IOUtils.closeQuietly(session);
             }
         });

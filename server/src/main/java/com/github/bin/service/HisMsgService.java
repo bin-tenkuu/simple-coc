@@ -12,11 +12,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.sqlite.SQLiteDataSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -49,15 +44,15 @@ public class HisMsgService {
 
     public static void addDataSource(String name) {
         val url = getDbUrl(name);
-//        val dbFile = new File(url);
-//        if (!dbFile.exists()) {
-//            try {
-//                Files.copy(Path.of("sql/hisMsg.db"), dbFile.toPath(),
-//                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        //        val dbFile = new File(url);
+        //        if (!dbFile.exists()) {
+        //            try {
+        //                Files.copy(Path.of("sql/hisMsg.db"), dbFile.toPath(),
+        //                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+        //            } catch (IOException e) {
+        //                throw new RuntimeException(e);
+        //            }
+        //        }
         val sqLiteDataSource = new SQLiteDataSource();
         sqLiteDataSource.setUrl("jdbc:sqlite:" + url);
         sqLiteDataSource.setSharedCache(true);
@@ -110,7 +105,7 @@ public class HisMsgService {
                     .param(3, msg.getRole())
                     .query(HisMsg.class)
                     .single();
-//            hisMsg = hisMsgMapper.insert(msg.getType().name(), msg.getMsg(), msg.getRole());
+            //            hisMsg = hisMsgMapper.insert(msg.getType().name(), msg.getMsg(), msg.getRole());
         } else {
             hisMsg = sql("""
                     UPDATE his_msg
@@ -124,14 +119,33 @@ public class HisMsgService {
                     .param(3, msg.getId())
                     .query(HisMsg.class)
                     .single();
-//            hisMsg = hisMsgMapper.update(msg.getId(), msg.getMsg(), msg.getRole());
+            //            hisMsg = hisMsgMapper.update(msg.getId(), msg.getMsg(), msg.getRole());
         }
         return hisMsg;
     }
 
     public static List<HisMsg> historyMsg(String roomId, Integer id, int limit) {
         setDataSource(roomId);
-        return hisMsgMapper.historyMsg(id, limit);
+        JdbcClient.StatementSpec spec;
+        if (id != null) {
+            spec = sql("""
+                    SELECT id, type, msg, role
+                    FROM his_msg
+                    WHERE id < ?
+                    order by id desc
+                    limit ?""")
+                    .param(1, id)
+                    .param(2, limit);
+        } else {
+            spec = sql("""
+                    SELECT id, type, msg, role
+                    FROM his_msg
+                    order by id desc
+                    limit ?""")
+                    .param(1, limit);
+
+        }
+        return spec.query(HisMsg.class).list();
     }
 
     public static List<HisMsg> listAll(String roomId, long offset, long size) {
