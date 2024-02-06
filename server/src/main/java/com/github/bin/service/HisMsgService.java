@@ -2,14 +2,11 @@ package com.github.bin.service;
 
 import com.github.bin.config.datasource.DynamicRoutingDataSource;
 import com.github.bin.entity.msg.HisMsg;
-import com.github.bin.mapper.msg.HisMsgMapper;
 import com.github.bin.model.MessageIn;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.intellij.lang.annotations.Language;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Service;
 import org.sqlite.SQLiteDataSource;
 
 import java.util.List;
@@ -18,7 +15,6 @@ import java.util.List;
  * @author bin
  * @since 2023/08/22
  */
-@Service
 @Slf4j
 public class HisMsgService {
     public static final DynamicRoutingDataSource DATA_SOURCE;
@@ -31,28 +27,12 @@ public class HisMsgService {
         addDataSource("default");
     }
 
-    private static HisMsgMapper hisMsgMapper;
-
-    @Autowired
-    public void setHisMsgMapper(HisMsgMapper hisMsgMapper) {
-        HisMsgService.hisMsgMapper = hisMsgMapper;
-    }
-
     public static String getDbUrl(String name) {
         return "sql/hisMsg_" + name + ".db";
     }
 
     public static void addDataSource(String name) {
         val url = getDbUrl(name);
-        //        val dbFile = new File(url);
-        //        if (!dbFile.exists()) {
-        //            try {
-        //                Files.copy(Path.of("sql/hisMsg.db"), dbFile.toPath(),
-        //                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-        //            } catch (IOException e) {
-        //                throw new RuntimeException(e);
-        //            }
-        //        }
         val sqLiteDataSource = new SQLiteDataSource();
         sqLiteDataSource.setUrl("jdbc:sqlite:" + url);
         sqLiteDataSource.setSharedCache(true);
@@ -150,16 +130,32 @@ public class HisMsgService {
 
     public static List<HisMsg> listAll(String roomId, long offset, long size) {
         setDataSource(roomId);
-        return hisMsgMapper.listAll(offset, size);
+        return sql("""
+                select id, type, msg, role
+                from his_msg
+                limit ? offset ?""")
+                .param(1, size)
+                .param(2, offset)
+                .query(HisMsg.class)
+                .list();
     }
 
     public static HisMsg getById(String roomId, int id) {
         setDataSource(roomId);
-        return hisMsgMapper.getById(id);
+        return sql("""
+                select id, type, msg, role
+                from his_msg
+                where id = ?""")
+                .param(1, id)
+                .query(HisMsg.class)
+                .optional()
+                .orElse(null);
     }
 
-    public static Long count(String roomId) {
+    public static long count(String roomId) {
         setDataSource(roomId);
-        return hisMsgMapper.count();
+        return sql("select count(*) from his_msg")
+                .query(Long.class)
+                .single();
     }
 }

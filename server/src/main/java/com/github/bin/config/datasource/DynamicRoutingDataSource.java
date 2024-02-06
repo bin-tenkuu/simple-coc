@@ -15,16 +15,19 @@
  */
 package com.github.bin.config.datasource;
 
-import com.baomidou.dynamic.datasource.exception.CannotFindDataSourceException;
+import com.github.bin.exception.CannotFindDataSourceException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
+import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.NamedThreadLocal;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 import org.springframework.util.StringUtils;
+import org.sqlite.SQLiteDataSource;
 
-import javax.sql.DataSource;
-import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -37,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 @Slf4j
-public class DynamicRoutingDataSource extends AbstractRoutingDataSource implements DisposableBean {
+public final class DynamicRoutingDataSource extends AbstractDataSource {
     /**
      * 为什么要用链表存储(准确的是栈)
      * <pre>
@@ -46,8 +49,7 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
      * 传统的只设置当前线程的方式不能满足此业务需求，必须使用栈，后进先出。
      * </pre>
      */
-    private static final ThreadLocal<Deque<String>> LOOKUP_KEY_HOLDER = new NamedThreadLocal<>(
-            "dynamic-datasource") {
+    private static final ThreadLocal<Deque<String>> LOOKUP_KEY_HOLDER = new NamedThreadLocal<>("dynamic-datasource") {
         @Override
         protected Deque<String> initialValue() {
             return new ArrayDeque<>();
@@ -71,53 +73,49 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
      *
      * @param ds 数据源名称
      */
-    public static String push(String ds) {
-        String dataSourceStr = StringUtils.isEmpty(ds) ? "" : ds;
+    public static void push(String ds) {
+        String dataSourceStr = ds == null ? "" : ds;
         LOOKUP_KEY_HOLDER.get().push(dataSourceStr);
-        return dataSourceStr;
-    }
-
-    /**
-     * 清空当前线程数据源
-     * <p>
-     * 如果当前线程是连续切换数据源 只会移除掉当前线程的数据源名称
-     * </p>
-     */
-    public static void poll() {
-        Deque<String> deque = LOOKUP_KEY_HOLDER.get();
-        deque.poll();
-        if (deque.isEmpty()) {
-            LOOKUP_KEY_HOLDER.remove();
-        }
-    }
-
-    /**
-     * 强制清空本地线程
-     * <p>
-     * 防止内存泄漏，如手动调用了push可调用此方法确保清除
-     * </p>
-     */
-    public static void clear() {
-        LOOKUP_KEY_HOLDER.remove();
     }
 
     /**
      * 所有数据库
      */
     @Getter
-    private final Map<String, DataSource> dataSourceMap = new ConcurrentHashMap<>();
+    private final Map<String, SQLiteDataSource> dataSourceMap = new ConcurrentHashMap<>();
+
+    @Getter
+    private final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
 
     @Setter
     private String primary = "master";
 
-    @Override
-    public DataSource determineDataSource() {
+    private SQLiteDataSource determineDataSource() {
         return getDataSource(peek());
     }
 
-    private DataSource determinePrimaryDataSource() {
+    @Override
+    public Connection getConnection() throws SQLException {
+        return getConnection(null, null);
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
+        val ds = peek();
+        Connection connection = connectionMap.get(ds);
+        if (connection != null) {
+            return connection;
+        }
+        connection =
+                new ConnectionProxy
+                        (determineDataSource().getConnection(username, password));
+        connectionMap.put(ds, connection);
+        return connection;
+    }
+
+    private SQLiteDataSource determinePrimaryDataSource() {
         log.debug("dynamic-datasource switch to the primary datasource");
-        DataSource dataSource = dataSourceMap.get(primary);
+        SQLiteDataSource dataSource = dataSourceMap.get(primary);
         if (dataSource != null) {
             return dataSource;
         }
@@ -130,8 +128,8 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
      * @param ds 数据源名称
      * @return 数据源
      */
-    public DataSource getDataSource(String ds) {
-        if (StringUtils.isEmpty(ds)) {
+    private SQLiteDataSource getDataSource(String ds) {
+        if (ds == null) {
             return determinePrimaryDataSource();
         } else if (dataSourceMap.containsKey(ds)) {
             log.debug("dynamic-datasource switch to the datasource named [{}]", ds);
@@ -146,12 +144,8 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
      * @param ds 数据源名称
      * @param dataSource 数据源
      */
-    public synchronized void addDataSource(String ds, DataSource dataSource) {
-        DataSource oldDataSource = dataSourceMap.put(ds, dataSource);
-        // 关闭老的数据源
-        if (oldDataSource != null) {
-            closeDataSource(ds, oldDataSource);
-        }
+    public synchronized void addDataSource(String ds, SQLiteDataSource dataSource) {
+        dataSourceMap.put(ds, dataSource);
         log.info("dynamic-datasource - add a datasource named [{}] success", ds);
     }
 
@@ -168,8 +162,7 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
             throw new RuntimeException("could not remove primary datasource");
         }
         if (dataSourceMap.containsKey(ds)) {
-            DataSource dataSource = dataSourceMap.remove(ds);
-            closeDataSource(ds, dataSource);
+            dataSourceMap.remove(ds);
             log.info("dynamic-datasource - remove the database named [{}] success", ds);
         } else {
             log.warn("dynamic-datasource - could not find a database named [{}]", ds);
@@ -177,28 +170,16 @@ public class DynamicRoutingDataSource extends AbstractRoutingDataSource implemen
     }
 
     @Override
-    public void destroy() {
-        log.info("dynamic-datasource start closing ....");
-        for (Map.Entry<String, DataSource> item : dataSourceMap.entrySet()) {
-            closeDataSource(item.getKey(), item.getValue());
+    @SuppressWarnings("unchecked")
+    public <T> @NotNull T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return (T) this;
         }
-        log.info("dynamic-datasource all closed success,bye");
+        return determineDataSource().unwrap(iface);
     }
 
-    /**
-     * close db
-     *
-     * @param ds dsName
-     * @param dataSource db
-     */
-    private void closeDataSource(String ds, DataSource dataSource) {
-        try {
-            if (dataSource instanceof Closeable closeable) {
-                closeable.close();
-            }
-        } catch (Exception e) {
-            log.warn("dynamic-datasource closed datasource named [{}] failed", ds, e);
-        }
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return (iface.isInstance(this) || determineDataSource().isWrapperFor(iface));
     }
-
 }

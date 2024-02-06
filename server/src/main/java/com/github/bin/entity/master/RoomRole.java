@@ -1,6 +1,5 @@
 package com.github.bin.entity.master;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.*;
 
 /**
@@ -19,10 +18,8 @@ public class RoomRole {
     @EqualsAndHashCode.Include
     private int id;
 
-    @TableField("name")
     private String name;
 
-    @TableField("color")
     private String color;
 
     public RoomRole copy(int id) {

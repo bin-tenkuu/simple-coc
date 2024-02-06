@@ -1,15 +1,14 @@
 package com.github.bin.service;
 
-import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.entity.msg.HisMsg;
 import com.github.bin.enums.MsgType;
-import com.github.bin.mapper.master.RoomMapper;
 import com.github.bin.model.IdAndName;
 import com.github.bin.model.MessageIn;
 import com.github.bin.model.MessageOut;
 import com.github.bin.model.login.LoginUser;
+import com.github.bin.repository.master.RoomRepository;
 import com.github.bin.util.MessageUtil;
 import com.github.bin.util.ThreadUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,7 @@ public class RoomService {
     public static RoomConfig get(String id) {
         var roomConfig = ROOM_MAP.get(id);
         if (roomConfig == null) {
-            roomConfig = new RoomConfig(roomMapper.selectById(id));
+            roomConfig = new RoomConfig(roomRepository.findById(id).orElse(null));
             ROOM_MAP.put(id, roomConfig);
         } else {
             roomConfig.hold();
@@ -83,15 +82,15 @@ public class RoomService {
     // endregion
     // region RoomMapper
 
-    private static RoomMapper roomMapper;
+    private static RoomRepository roomRepository;
 
     @Autowired
-    public void setRoomMapper(RoomMapper roomMapper) {
-        RoomService.roomMapper = roomMapper;
+    public void setRoomRepository(RoomRepository roomRepository) {
+        RoomService.roomRepository = roomRepository;
     }
 
     public static List<IdAndName> rooms() {
-        return roomMapper.listIdAndName();
+        return roomRepository.listIdAndName();
     }
 
     @Nullable
@@ -100,17 +99,17 @@ public class RoomService {
         return roomConfig.getRoom();
     }
 
-    public static boolean removeById(String id) {
-        val room = roomMapper.selectById(id);
+    public static void removeById(String id) {
+        val room = roomRepository.findById(id).orElse(null);
         if (room == null) {
-            return true;
+            return;
         }
         val roomConfig = ROOM_MAP.remove(id);
         if (roomConfig != null) {
             roomConfig.close();
         }
         HisMsgService.removeDataSource(HisMsgService.getDbUrl(id));
-        return SqlHelper.retBool(roomMapper.deleteById(id));
+        roomRepository.deleteById(id);
     }
 
     public static void saveOrUpdate(Room room) {
@@ -122,12 +121,12 @@ public class RoomService {
             old.setName(room.getName());
             old.setRoles(room.getRoles());
             old.setArchive(room.getArchive());
-            roomMapper.updateById(old);
+            roomRepository.save(old);
             config.sendAll(new MessageOut.RoomMessage(old, config.topMessage));
         } else {
             room.setUserId(LoginUser.getUserId());
             ROOM_MAP.put(id, new RoomConfig(room));
-            roomMapper.insert(room);
+            roomRepository.save(room);
             HisMsgService.addDataSource(id);
         }
     }
@@ -178,20 +177,21 @@ public class RoomService {
             IOUtils.closeQuietly(session);
             return;
         }
-        if (roomConfig.getRoom().getArchive()) {
+        val room = roomConfig.getRoom();
+        if (room.getArchive()) {
             return;
         }
         val id = session.getId();
         RoomRole role = roomConfig.getRole(id);
         if (role == null) {
-            val roomRole = roomConfig.getRoom().getRoles().get(RoomConfig.DEFAULT_ROLE);
+            val roomRole = room.getRoles().get(RoomConfig.DEFAULT_ROLE);
             if (roomRole == null) {
                 return;
             }
             role = roomRole.copy(message.getRole());
-            roomConfig.getRoom().addRole(role);
-            roomMapper.updateById(roomConfig.getRoom());
-            roomConfig.sendAll(new MessageOut.RoomMessage(roomConfig.getRoom(), roomConfig.topMessage));
+            room.addRole(role);
+            roomRepository.save(room);
+            roomConfig.sendAll(new MessageOut.RoomMessage(room, roomConfig.topMessage));
             return;
         }
         val roleId = role.getId();

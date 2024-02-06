@@ -1,13 +1,12 @@
 package com.github.bin.entity.master;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -18,22 +17,26 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@TableName(value = "sys_user", resultMap = "BaseResultMap")
+@Entity
+@Table(name = "sys_user")
 public class SysUser {
-    @TableId(value = "id", type = IdType.AUTO)
+    @Id
+    @GeneratedValue
     private Long id;
-    @TableField("user_name")
+    @Column(name = "username", nullable = false, unique = true, length = 32)
     @NotBlank
     private String username;
-    @TableField("nick_name")
+    @Column(name = "nickname", length = 32)
     private String nickname;
-    @TableField("password")
+    @Column(name = "password", nullable = false, length = 128)
     @NotBlank
     private String password;
-    @TableField("create_time")
+    @CreatedDate
+    @Column(name = "create_time", nullable = false, updatable = false)
     private LocalDateTime createTime;
-    @TableField("update_time")
+    @LastModifiedDate
+    @Column(name = "update_time", nullable = false)
     private LocalDateTime updateTime;
-    @TableField("is_enable")
+    @Column(name = "is_enable", nullable = false)
     private Boolean isEnable;
 }

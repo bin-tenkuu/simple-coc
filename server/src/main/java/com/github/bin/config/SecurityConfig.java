@@ -3,6 +3,7 @@ package com.github.bin.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,24 +20,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
         //开启跨域访问
-        security.cors()
-                .configurationSource(SecurityConfig::corsFilter);
+        security.cors(cors -> cors.configurationSource(SecurityConfig::corsFilter));
         // CSRF禁用，因为不使用session
-        security.csrf().disable();
+        security.csrf(AbstractHttpConfigurer::disable);
         // 基于token，所以不需要session
-        security.sessionManagement().disable();
+        security.sessionManagement(AbstractHttpConfigurer::disable);
         // 登出操作
-        security.logout().disable();
+        security.logout(AbstractHttpConfigurer::disable);
         // 登录
-        security.formLogin().disable();
-        security.rememberMe().disable();
+        security.formLogin(AbstractHttpConfigurer::disable);
+        security.rememberMe(AbstractHttpConfigurer::disable);
         // 认证失败处理类
-        security.exceptionHandling().disable();
+        security.exceptionHandling(AbstractHttpConfigurer::disable);
         // 过滤请求
-        security.authorizeHttpRequests()
-                .requestMatchers("/**").permitAll()
-                .anyRequest().permitAll()
-        ;
+        security.authorizeHttpRequests(requests -> {
+            requests.requestMatchers("/**").permitAll();
+            requests.anyRequest().permitAll();
+        });
         return security.build();
     }
 

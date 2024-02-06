@@ -1,11 +1,10 @@
 package com.github.bin.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.bin.entity.master.SysUser;
-import com.github.bin.mapper.master.SysUserMapper;
 import com.github.bin.model.login.InviteCode;
 import com.github.bin.model.login.LoginUser;
+import com.github.bin.repository.master.SysUserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Component;
@@ -17,15 +16,17 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class SysUserService extends ServiceImpl<SysUserMapper, SysUser> implements IService<SysUser> {
+@RequiredArgsConstructor
+public class SysUserService {
+    private final SysUserRepository sysUserRepository;
     private static final String INVITE_CODE = "inviteCode";
 
     public SysUser findByUsername(String username) {
-        return baseMapper.findByUsername(username);
+        return sysUserRepository.findByUsername(username);
     }
 
     public void updatePassword(SysUser user) {
-        baseMapper.updatePassword(user);
+        sysUserRepository.updatePasswordById(user.getId(), user.getPassword());
     }
 
     public String generateInviteCode() {
@@ -50,5 +51,11 @@ public class SysUserService extends ServiceImpl<SysUserMapper, SysUser> implemen
         return false;
     }
 
+    public void save(SysUser entity) {
+        sysUserRepository.save(entity);
+    }
 
+    public SysUser getById(Long id) {
+        return sysUserRepository.findById(id).orElse(null);
+    }
 }

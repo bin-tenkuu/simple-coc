@@ -1,6 +1,5 @@
 package com.github.bin.service;
 
-import cn.hutool.core.io.IoUtil;
 import com.github.bin.entity.master.Room;
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.enums.ElPosition;
@@ -15,10 +14,11 @@ import com.github.bin.util.ThreadUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -133,7 +133,7 @@ public final class RoomConfig implements Closeable {
                 try {
                     send(session, textMessage);
                 } catch (IOException e) {
-                    IoUtil.close(session);
+                    IOUtils.closeQuietly(session);
                 }
             });
         }
@@ -181,7 +181,7 @@ public final class RoomConfig implements Closeable {
     @Override
     public void close() {
         for (val wrapper : new ArrayList<>(sessions.values())) {
-            IoUtil.close(wrapper.session);
+            IOUtils.closeQuietly(wrapper.session);
         }
         sessions.clear();
     }

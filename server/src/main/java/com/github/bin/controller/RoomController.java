@@ -73,11 +73,8 @@ public class RoomController {
     @Operation(summary = "删除房间")
     @GetMapping("/del")
     public ResultModel<?> deleteRoom(@RequestParam String id) {
-        if (RoomService.removeById(id)) {
-            return ResultModel.success();
-        } else {
-            return ResultModel.fail("删除失败");
-        }
+        RoomService.removeById(id);
+        return ResultModel.success();
     }
 
     @Operation(summary = "导出房间聊天记录")

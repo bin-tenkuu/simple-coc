@@ -2,10 +2,8 @@ package com.github.bin.command;
 
 import com.github.bin.entity.master.RoomRole;
 import com.github.bin.service.RoomConfig;
-import jakarta.validation.constraints.NotNull;
 import lombok.val;
 import org.intellij.lang.annotations.Language;
-import org.intellij.lang.annotations.MagicConstant;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,13 +33,6 @@ public interface Command {
 
         public Regex(@Language("RegExp") String regex) {
             this.regex = Pattern.compile(regex, DEFAULT_FLAG);
-        }
-
-        public Regex(
-                @Language("RegExp") @NotNull String regex,
-                @MagicConstant(flagsFromClass = Pattern.class) int flags
-        ) {
-            this.regex = Pattern.compile(regex, DEFAULT_FLAG | flags);
         }
 
         @Override
