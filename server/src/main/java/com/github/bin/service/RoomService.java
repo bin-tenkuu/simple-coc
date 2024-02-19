@@ -267,6 +267,9 @@ public class RoomService {
     @Nullable
     private static RoomConfig getRoom(WebSocketSession session) {
         val roomId = (String) session.getAttributes().get("roomId");
+        if (roomId == null) {
+            return null;
+        }
         return getSafe(roomId);
     }
 

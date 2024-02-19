@@ -106,9 +106,9 @@ public final class DynamicRoutingDataSource extends AbstractDataSource {
         if (connection != null) {
             return connection;
         }
-        connection =
-                new ConnectionProxy
-                        (determineDataSource().getConnection(username, password));
+        connection = new ConnectionProxy(
+                determineDataSource().getConnection(username, password)
+        );
         connectionMap.put(ds, connection);
         return connection;
     }
