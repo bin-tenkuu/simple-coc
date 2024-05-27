@@ -28,8 +28,6 @@ import org.sqlite.SQLiteDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,12 +47,7 @@ public final class DynamicRoutingDataSource extends AbstractDataSource {
      * 传统的只设置当前线程的方式不能满足此业务需求，必须使用栈，后进先出。
      * </pre>
      */
-    private static final ThreadLocal<Deque<String>> LOOKUP_KEY_HOLDER = new NamedThreadLocal<>("dynamic-datasource") {
-        @Override
-        protected Deque<String> initialValue() {
-            return new ArrayDeque<>();
-        }
-    };
+    private static final ThreadLocal<String> LOOKUP_KEY_HOLDER = new NamedThreadLocal<>("dynamic-datasource");
 
     /**
      * 获得当前线程数据源
@@ -62,7 +55,7 @@ public final class DynamicRoutingDataSource extends AbstractDataSource {
      * @return 数据源名称
      */
     public static String peek() {
-        return LOOKUP_KEY_HOLDER.get().peek();
+        return LOOKUP_KEY_HOLDER.get();
     }
 
     /**
@@ -75,7 +68,7 @@ public final class DynamicRoutingDataSource extends AbstractDataSource {
      */
     public static void push(String ds) {
         String dataSourceStr = ds == null ? "" : ds;
-        LOOKUP_KEY_HOLDER.get().push(dataSourceStr);
+        LOOKUP_KEY_HOLDER.set(dataSourceStr);
     }
 
     /**

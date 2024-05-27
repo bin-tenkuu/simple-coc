@@ -21,8 +21,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//    implementation("org.hibernate.orm:hibernate-community-dialects")
+//    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     // lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
@@ -30,7 +29,7 @@ dependencies {
     // sql
     implementation("org.postgresql:postgresql:42.5.4")
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")
-//    implementation("com.baomidou:mybatis-plus-boot-starter:3.5.5")
+    implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6")
 //    implementation("com.baomidou:dynamic-datasource-spring-boot-starter:3.5.1")
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.3.0")

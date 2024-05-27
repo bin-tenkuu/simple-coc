@@ -1,15 +1,14 @@
 package com.github.bin.entity.master;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.bin.util.JsonUtil;
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.*;
+import com.github.bin.config.handler.RoomHandler;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.ibatis.type.JdbcType;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -22,42 +21,32 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
-@Entity
-@Table(
-        name = "room",
-        indexes = {
-                @Index(name = "uk_room_id", columnList = "id", unique = true),
-                @Index(name = "idx_room_user_id", columnList = "user_id")
-        }
-)
+@TableName(value = "room", resultMap = "BaseResultMap")
 public class Room {
     @NotBlank
     @NotNull
     @Pattern(regexp = "^\\w+$", message = "房间ID只能包含字母、数字、下划线")
-    @Id
-    @Column(name = "id", nullable = false, length = 32)
+    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
+    @TableField("name")
     @NotBlank
-    @Column(name = "name", nullable = false, length = 128)
     private String name;
 
-    @Column(name = "roles", nullable = false, columnDefinition = "text")
-    @Convert(converter = JpaConverterJson.class)
+    @TableField(value = "roles", jdbcType = JdbcType.VARCHAR, typeHandler = RoomHandler.class)
     private Map<Integer, RoomRole> roles = new HashMap<>();
 
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @TableField(value = "user_id", insertStrategy = FieldStrategy.ALWAYS, updateStrategy = FieldStrategy.NEVER)
     private Long userId;
     public static final Long ALL_USER = 0L;
 
-    @Column(name = "archive", nullable = false, insertable = false)
+    @TableField(value = "archive", insertStrategy = FieldStrategy.NEVER)
     private Boolean archive;
 
-    @LastModifiedDate
-    @Column(name = "update_date", nullable = false, insertable = false)
+    @TableField(value = "update_date", update = "CURRENT_DATE")
     private LocalDate updateDate;
 
-    @Transient
+    @TableField(exist = false)
     private Boolean enable;
 
     public void addRole(RoomRole role) {
@@ -72,21 +61,6 @@ public class Room {
         this.archive = room.archive;
         this.updateDate = room.updateDate;
         this.enable = room.enable;
-    }
-
-    public static final class JpaConverterJson implements AttributeConverter<Map<Integer, RoomRole>, String> {
-
-        @Override
-        public String convertToDatabaseColumn(Map<Integer, RoomRole> meta) {
-            return JsonUtil.toJson(meta);
-        }
-
-        @Override
-        public Map<Integer, RoomRole> convertToEntityAttribute(String dbData) {
-            return JsonUtil.toBean(dbData, new TypeReference<>() {
-            });
-        }
-
     }
 }
 
