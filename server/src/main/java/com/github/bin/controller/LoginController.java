@@ -93,15 +93,17 @@ public class LoginController {
         if (sysUser != null) {
             return ResultModel.fail("用户名已存在");
         }
-        if (!registerUser.getPassword().equals(registerUser.getConfirmPassword())) {
+        val password = registerUser.getPassword();
+        if (!password.equals(registerUser.getConfirmPassword())) {
             return ResultModel.fail("两次密码不一致");
         }
-        if (!sysUserService.checkInviteCodeAndRemove(registerUser.getInviteCode())) {
+        val inviteCode = registerUser.getInviteCode();
+        if (inviteCode != null && !sysUserService.checkInviteCodeAndRemove(inviteCode)) {
             return ResultModel.fail("邀请码错误或不存在");
         }
         sysUser = new SysUser();
         sysUser.setUsername(registerUser.getUsername());
-        sysUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
+        sysUser.setPassword(passwordEncoder.encode(password));
         val now = LocalDateTime.now();
         sysUser.setNickname("user_" + now);
         sysUserService.save(sysUser);

@@ -7,6 +7,7 @@ import com.github.bin.util.CacheMap;
 import com.github.bin.util.DiceResult;
 import lombok.val;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -111,5 +112,34 @@ public interface CocSbiScope {
             roomConfig.sendAsBot(msg);
             return true;
         }
+    }
+
+    static void main(String[] args) {
+        val gbk = Charset.forName("GBK");
+        val result = new DiceResult(23, 6);
+        int success = 0, bigSuccess = 0, fail = 0, bigFail = 0;
+        for (int i = 0; i < 100; i++) {
+            result.dice();
+            val msg = sbiResult(result.getList());
+            if (msg.startsWith("大")) {
+                if (msg.charAt(1) == '成') {
+                    bigSuccess++;
+                } else {
+                    bigFail++;
+                }
+            } else {
+                if (msg.charAt(0) == '成') {
+                    success++;
+                } else {
+                    fail++;
+                }
+            }
+            val format = String.format("%s（%s）", Arrays.toString(result.getList()), msg);
+            System.out.println(new String(format.getBytes(), gbk));
+        }
+        System.out.println("bigSuccess: " + bigSuccess);
+        System.out.println("success: " + success);
+        System.out.println("fail: " + fail);
+        System.out.println("bigFail: " + bigFail);
     }
 }

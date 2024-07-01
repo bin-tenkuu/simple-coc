@@ -23,6 +23,6 @@ public class RegisterUser {
     @NotBlank
     @Length(min = 1, max = 20)
     private String confirmPassword;
-    @NotBlank
+    // @NotBlank
     private String inviteCode;
 }

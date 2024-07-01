@@ -27,7 +27,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     compileOnly("org.jetbrains:annotations:24.0.1")
     // sql
-    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.1.0")
     implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6")
 //    implementation("com.baomidou:dynamic-datasource-spring-boot-starter:3.5.1")
@@ -36,8 +36,8 @@ dependencies {
     // hutool全家桶: https://hutool.cn/docs/#/
 //    implementation("cn.hutool:hutool-core:5.8.25")
     // org.mapstruct
-    compileOnly("org.mapstruct:mapstruct")
-    annotationProcessor("org.mapstruct:mapstruct:1.5.5.Final")
+    // compileOnly("org.mapstruct:mapstruct")
+    // annotationProcessor("org.mapstruct:mapstruct:1.5.5.Final")
     // minio
 //    implementation("io.minio:minio:8.5.2")
 }
