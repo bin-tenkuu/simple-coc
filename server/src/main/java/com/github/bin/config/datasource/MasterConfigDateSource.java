@@ -2,7 +2,6 @@ package com.github.bin.config.datasource;
 
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusProperties;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
-import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +9,10 @@ import lombok.val;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -35,13 +32,16 @@ import javax.sql.DataSource;
 public class MasterConfigDateSource {
     private final MybatisPlusProperties properties;
 
-    private void modify(MybatisSqlSessionFactoryBean bean) {
-        val globalConfig = new GlobalConfig();
-        BeanUtils.copyProperties(properties.getGlobalConfig(), globalConfig);
-        bean.setGlobalConfig(globalConfig);
+    public void modify(MybatisSqlSessionFactoryBean factory, String[] mapperLocations) {
+        factory.setGlobalConfig(properties.getGlobalConfig());
         val configuration = new MybatisConfiguration();
-        BeanUtils.copyProperties(properties.getConfiguration(), configuration);
-        bean.setConfiguration(configuration);
+        val coreConfiguration = properties.getConfiguration();
+        properties.setMapperLocations(mapperLocations);
+        factory.setMapperLocations(properties.resolveMapperLocations());
+        if (coreConfiguration != null) {
+            coreConfiguration.applyTo(configuration);
+        }
+        factory.setConfiguration(configuration);
     }
 
     @Bean("masterDataSource")
@@ -64,9 +64,7 @@ public class MasterConfigDateSource {
     ) throws Exception {
         val bean = new MybatisSqlSessionFactoryBean();
         bean.setDataSource(dataSource);
-        val resolver = new PathMatchingResourcePatternResolver();
-        bean.setMapperLocations(resolver.getResources("classpath*:mapper/master/*.xml"));
-        modify(bean);
+        modify(bean, new String[]{"classpath*:mapper/master/*.xml"});
         return bean.getObject();
     }
 

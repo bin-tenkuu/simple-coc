@@ -7,7 +7,7 @@ logging:
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] - %logger{50} - %msg%n'
   logback:
     rollingpolicy:
-      max-history: 30
+      max-history: 180
       clean-history-on-start: true
       max-file-size: 10MB
   level:
