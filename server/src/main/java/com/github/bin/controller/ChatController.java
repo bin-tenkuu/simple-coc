@@ -2,7 +2,7 @@ package com.github.bin.controller;
 
 import com.github.bin.model.MessageOut;
 import com.github.bin.model.ResultModel;
-import com.github.bin.service.HisMsgService;
+import com.github.bin.repository.HisMsgService;
 import com.github.bin.util.MessageUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

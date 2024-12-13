@@ -1,4 +1,4 @@
-package com.github.bin.service;
+package com.github.bin.repository;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -6,6 +6,7 @@ import com.github.bin.entity.master.SysUser;
 import com.github.bin.mapper.master.SysUserMapper;
 import com.github.bin.model.login.InviteCode;
 import com.github.bin.model.login.LoginUser;
+import com.github.bin.service.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Component;

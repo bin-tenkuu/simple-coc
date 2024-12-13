@@ -1,6 +1,6 @@
 package com.github.bin.task;
 
-import com.github.bin.service.RoomService;
+import com.github.bin.repository.RoomService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.InitializingBean;

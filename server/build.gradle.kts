@@ -17,24 +17,20 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-//    implementation("org.springframework.boot:spring-boot-starter-aop")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-//    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     // lombok
     compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
     compileOnly("org.jetbrains:annotations:24.0.1")
     // sql
-    implementation("org.postgresql:postgresql:42.7.2")
-    implementation("org.xerial:sqlite-jdbc:3.45.1.0")
-    implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.6")
-//    implementation("com.baomidou:dynamic-datasource-spring-boot-starter:3.5.1")
+    implementation("org.postgresql:postgresql:42.7.4")
+    implementation("org.xerial:sqlite-jdbc:3.47.1.0")
+    implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.9")
+    // implementation("com.baomidou:mybatis-plus-jsqlparser:3.5.9")
     // swagger
     implementation("com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:4.3.0")
-    // hutool全家桶: https://hutool.cn/docs/#/
-//    implementation("cn.hutool:hutool-core:5.8.25")
     // org.mapstruct
     // compileOnly("org.mapstruct:mapstruct")
     // annotationProcessor("org.mapstruct:mapstruct:1.5.5.Final")

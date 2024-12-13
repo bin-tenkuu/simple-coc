@@ -7,10 +7,8 @@ import com.github.bin.enums.ElType;
 import com.github.bin.enums.MsgType;
 import com.github.bin.model.MessageIn;
 import com.github.bin.model.MessageOut;
-import com.github.bin.util.IdWorker;
-import com.github.bin.util.JsonUtil;
-import com.github.bin.util.MessageUtil;
-import com.github.bin.util.ThreadUtil;
+import com.github.bin.repository.HisMsgService;
+import com.github.bin.util.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -35,6 +33,7 @@ public final class RoomConfig implements Closeable {
     public static final int DEFAULT_ROLE = -1;
     public static final int BOT_ROLE = -10;
 
+    public final CocService cocService = new CocService();
     private final HashMap<String, SessionWrapper> sessions = new HashMap<>();
     private final IdWorker idWorker = new IdWorker(0L);
     @Getter

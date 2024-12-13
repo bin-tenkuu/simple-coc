@@ -2,7 +2,7 @@ package com.github.bin.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.bin.model.MessageIn;
-import com.github.bin.service.RoomService;
+import com.github.bin.repository.RoomService;
 import com.github.bin.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;

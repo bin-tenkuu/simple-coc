@@ -5,10 +5,10 @@ import com.github.bin.util.DiceResult;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.github.bin.util.NumberUtil.toIntOr;
 
@@ -17,39 +17,42 @@ import static com.github.bin.util.NumberUtil.toIntOr;
  * @since 2023/08/22
  */
 public class CocService {
-    public static final CacheMap<Integer, DiceResult> CACHE = new CacheMap<>();
-
     private static final Pattern SPLIT_DICE_REGEX = Pattern.compile("(?=[+\\-*])");
 
-    public static boolean cheater = false;
+    public final CacheMap<Integer, DiceResult> cache = new CacheMap<>();
+    public boolean cheater = false;
 
-    public static Effects specialEffects = Effects.bug;
-
-    public static String dice(String str, Integer qq) {
-        val handles = Arrays.stream(SPLIT_DICE_REGEX.split(str)).map(it ->
-                castString(it, CocService.cheater)
-        ).toArray(Calc[]::new);
-        if (handles.length == 1) {
-            val calc = handles[0];
+    public String dice(String str, Integer qq) {
+        List<Calc> handles = new ArrayList<>();
+        for (String string : SPLIT_DICE_REGEX.split(str)) {
+            Calc castString = castString(string, cheater);
+            handles.add(castString);
+        }
+        if (handles.size() == 1) {
+            val calc = handles.getFirst();
             if (calc.list == null) {
                 return String.format("%s%s=%s", calc.op, calc.origin, calc.sum);
             } else {
-                CACHE.set(qq, new DiceResult(calc.sum, calc.list, calc.max));
-                specialEffects.invoke(calc);
-                return String.format("%s：%s=%s%s", calc.origin, Arrays.toString(calc.list), calc.sum, calc.state);
+                cache.set(qq, new DiceResult(calc.sum, calc.list, calc.max));
+                return String.format("%s：%s=%s", calc.origin, Arrays.toString(calc.list), calc.sum);
             }
         }
-        val preRet = Arrays.stream(handles)
-                .filter(it -> it.list != null)
-                .map(it -> String.format("%s：%s=%s", it.origin, Arrays.toString(it.list), it.sum))
-                .collect(Collectors.joining("\n"));
-        val s = Arrays.stream(handles)
-                .map(it -> String.format("%s%s", it.op, it.origin))
-                .collect(Collectors.joining(""));
-        return String.format("%s\n%s=%s", preRet, s, calculate(handles));
+        val result = new StringBuilder();
+        for (Calc handle : handles) {
+            if (handle.list != null) {
+                result.append(handle.origin).append("：")
+                        .append(Arrays.toString(handle.list)).append("=")
+                        .append(handle.sum).append("\n");
+            }
+        }
+        for (Calc it : handles) {
+            result.append(it.op).append(it.origin);
+        }
+        result.append("=").append(calculate(handles));
+        return result.toString();
     }
 
-    private static long calculate(Calc[] list) {
+    private static long calculate(List<Calc> list) {
         long[] accumulator = {0, 1};
         for (Calc c : list) {
             accumulator = c.op.invoke(accumulator, c.sum);
@@ -90,11 +93,6 @@ public class CocService {
         private final int[] list;
         private final String origin;
         private final int max;
-        private String state = "";
-
-        public void setState(String v) {
-            state = ("".equals(v)) ? "" : "\n" + v;
-        }
     }
 
     @RequiredArgsConstructor
@@ -128,76 +126,4 @@ public class CocService {
         abstract long[] invoke(long[] sc, long num);
     }
 
-
-    @RequiredArgsConstructor
-    public enum Effects {
-        bug("默认") {
-            @Override
-            public void invoke(Calc calc) {
-            }
-        },
-        wrf("温柔f") {
-            @Override
-            public void invoke(Calc calc) {
-                val it = calc.list;
-                if (it.length > 2 && it[0] == it[1]) {
-                    ++it[1];
-                    calc.setState("[温柔]");
-                }
-            }
-        },
-        cbf("残暴f") {
-            @Override
-            public void invoke(Calc calc) {
-                val it = calc.list;
-                if (it.length > 2) {
-                    it[1] = it[0];
-                    calc.setState("[残暴]");
-                }
-            }
-        },
-        ajf("傲娇f") {
-            @Override
-            public void invoke(Calc calc) {
-                if (RANDOM.nextDouble() < 0.5) {
-                    wrf.invoke(calc);
-                } else {
-                    cbf.invoke(calc);
-                }
-            }
-        },
-        wr("温柔") {
-            @Override
-            public void invoke(Calc calc) {
-                if (RANDOM.nextDouble() < 0.5) {
-                    wrf.invoke(calc);
-                } else {
-                    bug.invoke(calc);
-                }
-            }
-        },
-        cb("残暴") {
-            @Override
-            public void invoke(Calc calc) {
-                if (RANDOM.nextDouble() < 0.5) {
-                    cbf.invoke(calc);
-                } else {
-                    bug.invoke(calc);
-                }
-            }
-        },
-        aj("傲娇") {
-            @Override
-            public void invoke(Calc calc) {
-                new Effects[]{wrf, cbf, bug}
-                        [RANDOM.nextInt(0, 3)]
-                        .invoke(calc);
-            }
-        },
-        ;
-        private static final Random RANDOM = new Random();
-        private final String state;
-
-        abstract void invoke(Calc calc);
-    }
 }

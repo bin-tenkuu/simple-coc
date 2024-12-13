@@ -1,4 +1,4 @@
-package com.github.bin.service;
+package com.github.bin.repository;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.github.bin.entity.master.Room;
@@ -10,6 +10,8 @@ import com.github.bin.model.IdAndName;
 import com.github.bin.model.MessageIn;
 import com.github.bin.model.MessageOut;
 import com.github.bin.model.login.LoginUser;
+import com.github.bin.service.CommandServer;
+import com.github.bin.service.RoomConfig;
 import com.github.bin.util.MessageUtil;
 import com.github.bin.util.ThreadUtil;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,6 @@
 package com.github.bin.command;
 
 import com.github.bin.entity.master.RoomRole;
-import com.github.bin.service.CocService;
 import com.github.bin.service.RoomConfig;
 import com.github.bin.util.CacheMap;
 import com.github.bin.util.DiceResult;
@@ -74,7 +73,7 @@ public interface CocSbiScope {
             val num = Math.max(toIntOr(matcher.group("num"), 0), 3);
             val max = toIntOr(matcher.group("max"), 0);
             val diceResult = new DiceResult(num, max);
-            if (!CocService.cheater) {
+            if (!roomConfig.cocService.cheater) {
                 diceResult.dice();
             }
             CACHE.set(roomRole.getId(), diceResult);
@@ -101,7 +100,7 @@ public interface CocSbiScope {
                 return true;
             }
             val dice = new DiceResult(num, diceResult.getMax());
-            if (!CocService.cheater) {
+            if (!roomConfig.cocService.cheater) {
                 dice.dice();
             }
             diceResult = diceResult.plus(dice);

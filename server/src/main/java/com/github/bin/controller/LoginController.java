@@ -6,7 +6,7 @@ import com.github.bin.model.login.ChangePassword;
 import com.github.bin.model.login.LoginModel;
 import com.github.bin.model.login.LoginUser;
 import com.github.bin.model.login.RegisterUser;
-import com.github.bin.service.SysUserService;
+import com.github.bin.repository.SysUserService;
 import com.github.bin.util.IdWorker;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

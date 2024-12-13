@@ -1,4 +1,4 @@
-package com.github.bin.service;
+package com.github.bin.repository;
 
 import com.github.bin.config.datasource.DynamicRoutingDataSource;
 import com.github.bin.entity.msg.HisMsg;
@@ -43,6 +43,8 @@ public class HisMsgService {
         DATA_SOURCE.addDataSource(name, sqLiteDataSource);
         DynamicRoutingDataSource.push(name);
         sql("""
+                drop table if exists his_msg""").update();
+        sql("""
                 create table if not exists his_msg
                 (
                     id          integer not null
@@ -53,8 +55,7 @@ public class HisMsgService {
                     role        text    not null,
                     create_time text    not null,
                     update_time text    not null
-                )
-                    strict;""").update();
+                ) strict;""").update();
     }
 
     public static void setDataSource(String name) {

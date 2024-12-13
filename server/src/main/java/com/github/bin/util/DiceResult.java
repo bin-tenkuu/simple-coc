@@ -3,8 +3,8 @@ package com.github.bin.util;
 import lombok.Getter;
 import lombok.val;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * @author bin
@@ -38,7 +38,7 @@ public class DiceResult {
 
     public void dice() {
         long sum = 0;
-        val random = new SecureRandom();
+        val random = new Random();
         val max = this.max + 1;
         for (int i = 0; i < list.length; i++) {
             val it = random.nextInt(1, max);
