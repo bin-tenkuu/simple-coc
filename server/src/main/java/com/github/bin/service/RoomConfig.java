@@ -8,7 +8,10 @@ import com.github.bin.enums.MsgType;
 import com.github.bin.model.MessageIn;
 import com.github.bin.model.MessageOut;
 import com.github.bin.repository.HisMsgService;
-import com.github.bin.util.*;
+import com.github.bin.util.IdWorker;
+import com.github.bin.util.JsonUtil;
+import com.github.bin.util.MessageUtil;
+import com.github.bin.util.ThreadUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -182,6 +185,7 @@ public final class RoomConfig implements Closeable {
         for (val wrapper : new ArrayList<>(sessions.values())) {
             IOUtils.closeQuietly(wrapper.session);
         }
+        HisMsgService.removeDataSource(getRoomId());
         sessions.clear();
     }
 

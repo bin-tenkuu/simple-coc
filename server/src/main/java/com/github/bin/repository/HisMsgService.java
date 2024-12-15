@@ -27,12 +27,12 @@ public class HisMsgService {
         addDataSource("default");
     }
 
-    public static String getDbUrl(String name) {
-        return "sql/hisMsg_" + name + ".db";
+    public static String getDbUrl(String roomId) {
+        return "sql/hisMsg_" + roomId + ".db";
     }
 
-    public static void addDataSource(String name) {
-        val url = getDbUrl(name);
+    public static void addDataSource(String roomId) {
+        val url = getDbUrl(roomId);
         val sqLiteDataSource = new SQLiteDataSource();
         sqLiteDataSource.setUrl("jdbc:sqlite:" + url);
         sqLiteDataSource.setSharedCache(true);
@@ -40,10 +40,8 @@ public class HisMsgService {
         sqLiteDataSource.setCountChanges(true);
         sqLiteDataSource.setLegacyFileFormat(false);
         sqLiteDataSource.setLegacyAlterTable(false);
-        DATA_SOURCE.addDataSource(name, sqLiteDataSource);
-        DynamicRoutingDataSource.push(name);
-        sql("""
-                drop table if exists his_msg""").update();
+        DATA_SOURCE.addDataSource(roomId, sqLiteDataSource);
+        DynamicRoutingDataSource.push(roomId);
         sql("""
                 create table if not exists his_msg
                 (
@@ -58,15 +56,21 @@ public class HisMsgService {
                 ) strict;""").update();
     }
 
-    public static void setDataSource(String name) {
-        if (!DATA_SOURCE.getDataSourceMap().containsKey(name)) {
-            addDataSource(name);
+    public static void setDataSource(String roomId) {
+        if (!DATA_SOURCE.getDataSourceMap().containsKey(roomId)) {
+            addDataSource(roomId);
         }
-        DynamicRoutingDataSource.push(name);
+        DynamicRoutingDataSource.push(roomId);
     }
 
-    public static void removeDataSource(String name) {
-        DATA_SOURCE.removeDataSource(name);
+    public static void deleteDataSource(String roomId) {
+        sql("""
+                drop table if exists his_msg""").update();
+        removeDataSource(roomId);
+    }
+
+    public static void removeDataSource(String roomId) {
+        DATA_SOURCE.removeDataSource(roomId);
     }
 
     private static JdbcClient.StatementSpec sql(@Language("SQLite") String sql) {

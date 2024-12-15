@@ -111,7 +111,7 @@ public class RoomService {
         if (roomConfig != null) {
             roomConfig.close();
         }
-        HisMsgService.removeDataSource(HisMsgService.getDbUrl(id));
+        HisMsgService.deleteDataSource(id);
         return SqlHelper.retBool(roomMapper.deleteById(id));
     }
 
