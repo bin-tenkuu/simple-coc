@@ -42,7 +42,8 @@ public class RoomController {
     @Operation(summary = "获取房间信息")
     @GetMapping("/info")
     public ResultModel<Room> getRoom(@RequestParam String id) {
-        val room = RoomService.getById(id);
+        val roomConfig = RoomService.get(id);
+        val room = roomConfig.getRoom();
         if (room == null) {
             return ResultModel.fail("房间不存在");
         }
@@ -50,6 +51,7 @@ public class RoomController {
         val userId = LoginUser.getUserId();
         val copy = new Room(room);
         copy.setEnable(roomUserId.equals(userId) || Room.ALL_USER.equals(roomUserId));
+        copy.setMemberCount(roomConfig.size());
         return ResultModel.success(copy);
     }
 

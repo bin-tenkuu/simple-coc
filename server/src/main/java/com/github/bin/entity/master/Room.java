@@ -49,6 +49,9 @@ public class Room {
     @TableField(exist = false)
     private Boolean enable;
 
+    @TableField(exist = false)
+    private int memberCount;
+
     public void addRole(RoomRole role) {
         roles.put(role.getId(), role);
     }
@@ -61,6 +64,7 @@ public class Room {
         this.archive = room.archive;
         this.updateDate = room.updateDate;
         this.enable = room.enable;
+        this.memberCount = room.memberCount;
     }
 }
 
