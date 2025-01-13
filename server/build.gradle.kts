@@ -59,7 +59,6 @@ tasks {
 //        dependsOn("copyLib")
         manifest {
             attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { "lib/" + it.name }
-//            attributes["Class-Path"] = "./lib.jar"
         }
     }
 }

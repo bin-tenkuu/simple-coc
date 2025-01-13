@@ -9,6 +9,9 @@ import org.intellij.lang.annotations.Language;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.sqlite.SQLiteDataSource;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -64,8 +67,12 @@ public class HisMsgService {
     }
 
     public static void deleteDataSource(String roomId) {
-        sql("""
-                drop table if exists his_msg""").update();
+        val url = getDbUrl(roomId);
+        try {
+            Files.deleteIfExists(Path.of(url));
+        } catch (IOException e) {
+            log.warn("删除数据库失败", e);
+        }
         removeDataSource(roomId);
     }
 
@@ -90,7 +97,6 @@ public class HisMsgService {
                     .param(3, msg.getRole())
                     .query(HisMsg.class)
                     .single();
-            //            hisMsg = hisMsgMapper.insert(msg.getType().name(), msg.getMsg(), msg.getRole());
         } else {
             hisMsg = sql("""
                     UPDATE his_msg
@@ -104,7 +110,6 @@ public class HisMsgService {
                     .param(3, msg.getId())
                     .query(HisMsg.class)
                     .single();
-            //            hisMsg = hisMsgMapper.update(msg.getId(), msg.getMsg(), msg.getRole());
         }
         return hisMsg;
     }
