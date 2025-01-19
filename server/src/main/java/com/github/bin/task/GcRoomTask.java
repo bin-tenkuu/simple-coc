@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class GcRoomTask {
-    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+    @Scheduled(fixedRate = 7, timeUnit = TimeUnit.DAYS)
     public void gcRoom() {
         val sb = new StringBuilder();
         val iterator = RoomService.values().iterator();
