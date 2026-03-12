@@ -3,13 +3,10 @@ package com.github.bin;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
@@ -31,12 +28,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 )
 @EnableWebSocket
 @EnableScheduling
-public class ApplicationStarter implements ApplicationListener<ApplicationStartedEvent> {
-    @Override
-    public void onApplicationEvent(@NotNull ApplicationStartedEvent event) {
-        System.out.println("启动成功");
-    }
-
+public class ApplicationStarter {
     public static void main(String[] args) {
         val application = new SpringApplication(ApplicationStarter.class);
         application.setBannerMode(Banner.Mode.OFF);

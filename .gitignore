@@ -7,3 +7,4 @@ application-connect.yml
 /.fastRequest
 /sql
 !/sql/hisMsg.db
+/front/public/libs

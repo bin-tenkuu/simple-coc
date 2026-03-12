@@ -11,7 +11,6 @@ version = "1.0.0"
 dependencies {
     // spring
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
@@ -19,13 +18,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     // lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok:1.18.36")
     compileOnly("org.jetbrains:annotations:24.0.1")
     // sql
-    implementation("org.postgresql:postgresql:42.7.4")
     implementation("org.xerial:sqlite-jdbc:3.47.1.0")
     implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.9")
     // implementation("com.baomidou:mybatis-plus-jsqlparser:3.5.9")

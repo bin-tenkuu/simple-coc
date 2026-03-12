@@ -15,7 +15,7 @@ public class CacheMap<K, V> {
      */
     private final long timeout;
 
-    private final HashMap<K, Node> map = new HashMap<>();
+    private final HashMap<K, Node<V>> map = new HashMap<>();
 
     public CacheMap(long timeout) {
         this.timeout = timeout;
@@ -56,7 +56,17 @@ public class CacheMap<K, V> {
 
     public void set(K key, V value, long timeout) {
         expungeExpiredEntries();
-        map.put(key, new Node(value, timeout));
+        map.put(key, new Node<>(value, timeout));
+    }
+
+    public V getAndExpire(K key, long timeout) {
+        expungeExpiredEntries();
+        var node = map.get(key);
+        if (node == null) {
+            return null;
+        }
+        map.put(key, new Node<>(node.v, timeout));
+        return node.v;
     }
 
     public void set(K key, V value) {
@@ -98,18 +108,10 @@ public class CacheMap<K, V> {
         return node.v;
     }
 
-    private class Node {
-        private final V v;
-
-        private final long time;
-
-        public Node(V v, long timeout) {
+    private record Node<V>(V v, long time) {
+        private Node(V v, long time) {
             this.v = v;
-            this.time = timeout + System.currentTimeMillis();
-        }
-
-        public Node(V v) {
-            this(v, 0);
+            this.time = time + System.currentTimeMillis();
         }
 
         public boolean isBeOverdue(long time) {
